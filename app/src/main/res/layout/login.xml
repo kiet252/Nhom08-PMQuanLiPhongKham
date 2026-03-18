@@ -31,7 +31,7 @@
                 android:layout_height="match_parent"
                 android:padding="15dp"
                 android:scaleType="centerInside"
-                android:src="@drawable/ic_clinic_default" /> </com.google.android.material.card.MaterialCardView>
+                android:src="@drawable/login_clinic_icon_default" /> </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
@@ -73,7 +73,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Tên đăng nhập"
-                    app:startIconDrawable="@drawable/ic_person"> <com.google.android.material.textfield.TextInputEditText
+                    app:startIconDrawable="@drawable/dashboard_icon_avatar"> <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edtUsername"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
@@ -86,7 +86,7 @@
                     android:layout_marginTop="16dp"
                     android:hint="Mật khẩu"
                     app:passwordToggleEnabled="true"
-                    app:startIconDrawable="@drawable/ic_lock">
+                    app:startIconDrawable="@drawable/login_icon_lock">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edtPassword"
@@ -104,7 +104,7 @@
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:cornerRadius="12dp"
-                    android:backgroundTint="#2196F3"/>
+                    android:backgroundTint="@color/app_primary_btn_color"/>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

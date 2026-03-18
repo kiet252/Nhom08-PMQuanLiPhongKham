@@ -68,7 +68,7 @@
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:src="@drawable/ic_person"
+                        android:src="@drawable/dashboard_icon_avatar"
                         android:scaleType="centerInside"
                         android:padding="8dp"/>
                 </com.google.android.material.card.MaterialCardView>
@@ -95,9 +95,9 @@
                         android:text="QUẢN LÝ THÔNG TIN BÁC SĨ"
                         android:gravity="center_vertical|start"
                         android:textColor="#2C3E50"
-                        app:icon="@drawable/ic_doctor"
+                        app:icon="@drawable/dashboard_icon_doctor"
                         app:iconPadding="16dp"
-                        app:iconTint="#2196F3" />
+                        app:iconTint="@color/app_primary_color" />
 
                     <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />
 
@@ -109,9 +109,9 @@
                         android:text="QUẢN LÝ DỮ LIỆU PHÒNG KHÁM"
                         android:gravity="center_vertical|start"
                         android:textColor="#2C3E50"
-                        app:icon="@drawable/ic_clinic"
+                        app:icon="@drawable/dashboard_icon_clinic"
                         app:iconPadding="16dp"
-                        app:iconTint="#2196F3" />
+                        app:iconTint="@color/app_primary_color" />
 
                     <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />
 
@@ -123,9 +123,9 @@
                         android:text="XEM BÁO CÁO VÀ THỐNG KÊ"
                         android:gravity="center_vertical|start"
                         android:textColor="#2C3E50"
-                        app:icon="@drawable/ic_report"
+                        app:icon="@drawable/dashboard_icon_report"
                         app:iconPadding="16dp"
-                        app:iconTint="#2196F3" />
+                        app:iconTint="@color/app_primary_color" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
