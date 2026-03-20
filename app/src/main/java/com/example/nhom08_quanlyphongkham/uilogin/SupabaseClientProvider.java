@@ -4,7 +4,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class SupabaseClientProvider {
 
-    private static final String SUPABASE_URL = "https://your-project-id.supabase.co/";
+    private static final String SUPABASE_URL = "https://waiuciilyysobnvcwshd.supabase.co/";
     private static Retrofit retrofit;
 
     public static Retrofit getClient() {

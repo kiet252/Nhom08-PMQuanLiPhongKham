@@ -72,9 +72,9 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Tên đăng nhập"
+                    android:hint="Email đăng nhập"
                     app:startIconDrawable="@drawable/dashboard_icon_avatar"> <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/edtUsername"
+                    android:id="@+id/edtEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
                 </com.google.android.material.textfield.TextInputLayout>
