@@ -1,7 +1,6 @@
 package com.example.nhom08_quanlyphongkham;
 
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -11,11 +10,14 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.nhom08_quanlyphongkham.uilogin.AuthRepository;
 import com.example.nhom08_quanlyphongkham.uilogin.LoginResponse;
+import com.example.nhom08_quanlyphongkham.uilogin.ProfileRepository;
+import com.example.nhom08_quanlyphongkham.uilogin.UserProfile;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
-import com.example.nhom08_quanlyphongkham.uilogin.AuthRepository;
 
+import java.util.List;
 import java.util.Objects;
 
 import retrofit2.Call;
@@ -24,44 +26,68 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
-    TextInputEditText editTextEmail, editTextPassword;
-    MaterialButton buttonLogin;
+    private TextInputEditText editTextEmail, editTextPassword;
+    private MaterialButton buttonLogin;
+
+    private AuthRepository authRepository;
+    private ProfileRepository profileRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.login);
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.login), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        InitializeComponents();
-        setListenersToComponents();
+        authRepository = new AuthRepository(getString(R.string.abAIkey));
+        profileRepository = new ProfileRepository(getString(R.string.abAIkey));
+
+        initializeViews();
+        setupListeners();
     }
 
-    protected void InitializeComponents() {
+    private void initializeViews() {
         editTextEmail = findViewById(R.id.edtEmail);
         editTextPassword = findViewById(R.id.edtPassword);
         buttonLogin = findViewById(R.id.btnLogin);
     }
 
-    protected void setListenersToComponents() {
-        buttonLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String email = Objects.requireNonNull(editTextEmail.getText()).toString().trim();
-                String password = Objects.requireNonNull(editTextPassword.getText()).toString().trim();
+    private void setupListeners() {
+        buttonLogin.setOnClickListener(v -> attemptLogin());
+    }
 
-                if (IsValidLoginDetails(email, password))
-                    loginInitialize(email, password);
+    private void attemptLogin() {
+        String email = Objects.requireNonNull(editTextEmail.getText()).toString().trim();
+        String password = Objects.requireNonNull(editTextPassword.getText()).toString().trim();
+
+        if (!isValidLoginDetails(email, password)) {
+            return;
+        }
+
+        authRepository.login(email, password).enqueue(new Callback<LoginResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
+                if (!response.isSuccessful() || response.body() == null) {
+                    Toast.makeText(MainActivity.this, "Login failed", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                handleLoginSuccess(response.body());
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<LoginResponse> call, @NonNull Throwable t) {
+                Toast.makeText(MainActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    protected boolean IsValidLoginDetails(String email, String password) {
+    private boolean isValidLoginDetails(String email, String password) {
         if (email.isEmpty()) {
             editTextEmail.setError("Email is required");
             return false;
@@ -75,23 +101,35 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    protected void loginInitialize(String username, String password) {
-        AuthRepository authRepository = new AuthRepository();
+    private void handleLoginSuccess(LoginResponse loginResponse) {
+        String accessToken = loginResponse.getAccess_token();
+        String userId = loginResponse.getUser().getId();
 
-        authRepository.login(username, password).enqueue(new Callback<LoginResponse>() {
+        fetchUserProfile(accessToken, userId);
+        Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show();
+    }
+
+    private void fetchUserProfile(String accessToken, String userId) {
+        profileRepository.getProfile(accessToken, userId).enqueue(new Callback<List<UserProfile>>() {
             @Override
-            public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    Toast.makeText(MainActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(MainActivity.this, "Login failed", Toast.LENGTH_SHORT).show();
+            public void onResponse(@NonNull Call<List<UserProfile>> call, @NonNull Response<List<UserProfile>> response) {
+                if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {
+                    Toast.makeText(MainActivity.this, "Could not load user profile", Toast.LENGTH_SHORT).show();
+                    return;
                 }
+
+                UserProfile profile = response.body().get(0);
+                showWelcomeMessage(profile);
             }
 
             @Override
-            public void onFailure(@NonNull Call<LoginResponse> call, @NonNull Throwable t) {
-                Toast.makeText(MainActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            public void onFailure(@NonNull Call<List<UserProfile>> call, @NonNull Throwable t) {
+                Toast.makeText(MainActivity.this, "Profile error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void showWelcomeMessage(UserProfile profile) {
+        Toast.makeText(this, "Welcome " + profile.getHo_ten(), Toast.LENGTH_SHORT).show();
     }
 }

@@ -3,6 +3,7 @@ public class LoginResponse {
     private String access_token;
     private String refresh_token;
     private String token_type;
+    private User user;
 
     public String getAccess_token() {
         return access_token;
@@ -14,6 +15,10 @@ public class LoginResponse {
 
     public String getToken_type() {
         return token_type;
+    }
+
+    public User getUser() {
+        return user;
     }
 
     public static class User {
