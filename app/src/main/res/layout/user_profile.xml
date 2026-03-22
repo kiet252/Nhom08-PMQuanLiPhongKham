@@ -29,7 +29,7 @@
             <View
                 android:id="@+id/profileHeaderBg"
                 android:layout_width="match_parent"
-                android:layout_height="250dp"
+                android:layout_height="210dp"
                 android:background="@drawable/gradient_blue_bg" />
 
             <LinearLayout
@@ -41,9 +41,9 @@
 
                 <!-- Avatar Section -->
                 <com.google.android.material.card.MaterialCardView
-                    android:layout_width="120dp"
-                    android:layout_height="120dp"
-                    android:layout_marginTop="40dp"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_marginTop="30dp"
                     app:cardCornerRadius="60dp"
                     app:cardElevation="8dp"
                     app:strokeColor="#FFFFFF"
@@ -62,7 +62,7 @@
                     android:id="@+id/txtProfileName1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="10dp"
                     android:text="Xin chào, "
                     android:textColor="#FFFFFF"
                     android:textSize="22sp"
@@ -71,13 +71,13 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="30dp"
+                    android:layout_marginTop="20dp"
                     app:cardCornerRadius="24dp"
                     app:cardElevation="4dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:orientation="vertical"
                         android:padding="16dp">
 
@@ -159,9 +159,6 @@
                         </LinearLayout>
 
 
-
-
-
                         <!-- Item: Gender -->
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -197,8 +194,6 @@
                                     android:textSize="16sp" />
                             </LinearLayout>
                         </LinearLayout>
-
-
 
 
                         <!-- Item: Address -->
@@ -238,7 +233,6 @@
                         </LinearLayout>
 
 
-
                         <!-- Item: Job Title -->
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -276,9 +270,6 @@
                         </LinearLayout>
 
 
-
-
-
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -287,7 +278,7 @@
                     android:id="@+id/btnEditProfile"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
-                    android:layout_marginTop="20dp"
+                    android:layout_marginTop="5dp"
                     android:backgroundTint="#2196F3"
                     android:text="CHỈNH SỬA THÔNG TIN"
                     app:cornerRadius="12dp" />
@@ -296,7 +287,7 @@
                     android:id="@+id/btnEditPass"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
-                    android:layout_marginTop="20dp"
+                    android:layout_marginTop="5dp"
                     android:backgroundTint="#2196F3"
                     android:text="ĐỔI MẬT KHẨU"
                     app:cornerRadius="12dp" />
@@ -306,7 +297,7 @@
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="5dp"
                     android:text="ĐĂNG XUẤT"
                     android:textColor="#F44336"
                     app:cornerRadius="12dp"
