@@ -1,5 +1,6 @@
 package com.example.nhom08_quanlyphongkham;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -119,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 UserProfile profile = response.body().get(0);
-                showWelcomeMessage(profile);
+                openUserProfile(profile);
             }
 
             @Override
@@ -131,5 +132,16 @@ public class MainActivity extends AppCompatActivity {
 
     private void showWelcomeMessage(UserProfile profile) {
         Toast.makeText(this, "Welcome " + profile.getHo_ten(), Toast.LENGTH_SHORT).show();
+    }
+
+    private void openUserProfile(UserProfile profile) {
+        showWelcomeMessage(profile);
+
+
+        Intent intent = new Intent(this, UserProfileActivity.class);
+        intent.putExtra(UserProfileActivity.EXTRA_USER_PROFILE, profile);
+        startActivity(intent);
+
+        finish();
     }
 }
