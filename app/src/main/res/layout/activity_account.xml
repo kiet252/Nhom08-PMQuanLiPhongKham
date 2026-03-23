@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:visibility="visible"
+    tools:context=".AccountActivity">
+
+    <View
+        android:id="@+id/blue_header"
+        android:layout_width="414dp"
+        android:layout_height="260dp"
+        android:layout_marginTop="-81dp"
+        android:background="@drawable/bo_goc_header_blue"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.666"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/myCard"
+        android:layout_width="350dp"
+        android:layout_height="74dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="57dp"
+        android:visibility="invisible"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="4dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/text1"
+        android:layout_width="wrap_content"
+        android:layout_height="44dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="57dp"
+        android:text="TÀI KHOẢN"
+        android:textColor="#FFFFFF"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/text2"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:text="Bác sĩ, "
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="@+id/myCard"
+        app:layout_constraintStart_toStartOf="@+id/text1"
+        app:layout_constraintTop_toBottomOf="@+id/text1" />
+
+    <TextView
+        android:id="@+id/text_body1"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginStart="31dp"
+        android:layout_marginTop="193dp"
+        android:layout_marginEnd="226dp"
+        android:layout_marginBottom="508dp"
+        android:text="Thông tin tài khoản"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/text_body3"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginStart="31dp"
+        android:layout_marginTop="479dp"
+        android:layout_marginEnd="294dp"
+        android:layout_marginBottom="222dp"
+        android:text="Đăng nhập"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/text_end1"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginStart="30dp"
+        android:elevation="10dp"
+        android:text="Home"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/user_icon_end1" />
+
+    <TextView
+        android:id="@+id/text_end2"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginStart="163dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginEnd="163dp"
+        android:elevation="10dp"
+        android:text="Thông báo"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="@+id/end"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/user_icon_end2" />
+
+    <TextView
+        android:id="@+id/text_end3"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginEnd="16dp"
+        android:elevation="10dp"
+        android:text="Tài khoản"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/user_icon_end3" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginStart="107dp"
+        android:layout_marginTop="519dp"
+        android:layout_marginEnd="187dp"
+        android:layout_marginBottom="182dp"
+        android:elevation="10dp"
+        android:text="Đổi mật khẩu"
+        android:textColor="#000000"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginStart="107dp"
+        android:layout_marginTop="561dp"
+        android:layout_marginEnd="214dp"
+        android:layout_marginBottom="140dp"
+        android:elevation="10dp"
+        android:text="Đăng xuất"
+        android:textColor="#000000"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/user_icon"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/dashboard_icon_avatar"
+        app:layout_constraintBottom_toBottomOf="@+id/myCard"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/text1" />
+
+    <ImageView
+        android:id="@+id/user_icon_end1"
+        android:layout_width="50dp"
+        android:layout_height="35dp"
+        android:layout_marginEnd="100dp"
+        android:layout_marginBottom="36dp"
+        android:background="@drawable/dashboard_icon_avatar"
+        android:elevation="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/user_icon_end2" />
+
+    <ImageView
+        android:id="@+id/user_icon_end2"
+        android:layout_width="50dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="182dp"
+        android:layout_marginEnd="182dp"
+        android:layout_marginBottom="36dp"
+        android:background="@drawable/dashboard_icon_avatar"
+        android:elevation="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.666"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/user_icon_end3"
+        android:layout_width="50dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="100dp"
+        android:layout_marginBottom="36dp"
+        android:background="@drawable/dashboard_icon_avatar"
+        android:elevation="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/user_icon_end2" />
+
+
+    <ImageView
+        android:id="@+id/user_icon_body1_1"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="58dp"
+        android:layout_marginTop="223dp"
+        android:layout_marginEnd="313dp"
+        android:layout_marginBottom="468dp"
+        android:background="@drawable/dashboard_icon_avatar"
+        android:elevation="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/user_icon_body1_2"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="58dp"
+        android:layout_marginTop="263dp"
+        android:layout_marginEnd="313dp"
+        android:layout_marginBottom="428dp"
+        android:background="@drawable/dashboard_icon_avatar"
+        android:elevation="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/user_icon_body1_3"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="58dp"
+        android:layout_marginTop="303dp"
+        android:layout_marginEnd="313dp"
+        android:layout_marginBottom="388dp"
+        android:background="@drawable/dashboard_icon_avatar"
+        android:elevation="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/user_icon_body1_4"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="58dp"
+        android:layout_marginTop="343dp"
+        android:layout_marginEnd="313dp"
+        android:layout_marginBottom="348dp"
+        android:background="@drawable/dashboard_icon_avatar"
+        android:elevation="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/user_icon_body1_5"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="58dp"
+        android:layout_marginTop="383dp"
+        android:layout_marginEnd="313dp"
+        android:layout_marginBottom="308dp"
+        android:background="@drawable/dashboard_icon_avatar"
+        android:elevation="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/user_icon_body2_1"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="58dp"
+        android:layout_marginTop="509dp"
+        android:layout_marginEnd="313dp"
+        android:layout_marginBottom="182dp"
+        android:background="@drawable/dashboard_icon_avatar"
+        android:elevation="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/user_icon_body2_2"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="58dp"
+        android:layout_marginTop="551dp"
+        android:layout_marginEnd="313dp"
+        android:layout_marginBottom="140dp"
+        android:background="@drawable/dashboard_icon_avatar"
+        android:elevation="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <View
+        android:id="@+id/blue_body1"
+        android:layout_width="350dp"
+        android:layout_height="240dp"
+        android:layout_marginStart="31dp"
+        android:layout_marginTop="214dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="277dp"
+        android:background="@drawable/bo_goc_body_blue"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/blue_body2"
+        android:layout_width="350dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="502dp"
+        android:layout_marginBottom="129dp"
+        android:background="@drawable/bo_goc_body_blue"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.508"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/end"
+        android:layout_width="412dp"
+        android:layout_height="80dp"
+        android:background="#FFFFFF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <View
+        android:id="@+id/divider_end"
+        android:layout_width="0dp"
+        android:layout_height="5dp"
+        android:background="#D3D3D3"
+        app:layout_constraintBottom_toTopOf="@+id/end"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <View
+        android:id="@+id/divider_body2_1"
+        android:layout_width="281dp"
+        android:layout_height="2dp"
+        android:layout_marginTop="549dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="180dp"
+        android:background="#000000"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/divider_body1_1"
+        android:layout_width="281dp"
+        android:layout_height="2dp"
+        android:layout_marginTop="263dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="466dp"
+        android:background="#000000"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/divider_body1_2"
+        android:layout_width="281dp"
+        android:layout_height="2dp"
+        android:layout_marginTop="301dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="428dp"
+        android:background="#000000"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/divider_body1_3"
+        android:layout_width="281dp"
+        android:layout_height="2dp"
+        android:layout_marginTop="343dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="386dp"
+        android:background="#000000"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/divider_body1_4"
+        android:layout_width="281dp"
+        android:layout_height="2dp"
+        android:layout_marginTop="383dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="346dp"
+        android:background="#000000"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/divider_body1_5"
+        android:layout_width="281dp"
+        android:layout_height="2dp"
+        android:layout_marginTop="421dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="308dp"
+        android:background="#000000"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
