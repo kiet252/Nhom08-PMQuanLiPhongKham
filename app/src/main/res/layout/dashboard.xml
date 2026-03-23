@@ -57,9 +57,10 @@
                             android:textStyle="bold" />
 
                         <TextView
+                            android:id="@+id/txtWelcome"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Chào mừng, Administrator"
+                            android:text="Chào mừng, "
                             android:textColor="#D1E9FF"
                             android:textSize="14sp" />
                     </LinearLayout>

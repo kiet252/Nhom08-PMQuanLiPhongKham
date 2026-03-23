@@ -122,9 +122,9 @@ public class login extends AppCompatActivity {
                 }
 
                 UserProfile profile = response.body().get(0);
-                showWelcomeMessage(profile);
                 Intent logined = new Intent(login.this, dashboard.class);
-                logined.putExtra("accessToken", profile.getID());
+                logined.putExtra("accessToken", accessToken);
+                logined.putExtra("name", profile);
                 startActivity(logined);
                 finish();
             }
@@ -137,18 +137,4 @@ public class login extends AppCompatActivity {
         });
     }
 
-    private void showWelcomeMessage(UserProfile profile) {
-        Toast.makeText(this, "Welcome " + profile.getHo_ten(), Toast.LENGTH_SHORT).show();
-    }
-
-    private void openUserProfile(UserProfile profile) {
-        showWelcomeMessage(profile);
-
-
-        Intent intent = new Intent(this, UserProfileActivity.class);
-        intent.putExtra(UserProfileActivity.EXTRA_USER_PROFILE, profile);
-        startActivity(intent);
-
-        finish();
-    }
 }
