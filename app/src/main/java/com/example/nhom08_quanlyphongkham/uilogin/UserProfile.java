@@ -14,8 +14,14 @@ public class UserProfile implements Serializable {
     private String gioitinh;
     private String chuc_vu;
 
+    private String id;
+
     public String getEmail() {
         return email;
+    }
+
+    public String getID() {
+        return id;
     }
 
     public String getUser_name() {
