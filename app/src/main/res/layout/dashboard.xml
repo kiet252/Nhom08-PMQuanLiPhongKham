@@ -20,117 +20,128 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/bottom_navigation"> <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_above="@id/bottom_navigation">
 
-        <View
-            android:id="@+id/topHeader"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="220dp"
-            android:background="@drawable/gradient_blue_bg" />
+            android:layout_height="wrap_content">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="24dp">
+            <View
+                android:id="@+id/topHeader"
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:background="@drawable/gradient_blue_bg" />
 
-            <RelativeLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp">
+                android:orientation="vertical"
+                android:padding="24dp">
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Bảng quản trị"
-                        android:textColor="#FFFFFF"
-                        android:textSize="24sp"
-                        android:textStyle="bold" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Chào mừng, Administrator"
-                        android:textColor="#D1E9FF"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_alignParentRight="true"
-                    app:cardCornerRadius="25dp"
-                    app:cardElevation="4dp">
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/dashboard_icon_avatar"
-                        android:scaleType="centerInside"
-                        android:padding="8dp"/>
-                </com.google.android.material.card.MaterialCardView>
-            </RelativeLayout>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="6dp">
-
-                <LinearLayout
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:layout_marginTop="20dp">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnManageDoctor"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Bảng quản trị"
+                            android:textColor="#FFFFFF"
+                            android:textSize="24sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Chào mừng, Administrator"
+                            android:textColor="#D1E9FF"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_alignParentRight="true"
+                        app:cardCornerRadius="25dp"
+                        app:cardElevation="4dp">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="8dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/dashboard_icon_avatar" />
+                    </com.google.android.material.card.MaterialCardView>
+                </RelativeLayout>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="30dp"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="6dp">
+
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="80dp"
-                        android:text="QUẢN LÝ THÔNG TIN BÁC SĨ"
-                        android:gravity="center_vertical|start"
-                        android:textColor="#2C3E50"
-                        app:icon="@drawable/dashboard_icon_doctor"
-                        app:iconPadding="16dp"
-                        app:iconTint="@color/app_primary_color" />
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnManageDoctor"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="80dp"
+                            android:gravity="center_vertical|start"
+                            android:text="QUẢN LÝ THÔNG TIN BÁC SĨ"
+                            android:textColor="#2C3E50"
+                            app:icon="@drawable/dashboard_icon_doctor"
+                            app:iconPadding="16dp"
+                            app:iconTint="@color/app_primary_color" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnManageClinic"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="80dp"
-                        android:text="QUẢN LÝ DỮ LIỆU PHÒNG KHÁM"
-                        android:gravity="center_vertical|start"
-                        android:textColor="#2C3E50"
-                        app:icon="@drawable/dashboard_icon_clinic"
-                        app:iconPadding="16dp"
-                        app:iconTint="@color/app_primary_color" />
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="#EEEEEE" />
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnManageClinic"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="80dp"
+                            android:gravity="center_vertical|start"
+                            android:text="QUẢN LÝ DỮ LIỆU PHÒNG KHÁM"
+                            android:textColor="#2C3E50"
+                            app:icon="@drawable/dashboard_icon_clinic"
+                            app:iconPadding="16dp"
+                            app:iconTint="@color/app_primary_color" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnReports"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="80dp"
-                        android:text="XEM BÁO CÁO VÀ THỐNG KÊ"
-                        android:gravity="center_vertical|start"
-                        android:textColor="#2C3E50"
-                        app:icon="@drawable/dashboard_icon_report"
-                        app:iconPadding="16dp"
-                        app:iconTint="@color/app_primary_color" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-        </LinearLayout>
-    </RelativeLayout>
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="#EEEEEE" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnReports"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="80dp"
+                            android:gravity="center_vertical|start"
+                            android:text="XEM BÁO CÁO VÀ THỐNG KÊ"
+                            android:textColor="#2C3E50"
+                            app:icon="@drawable/dashboard_icon_report"
+                            app:iconPadding="16dp"
+                            app:iconTint="@color/app_primary_color" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+        </RelativeLayout>
     </androidx.core.widget.NestedScrollView>
 
 </RelativeLayout>
