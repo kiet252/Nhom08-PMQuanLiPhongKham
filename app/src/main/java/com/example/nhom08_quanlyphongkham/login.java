@@ -25,7 +25,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity {
+public class login extends AppCompatActivity {
 
     private TextInputEditText editTextEmail, editTextPassword;
     private MaterialButton buttonLogin;
@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     private AuthRepository authRepository;
     private ProfileRepository profileRepository;
 
+    private String currentToken;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
                 if (!response.isSuccessful() || response.body() == null) {
-                    Toast.makeText(MainActivity.this, "Login failed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(login.this, "Login failed", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -83,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(@NonNull Call<LoginResponse> call, @NonNull Throwable t) {
-                Toast.makeText(MainActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(login.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -104,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void handleLoginSuccess(LoginResponse loginResponse) {
         String accessToken = loginResponse.getAccess_token();
+        this.currentToken = accessToken;
         String userId = loginResponse.getUser().getId();
 
         fetchUserProfile(accessToken, userId);
@@ -115,33 +117,24 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call<List<UserProfile>> call, @NonNull Response<List<UserProfile>> response) {
                 if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {
-                    Toast.makeText(MainActivity.this, "Could not load user profile", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(login.this, "Could not load user profile", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 UserProfile profile = response.body().get(0);
-                openUserProfile(profile);
+                Intent logined = new Intent(login.this, dashboard.class);
+                logined.putExtra("accessToken", accessToken);
+                logined.putExtra("name", profile);
+                startActivity(logined);
+                finish();
             }
 
             @Override
             public void onFailure(@NonNull Call<List<UserProfile>> call, @NonNull Throwable t) {
-                Toast.makeText(MainActivity.this, "Profile error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(login.this, "Profile error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
+
         });
     }
 
-    private void showWelcomeMessage(UserProfile profile) {
-        Toast.makeText(this, "Welcome " + profile.getHo_ten(), Toast.LENGTH_SHORT).show();
-    }
-
-    private void openUserProfile(UserProfile profile) {
-        showWelcomeMessage(profile);
-
-
-        Intent intent = new Intent(this, UserProfileActivity.class);
-        intent.putExtra(UserProfileActivity.EXTRA_USER_PROFILE, profile);
-        startActivity(intent);
-
-        finish();
-    }
 }
