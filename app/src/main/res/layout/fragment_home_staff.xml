@@ -86,7 +86,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="80dp"
                             android:gravity="center_vertical|start"
-                            android:text="QUẢN LÝ THÔNG TIN BÁC SĨ"
+                            android:text="TẠO PHIẾU KHÁM"
                             android:textColor="#2C3E50"
                             app:icon="@drawable/dashboard_icon_doctor"
                             app:iconPadding="16dp"
@@ -102,7 +102,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="80dp"
                             android:gravity="center_vertical|start"
-                            android:text="QUẢN LÝ DỮ LIỆU PHÒNG KHÁM"
+                            android:text="QUẢN LÝ PHIẾU KHÁM"
                             android:textColor="#2C3E50"
                             app:icon="@drawable/dashboard_icon_clinic"
                             app:iconPadding="16dp"
@@ -118,8 +118,22 @@
                             android:layout_width="match_parent"
                             android:layout_height="80dp"
                             android:gravity="center_vertical|start"
-                            android:text="XEM BÁO CÁO VÀ THỐNG KÊ"
-                            android:textColor="#2C3E50"
+                            android:text="CẬP NHẬT THÔNG TIN BỆNH NHÂN"
+                            app:icon="@drawable/dashboard_icon_report"
+                            app:iconPadding="16dp"
+                            app:iconTint="@color/app_primary_color" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="#EEEEEE" />
+
+                        <com.google.android.material.button.MaterialButton
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="80dp"
+                            android:gravity="center_vertical|start"
+                            android:text="QUẢN LÝ HÓA ĐƠN"
                             app:icon="@drawable/dashboard_icon_report"
                             app:iconPadding="16dp"
                             app:iconTint="@color/app_primary_color" />
