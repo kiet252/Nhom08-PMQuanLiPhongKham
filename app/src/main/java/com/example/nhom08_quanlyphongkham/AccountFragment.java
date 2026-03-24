@@ -43,8 +43,6 @@ public class AccountFragment extends Fragment {
         if (getArguments() != null) {
             userprofile =(UserProfile) getArguments().getSerializable(ARG_PROFILE);
         }
-
-
     }
 
     @Override
