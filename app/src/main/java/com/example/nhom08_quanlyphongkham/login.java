@@ -14,7 +14,6 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.nhom08_quanlyphongkham.uilogin.AuthRepository;
 import com.example.nhom08_quanlyphongkham.uilogin.LoginResponse;
 import com.example.nhom08_quanlyphongkham.uilogin.ProfileRepository;
-import com.example.nhom08_quanlyphongkham.uilogin.UserProfile;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -103,16 +102,15 @@ public class login extends AppCompatActivity {
     }
 
     private void handleLoginSuccess(LoginResponse loginResponse) {
-        String accessToken = loginResponse.getAccess_token();
-        this.currentToken = accessToken;
+        currentToken = loginResponse.getAccess_token();
         String userId = loginResponse.getUser().getId();
 
-        fetchUserProfile(accessToken, userId);
+        fetchUserProfile(userId);
         Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show();
     }
 
-    private void fetchUserProfile(String accessToken, String userId) {
-        profileRepository.getProfile(accessToken, userId).enqueue(new Callback<List<UserProfile>>() {
+    private void fetchUserProfile(String userId) {
+        profileRepository.getProfile(currentToken, userId).enqueue(new Callback<List<UserProfile>>() {
             @Override
             public void onResponse(@NonNull Call<List<UserProfile>> call, @NonNull Response<List<UserProfile>> response) {
                 if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {
@@ -123,7 +121,7 @@ public class login extends AppCompatActivity {
                 UserProfile profile = response.body().get(0);
                 Intent logined = new Intent(login.this, dashboard.class);
 
-                logined.putExtra("accessToken", accessToken);
+                logined.putExtra("accessToken", currentToken);
                 logined.putExtra("Userprofile", profile);
 
                 startActivity(logined);
