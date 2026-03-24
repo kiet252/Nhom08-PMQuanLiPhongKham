@@ -7,6 +7,13 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
+import com.example.nhom08_quanlyphongkham.uilogin.UserProfile;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -15,33 +22,17 @@ import android.view.ViewGroup;
  */
 public class AccountFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private static final String ARG_PROFILE = "arg_profile";
+    private UserProfile userprofile;
+    TextView textviewProfile, textviewEmail, textviewPhone, textviewBirthday, textviewGender, textviewAddress, textviewJobTitle;
 
     public AccountFragment() {
-        // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment AccountFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static AccountFragment newInstance(String param1, String param2) {
+    public static AccountFragment newInstance(UserProfile profile) {
         AccountFragment fragment = new AccountFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putSerializable(ARG_PROFILE, profile);
         fragment.setArguments(args);
         return fragment;
     }
@@ -50,15 +41,49 @@ public class AccountFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            userprofile =(UserProfile) getArguments().getSerializable(ARG_PROFILE);
         }
+
+
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_account, container, false);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_account, container, false);
+
+        initializeViews(view);
+        setViewProfile(view);
+
+        return view;
+    }
+
+    private void initializeViews(View view) {
+        textviewProfile = view.findViewById(R.id.txtProfileName);
+        textviewEmail = view.findViewById(R.id.txtEmail);
+        textviewPhone = view.findViewById(R.id.txtPhone);
+        textviewBirthday = view.findViewById(R.id.txtBirthday);
+        textviewGender = view.findViewById(R.id.txtGender);
+        textviewAddress = view.findViewById(R.id.txtAddress);
+        textviewJobTitle = view.findViewById(R.id.txtJobTitle);
+    }
+
+    private void setViewProfile(View view) {
+        String GreetingText = "Xin chào, " + userprofile.getHo_ten();
+
+        textviewProfile.setText(GreetingText);
+
+        textviewEmail.setText(userprofile.getEmail());
+        textviewPhone.setText(userprofile.getSo_dien_thoai());
+
+        Date NgaySinhUser = userprofile.getNgay_sinh();
+
+        if (NgaySinhUser != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+            textviewBirthday.setText(sdf.format(NgaySinhUser));
+        }
+
+        textviewGender.setText(userprofile.getGioitinh());
+        textviewAddress.setText(userprofile.getDia_chi());
+        textviewJobTitle.setText(userprofile.getChuc_vu());
     }
 }

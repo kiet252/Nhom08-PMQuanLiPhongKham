@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import com.example.nhom08_quanlyphongkham.uilogin.UserProfile;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import dashboard_fragment.HomeFragment_admin;
@@ -15,26 +16,18 @@ public class dashboard extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         String token = getIntent().getStringExtra("accessToken");
         if(token == null || token.isEmpty()){
             goToLogin();
             return;
         }
+
         setContentView(R.layout.dashboard);
         HomeFragment_admin homeFragmentAdmin = new HomeFragment_admin();
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, homeFragmentAdmin).commit();
-        //UserProfile profile = (UserProfile) getIntent().getSerializableExtra("name");
-        //TextView txtWelcome = findViewById(R.id.txtWelcome);
+        UserProfile profile = (UserProfile) getIntent().getSerializableExtra("Userprofile");
 
-        //if(profile != null) {
-        //    String GreetingText = "Chào mừng, " + profile.getHo_ten();
-        //    txtWelcome.setText(GreetingText);
-        //}
-        //else
-        //{
-        //    String GreetingText = "Chào mừng, Guest";
-        //    txtWelcome.setText(GreetingText);
-        //}
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
 
         bottomNav.setOnItemSelectedListener(item -> {
@@ -46,7 +39,7 @@ public class dashboard extends AppCompatActivity {
             } else if (itemId == R.id.nav_notifications) { // Đổi từ doctor sang notification ở đây
                 selectedFragment = new NotificationFragment();
             } else if (itemId == R.id.nav_account) {
-                selectedFragment = new AccountFragment();
+                selectedFragment = AccountFragment.newInstance(profile);
             }
 
             // Thực hiện tráo đổi mảnh ghép vào FrameLayout

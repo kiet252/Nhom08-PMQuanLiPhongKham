@@ -32,7 +32,6 @@ public class login extends AppCompatActivity {
 
     private AuthRepository authRepository;
     private ProfileRepository profileRepository;
-
     private String currentToken;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,8 +122,10 @@ public class login extends AppCompatActivity {
 
                 UserProfile profile = response.body().get(0);
                 Intent logined = new Intent(login.this, dashboard.class);
+
                 logined.putExtra("accessToken", accessToken);
-                logined.putExtra("name", profile);
+                logined.putExtra("Userprofile", profile);
+
                 startActivity(logined);
                 finish();
             }
@@ -136,5 +137,4 @@ public class login extends AppCompatActivity {
 
         });
     }
-
 }
