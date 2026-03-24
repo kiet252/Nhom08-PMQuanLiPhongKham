@@ -34,9 +34,9 @@ public class dashboard extends AppCompatActivity {
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
 
         Fragment userFragment;
-        if (profile.getChuc_vu() == "Quản trị viên")
+        if ("Quản trị viên".equals(profile.getChuc_vu()))
             userFragment = new HomeFragment_admin();
-        else if (profile.getChuc_vu() == "Bác sĩ")
+        else if ("Bác sĩ".equals(profile.getChuc_vu()))
             userFragment = new HomeFragment_doctor();
         else
             userFragment = new HomeFragment_staff();
