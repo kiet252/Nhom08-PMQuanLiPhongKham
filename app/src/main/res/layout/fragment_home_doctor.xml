@@ -1,11 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/fragment_home_admin"
     android:layout_width="match_parent"
+    android:id="@+id/fragment_home_doctor"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent"
-    tools:context="dashboard_fragment.HomeFragment_admin"
-    android:background="#F0F4F8">
+    tools:context="dashboard_fragment.NotificationFragment">
+
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -81,18 +82,12 @@
                         android:orientation="vertical"
                         android:padding="16dp">
 
-                        <View
-                            android:id="@+id/view"
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:background="#EEEEEE" />
-
                         <com.google.android.material.button.MaterialButton
                             style="@style/Widget.MaterialComponents.Button.TextButton"
                             android:layout_width="match_parent"
                             android:layout_height="80dp"
                             android:gravity="center_vertical|start"
-                            android:text="QUẢN LÝ THÔNG TIN BÁC SĨ"
+                            android:text="DANH SÁCH KHÁM"
                             android:textColor="#2C3E50"
                             app:icon="@drawable/dashboard_icon_doctor"
                             app:iconPadding="16dp"
@@ -108,7 +103,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="80dp"
                             android:gravity="center_vertical|start"
-                            android:text="QUẢN LÝ DỮ LIỆU PHÒNG KHÁM"
+                            android:text="LỊCH HẸN TÁI KHÁM"
                             android:textColor="#2C3E50"
                             app:icon="@drawable/dashboard_icon_clinic"
                             app:iconPadding="16dp"
@@ -119,35 +114,16 @@
                             android:layout_height="1dp"
                             android:background="#EEEEEE" />
 
-                        <com.google.android.material.button.MaterialButton
-                            style="@style/Widget.MaterialComponents.Button.TextButton"
-                            android:layout_width="match_parent"
-                            android:layout_height="80dp"
-                            android:gravity="center_vertical|start"
-                            android:text="XEM BÁO CÁO VÀ THỐNG KÊ"
-                            android:textColor="#2C3E50"
-                            app:icon="@drawable/dashboard_icon_report"
-                            app:iconPadding="16dp"
-                            app:iconTint="@color/app_primary_color" />
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
                             android:background="#EEEEEE" />
 
-                        <com.google.android.material.button.MaterialButton
-                            style="@style/Widget.MaterialComponents.Button.TextButton"
-                            android:layout_width="match_parent"
-                            android:layout_height="80dp"
-                            android:gravity="center_vertical|start"
-                            android:text="CÀI ĐẶT THÔNG BÁO CHUNG"
-                            android:textColor="#2C3E50"
-                            app:icon="@drawable/dashboard_icon_report"
-                            app:iconPadding="16dp"
-                            app:iconTint="@color/app_primary_color" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
         </RelativeLayout>
     </androidx.core.widget.NestedScrollView>
+
 
 </FrameLayout>

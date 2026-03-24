@@ -1,4 +1,4 @@
-package com.example.nhom08_quanlyphongkham;
+package dashboard_fragment;
 
 import android.os.Bundle;
 
@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.uilogin.UserProfile;
 
 import java.text.SimpleDateFormat;
