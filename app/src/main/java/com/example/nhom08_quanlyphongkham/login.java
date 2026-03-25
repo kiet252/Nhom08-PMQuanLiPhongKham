@@ -75,6 +75,7 @@ public class login extends AppCompatActivity {
                 if (!response.isSuccessful() || response.body() == null) {
                     try {
                         Toast.makeText(login.this,"Error" + response.errorBody().string(), Toast.LENGTH_SHORT).show();
+                        return;
                     } catch (Exception e) {
                         Toast.makeText(login.this, "Unknown error" + e, Toast.LENGTH_SHORT).show();
                     }
