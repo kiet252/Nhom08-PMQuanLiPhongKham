@@ -73,8 +73,11 @@ public class login extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
                 if (!response.isSuccessful() || response.body() == null) {
-                    Toast.makeText(login.this, "Login failed", Toast.LENGTH_SHORT).show();
-                    return;
+                    try {
+                        Toast.makeText(login.this,"Error" + response.errorBody().string(), Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        Toast.makeText(login.this, "Unknown error" + e, Toast.LENGTH_SHORT).show();
+                    }
                 }
 
                 handleLoginSuccess(response.body());
@@ -89,12 +92,12 @@ public class login extends AppCompatActivity {
 
     private boolean isValidLoginDetails(String email, String password) {
         if (email.isEmpty()) {
-            editTextEmail.setError("Email is required");
+            editTextEmail.setError("Xin hãy nhập email!");
             return false;
         }
 
         if (password.isEmpty()) {
-            editTextPassword.setError("Password is required");
+            editTextPassword.setError("Xin hãy nhập mật khẩu!");
             return false;
         }
 
@@ -106,7 +109,7 @@ public class login extends AppCompatActivity {
         String userId = loginResponse.getUser().getId();
 
         fetchUserProfile(userId);
-        Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
     }
 
     private void fetchUserProfile(String userId) {
@@ -114,7 +117,7 @@ public class login extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call<List<UserProfile>> call, @NonNull Response<List<UserProfile>> response) {
                 if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {
-                    Toast.makeText(login.this, "Could not load user profile", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(login.this, "Không tìm được người dùng!", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -130,7 +133,7 @@ public class login extends AppCompatActivity {
 
             @Override
             public void onFailure(@NonNull Call<List<UserProfile>> call, @NonNull Throwable t) {
-                Toast.makeText(login.this, "Profile error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(login.this, "Lỗi tài khoản: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
 
         });

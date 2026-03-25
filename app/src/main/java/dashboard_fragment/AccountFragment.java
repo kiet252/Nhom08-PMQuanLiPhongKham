@@ -120,10 +120,7 @@ public class AccountFragment extends Fragment {
                 .inflate(R.layout.change_password_dialog, null);
 
         AlertDialog dialog = new AlertDialog.Builder(requireContext())
-                .setTitle("Đổi mật khẩu")
                 .setView(dialogView)
-                .setPositiveButton("Xác nhận", null)
-                .setNegativeButton("Hủy", (d, which) -> d.dismiss())
                 .create();
 
         dialog.setOnShowListener(d -> DialogShowUI(dialog, dialogView));
@@ -132,7 +129,8 @@ public class AccountFragment extends Fragment {
     }
 
     private void DialogShowUI(AlertDialog dialog, View dialogView) {
-        Button btnConfirm = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        Button btnConfirm = dialog.findViewById(R.id.btnUpdatePassword);
+        Button btnCancel = dialog.findViewById(R.id.btnCancel);
 
         TextInputEditText edtCurrentPassword = dialogView.findViewById(R.id.edtCurrentPassword);
         TextInputEditText edtNewPassword = dialogView.findViewById(R.id.edtNewPassword);
@@ -171,7 +169,16 @@ public class AccountFragment extends Fragment {
                 return;
             }
 
+            if (newPassword.length() < 8) {
+                layoutNewPassword.setError("Mật khẩu mới phải có ít nhất 6 ký tự!");
+                return;
+            }
+
             verifyCurrentPassword(currentPassword, newPassword, layoutCurrentPassword, dialog);
+        });
+
+        btnCancel.setOnClickListener(v ->{
+            dialog.dismiss();
         });
     }
 
@@ -200,7 +207,11 @@ public class AccountFragment extends Fragment {
             @Override
             public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
                 if (!response.isSuccessful() || response.body() == null) {
-                    Toast.makeText(requireContext(), "Đổi mật khẩu thất bại!", Toast.LENGTH_SHORT).show();
+                    try {
+                        Toast.makeText(requireContext(), "Error" + response.errorBody().string(), Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        Toast.makeText(requireContext(), "Unknown error" + e, Toast.LENGTH_SHORT).show();
+                    }
                 } else {
                     Toast.makeText(requireContext(), "Đổi mật khẩu thành công!", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
