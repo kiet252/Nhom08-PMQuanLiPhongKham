@@ -1,6 +1,12 @@
 package dashboard_fragment;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -18,6 +24,7 @@ import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.login;
 import com.example.nhom08_quanlyphongkham.uilogin.AuthRepository;
 import com.example.nhom08_quanlyphongkham.uilogin.LoginResponse;
+import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -42,6 +49,7 @@ public class AccountFragment extends Fragment {
     private String currentToken;
     TextView textviewProfile, textviewEmail, textviewPhone, textviewBirthday, textviewGender, textviewAddress, textviewJobTitle;
     Button btnEditPass;
+    Button btnLogout;
     private AuthRepository authRepository;
 
     public AccountFragment() {
@@ -89,6 +97,7 @@ public class AccountFragment extends Fragment {
         textviewJobTitle = view.findViewById(R.id.txtJobTitle);
 
         btnEditPass = view.findViewById(R.id.btnEditPass);
+        btnLogout = view.findViewById(R.id.btnLogout);
     }
 
     private void setViewProfile() {
@@ -113,6 +122,7 @@ public class AccountFragment extends Fragment {
 
     private void setupListeners() {
         btnEditPass.setOnClickListener(v -> showChangePasswordDialog());
+        btnLogout.setOnClickListener(v->showLogoutDialog());
     }
 
     private void showChangePasswordDialog() {
@@ -123,14 +133,14 @@ public class AccountFragment extends Fragment {
                 .setView(dialogView)
                 .create();
 
-        dialog.setOnShowListener(d -> DialogShowUI(dialog, dialogView));
+        dialog.setOnShowListener(d -> Change_Password_Dialog_Show_UI(dialog, dialogView));
 
         dialog.show();
     }
 
-    private void DialogShowUI(AlertDialog dialog, View dialogView) {
+    private void Change_Password_Dialog_Show_UI(AlertDialog dialog, View dialogView) {
         Button btnConfirm = dialog.findViewById(R.id.btnUpdatePassword);
-        Button btnCancel = dialog.findViewById(R.id.btnCancel);
+        Button btnCancel = dialog.findViewById(R.id.btnLogout);
 
         TextInputEditText edtCurrentPassword = dialogView.findViewById(R.id.edtCurrentPassword);
         TextInputEditText edtNewPassword = dialogView.findViewById(R.id.edtNewPassword);
@@ -222,6 +232,46 @@ public class AccountFragment extends Fragment {
             public void onFailure(@NonNull Call<LoginResponse> call, @NonNull Throwable t) {
                 Toast.makeText(requireContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
+        });
+    }
+    private void showLogoutDialog() {
+        View dialogView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.log_out_dialog, null);
+
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(dialogView)
+                .create();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        dialog.setOnShowListener(d -> Logout_Dialog_Show_UI(dialog, dialogView));
+
+        dialog.show();
+    }
+    private void Logout_Dialog_Show_UI(AlertDialog dialog, View dialogView) {
+        Button btnLogoutConfirm = dialog.findViewById(R.id.btnLogoutConfirm);
+        Button btnLogoutCancel = dialog.findViewById(R.id.btnLogoutCancel);
+
+        btnLogoutConfirm.setOnClickListener(v->{
+            SharedPreferences sharedPreferences = dialog.getContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.clear();//Xoa token
+            editor.apply();
+
+            dialog.dismiss();
+
+            Intent intent = new Intent(dialog.getContext(), login.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            dialog.getContext().startActivity(intent);
+
+            if (dialog.getContext() instanceof Activity) {
+                ((Activity) dialog.getContext()).finish();
+            }
+        });
+        btnLogoutCancel.setOnClickListener(v ->{
+            dialog.dismiss();
         });
     }
 }
