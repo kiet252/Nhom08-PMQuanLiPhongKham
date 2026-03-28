@@ -133,6 +133,10 @@ public class AccountFragment extends Fragment {
                 .setView(dialogView)
                 .create();
 
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
         dialog.setOnShowListener(d -> Change_Password_Dialog_Show_UI(dialog, dialogView));
 
         dialog.show();
@@ -179,7 +183,7 @@ public class AccountFragment extends Fragment {
                 return;
             }
 
-            if (newPassword.length() < 8) {
+            if (newPassword.length() < 6) {
                 layoutNewPassword.setError("Mật khẩu mới phải có ít nhất 6 ký tự!");
                 return;
             }

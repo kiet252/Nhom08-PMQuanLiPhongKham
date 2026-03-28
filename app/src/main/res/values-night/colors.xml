@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="app_primary_text_color">#E4E6EB</color>
+    <color name="app_secondary_text_color">#CBCED1</color>
+
+    <color name="change_password_dialog_cancel_btn_color">#3B3B3B</color>
+    <color name="change_password_dialog_cancel_btn_text_color">#EE2400</color>
+</resources>

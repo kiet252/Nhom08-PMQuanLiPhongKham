@@ -4,8 +4,7 @@
     android:id="@+id/fragment_home_admin"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="dashboard_fragment.HomeFragment_admin"
-    android:background="#F0F4F8">
+    tools:context="dashboard_fragment.HomeFragment_admin">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -82,10 +81,9 @@
                         android:padding="16dp">
 
                         <View
-                            android:id="@+id/view"
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:background="#EEEEEE" />
+                            android:background="@color/app_secondary_text_color" />
 
                         <com.google.android.material.button.MaterialButton
                             style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -93,7 +91,7 @@
                             android:layout_height="80dp"
                             android:gravity="center_vertical|start"
                             android:text="QUẢN LÝ THÔNG TIN BÁC SĨ"
-                            android:textColor="#2C3E50"
+                            android:textColor="@color/app_primary_text_color"
                             app:icon="@drawable/dashboard_icon_doctor"
                             app:iconPadding="16dp"
                             app:iconTint="@color/app_primary_color" />
@@ -101,7 +99,7 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:background="#EEEEEE" />
+                            android:background="@color/app_secondary_text_color" />
 
                         <com.google.android.material.button.MaterialButton
                             style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -109,7 +107,7 @@
                             android:layout_height="80dp"
                             android:gravity="center_vertical|start"
                             android:text="QUẢN LÝ DỮ LIỆU PHÒNG KHÁM"
-                            android:textColor="#2C3E50"
+                            android:textColor="@color/app_primary_text_color"
                             app:icon="@drawable/dashboard_icon_clinic"
                             app:iconPadding="16dp"
                             app:iconTint="@color/app_primary_color" />
@@ -117,7 +115,7 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:background="#EEEEEE" />
+                            android:background="@color/app_secondary_text_color" />
 
                         <com.google.android.material.button.MaterialButton
                             style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -125,14 +123,14 @@
                             android:layout_height="80dp"
                             android:gravity="center_vertical|start"
                             android:text="XEM BÁO CÁO VÀ THỐNG KÊ"
-                            android:textColor="#2C3E50"
+                            android:textColor="@color/app_primary_text_color"
                             app:icon="@drawable/dashboard_icon_report"
                             app:iconPadding="16dp"
                             app:iconTint="@color/app_primary_color" />
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:background="#EEEEEE" />
+                            android:background="@color/app_secondary_text_color" />
 
                         <com.google.android.material.button.MaterialButton
                             style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -140,7 +138,7 @@
                             android:layout_height="80dp"
                             android:gravity="center_vertical|start"
                             android:text="CÀI ĐẶT THÔNG BÁO CHUNG"
-                            android:textColor="#2C3E50"
+                            android:textColor="@color/app_primary_text_color"
                             app:icon="@drawable/dashboard_icon_report"
                             app:iconPadding="16dp"
                             app:iconTint="@color/app_primary_color" />

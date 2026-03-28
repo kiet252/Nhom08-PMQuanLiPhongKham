@@ -81,13 +81,18 @@
                         android:orientation="vertical"
                         android:padding="16dp">
 
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/app_secondary_text_color" />
+
                         <com.google.android.material.button.MaterialButton
                             style="@style/Widget.MaterialComponents.Button.TextButton"
                             android:layout_width="match_parent"
                             android:layout_height="80dp"
                             android:gravity="center_vertical|start"
                             android:text="TẠO PHIẾU KHÁM"
-                            android:textColor="#2C3E50"
+                            android:textColor="@color/app_primary_text_color"
                             app:icon="@drawable/dashboard_icon_doctor"
                             app:iconPadding="16dp"
                             app:iconTint="@color/app_primary_color" />
@@ -95,7 +100,7 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:background="#EEEEEE" />
+                            android:background="@color/app_secondary_text_color" />
 
                         <com.google.android.material.button.MaterialButton
                             style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -103,7 +108,7 @@
                             android:layout_height="80dp"
                             android:gravity="center_vertical|start"
                             android:text="QUẢN LÝ PHIẾU KHÁM"
-                            android:textColor="#2C3E50"
+                            android:textColor="@color/app_primary_text_color"
                             app:icon="@drawable/dashboard_icon_clinic"
                             app:iconPadding="16dp"
                             app:iconTint="@color/app_primary_color" />
@@ -111,7 +116,7 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:background="#EEEEEE" />
+                            android:background="@color/app_secondary_text_color" />
 
                         <com.google.android.material.button.MaterialButton
                             style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -119,6 +124,7 @@
                             android:layout_height="80dp"
                             android:gravity="center_vertical|start"
                             android:text="CẬP NHẬT THÔNG TIN BỆNH NHÂN"
+                            android:textColor="@color/app_primary_text_color"
                             app:icon="@drawable/dashboard_icon_report"
                             app:iconPadding="16dp"
                             app:iconTint="@color/app_primary_color" />
@@ -126,7 +132,7 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:background="#EEEEEE" />
+                            android:background="@color/app_secondary_text_color" />
 
                         <com.google.android.material.button.MaterialButton
                             style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -134,9 +140,15 @@
                             android:layout_height="80dp"
                             android:gravity="center_vertical|start"
                             android:text="QUẢN LÝ HÓA ĐƠN"
+                            android:textColor="@color/app_primary_text_color"
                             app:icon="@drawable/dashboard_icon_report"
                             app:iconPadding="16dp"
                             app:iconTint="@color/app_primary_color" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/app_secondary_text_color" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>

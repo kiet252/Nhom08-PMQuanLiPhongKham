@@ -7,4 +7,10 @@
     <color name="app_primary_btn_color">#2196F3</color>
 
     <color name="app_optional_gradient_color">#64B5F6</color>
+
+    <color name="app_primary_text_color">#2C3E50</color>
+    <color name="app_secondary_text_color">#7F8C8D</color>
+
+    <color name="change_password_dialog_cancel_btn_color">#FFFFFFFF</color>
+    <color name="change_password_dialog_cancel_btn_text_color">#EE2400</color>
 </resources>

@@ -75,6 +75,11 @@
                         android:orientation="vertical"
                         android:padding="16dp">
 
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/app_secondary_text_color" />
+
                         <!-- Item: Email -->
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -98,7 +103,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Email"
-                                    android:textColor="#9E9E9E"
+                                    android:textColor="@color/app_secondary_text_color"
                                     android:textSize="12sp" />
 
                                 <TextView
@@ -106,7 +111,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="admin@clinic.com"
-                                    android:textColor="#2C3E50"
+                                    android:textColor="@color/app_primary_text_color"
                                     android:textSize="16sp" />
                             </LinearLayout>
                         </LinearLayout>
@@ -114,7 +119,7 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:background="#EEEEEE" />
+                            android:background="@color/app_secondary_text_color" />
 
                         <!-- Item: Phone -->
                         <LinearLayout
@@ -139,7 +144,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Số điện thoại"
-                                    android:textColor="#9E9E9E"
+                                    android:textColor="@color/app_secondary_text_color"
                                     android:textSize="12sp" />
 
                                 <TextView
@@ -147,10 +152,15 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="090 123 4567"
-                                    android:textColor="#2C3E50"
+                                    android:textColor="@color/app_primary_text_color"
                                     android:textSize="16sp" />
                             </LinearLayout>
                         </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/app_secondary_text_color" />
 
                         <!-- Item: Birthday -->
                         <LinearLayout
@@ -175,7 +185,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Ngày sinh"
-                                    android:textColor="#9E9E9E"
+                                    android:textColor="@color/app_secondary_text_color"
                                     android:textSize="12sp" />
 
                                 <TextView
@@ -183,7 +193,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="01-01-2026"
-                                    android:textColor="#2C3E50"
+                                    android:textColor="@color/app_primary_text_color"
                                     android:textSize="16sp" />
                             </LinearLayout>
                         </LinearLayout>
@@ -191,9 +201,7 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:background="#EEEEEE" />
-
-
+                            android:background="@color/app_secondary_text_color" />
 
                         <!-- Item: Gender -->
                         <LinearLayout
@@ -218,7 +226,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Giới tính"
-                                    android:textColor="#9E9E9E"
+                                    android:textColor="@color/app_secondary_text_color"
                                     android:textSize="12sp" />
 
                                 <TextView
@@ -226,11 +234,15 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Khác"
-                                    android:textColor="#2C3E50"
+                                    android:textColor="@color/app_primary_text_color"
                                     android:textSize="16sp" />
                             </LinearLayout>
                         </LinearLayout>
 
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/app_secondary_text_color" />
 
                         <!-- Item: Address -->
                         <LinearLayout
@@ -255,7 +267,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Địa chỉ"
-                                    android:textColor="#9E9E9E"
+                                    android:textColor="@color/app_secondary_text_color"
                                     android:textSize="12sp" />
 
                                 <TextView
@@ -263,11 +275,15 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Sài Gòn"
-                                    android:textColor="#2C3E50"
+                                    android:textColor="@color/app_primary_text_color"
                                     android:textSize="16sp" />
                             </LinearLayout>
                         </LinearLayout>
 
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/app_secondary_text_color" />
 
                         <!-- Item: Job Title -->
                         <LinearLayout
@@ -292,7 +308,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Chức vụ"
-                                    android:textColor="#9E9E9E"
+                                    android:textColor="@color/app_secondary_text_color"
                                     android:textSize="12sp" />
 
                                 <TextView
@@ -300,10 +316,15 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Quản trị viên"
-                                    android:textColor="#2C3E50"
+                                    android:textColor="@color/app_primary_text_color"
                                     android:textSize="16sp" />
                             </LinearLayout>
                         </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/app_secondary_text_color" />
 
 
                     </LinearLayout>

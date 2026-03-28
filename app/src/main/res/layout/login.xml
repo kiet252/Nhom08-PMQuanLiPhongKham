@@ -4,7 +4,7 @@
     android:id="@+id/login"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F0F4F8">
+    >
 
     <View
         android:layout_width="match_parent"
@@ -58,7 +58,7 @@
                     android:layout_gravity="center"
                     android:layout_marginBottom="8dp"
                     android:text="Chào mừng trở lại!"
-                    android:textColor="#2C3E50"
+                    android:textColor="@color/app_primary_text_color"
                     android:textSize="22sp"
                     android:textStyle="bold" />
 
@@ -68,7 +68,7 @@
                     android:layout_gravity="center"
                     android:layout_marginBottom="32dp"
                     android:text="Đăng nhập để tiếp tục"
-                    android:textColor="#7F8C8D"
+                    android:textColor="@color/app_secondary_text_color"
                     android:textSize="14sp" />
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -76,6 +76,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Email đăng nhập"
+                    android:textColorHint="@color/app_secondary_text_color"
                     app:startIconDrawable="@drawable/dashboard_icon_avatar">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -90,6 +91,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:hint="Mật khẩu"
+                    android:textColorHint="@color/app_secondary_text_color"
                     app:passwordToggleEnabled="true"
                     app:startIconDrawable="@drawable/login_icon_lock">
 
@@ -97,7 +99,8 @@
                         android:id="@+id/edtPassword"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="textPassword" />
+                        android:inputType="textPassword"
+                        android:textColorHint="@color/app_secondary_text_color"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.button.MaterialButton

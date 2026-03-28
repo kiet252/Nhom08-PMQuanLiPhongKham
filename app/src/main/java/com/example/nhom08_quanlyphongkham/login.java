@@ -73,12 +73,7 @@ public class login extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
                 if (!response.isSuccessful() || response.body() == null) {
-                    try {
-                        Toast.makeText(login.this,"Error" + response.errorBody().string(), Toast.LENGTH_SHORT).show();
-                        return;
-                    } catch (Exception e) {
-                        Toast.makeText(login.this, "Unknown error" + e, Toast.LENGTH_SHORT).show();
-                    }
+                    Toast.makeText(login.this,"Đăng nhập thất bại! Sai mật kẩu hoặc tên người dùng", Toast.LENGTH_SHORT).show();
                 }
 
                 handleLoginSuccess(response.body());
