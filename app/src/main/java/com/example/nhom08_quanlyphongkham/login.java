@@ -73,7 +73,8 @@ public class login extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
                 if (!response.isSuccessful() || response.body() == null) {
-                    Toast.makeText(login.this,"Đăng nhập thất bại! Sai mật kẩu hoặc tên người dùng", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(login.this,"Đăng nhập thất bại! Sai mật khẩu hoặc tên người dùng", Toast.LENGTH_SHORT).show();
+                    return;
                 }
 
                 handleLoginSuccess(response.body());
