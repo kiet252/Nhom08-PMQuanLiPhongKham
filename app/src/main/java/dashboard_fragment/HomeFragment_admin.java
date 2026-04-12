@@ -1,5 +1,6 @@
 package dashboard_fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -7,8 +8,10 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.example.nhom08_quanlyphongkham.R;
+import com.example.nhom08_quanlyphongkham.admin_manage_staff;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -25,6 +28,9 @@ public class HomeFragment_admin extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
+    Button mngStaff;
+
 
     public HomeFragment_admin() {
         // Required empty public constructor
@@ -55,6 +61,7 @@ public class HomeFragment_admin extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
     }
 
     @Override
@@ -63,4 +70,16 @@ public class HomeFragment_admin extends Fragment {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_home_admin, container, false);
     }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mngStaff = view.findViewById(R.id.btn_mngStaff);
+        mngStaff.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), admin_manage_staff.class);
+            startActivity(intent);
+        });
+
+    }
+
 }
