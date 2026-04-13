@@ -10,6 +10,7 @@ public class PatientProfile {
     private String gioi_tinh;
     private String dia_chi;
     private String cccd;
+    private String so_dien_thoai;
 
     public String getId() {
         return id;

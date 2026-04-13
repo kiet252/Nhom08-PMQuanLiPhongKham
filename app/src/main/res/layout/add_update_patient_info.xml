@@ -102,7 +102,7 @@
         android:elevation="8dp">
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSavePatient"
+            android:id="@+id/btnSavePatientInfo"
             android:layout_width="0dp"
             android:layout_height="55dp"
             android:layout_weight="1"
@@ -113,7 +113,7 @@
             app:cornerRadius="12dp" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnExitPatient"
+            android:id="@+id/btnExitAddCreatePatient"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="55dp"

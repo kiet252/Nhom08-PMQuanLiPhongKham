@@ -10,6 +10,7 @@ import retrofit2.Call;
 
 public class PatientRepository {
     private final PatientApiGetService PatientApiGetService;
+    private final PatientApiCreateService PatientApiCreateService;
     private final String apiKey;
 
     public PatientRepository(String apiKey) {
@@ -17,6 +18,10 @@ public class PatientRepository {
         PatientApiGetService = SupabaseClientProvider
                 .getClient()
                 .create(PatientApiGetService.class);
+
+        PatientApiCreateService = SupabaseClientProvider
+                .getClient()
+                .create(PatientApiCreateService.class);
     }
 
     public Call<List<PatientProfile>> getProfileByName(String accessToken, String hoTen) {
@@ -25,6 +30,15 @@ public class PatientRepository {
                 "Bearer " + accessToken,
                 "eq." + hoTen,
                 "*"
+        );
+    }
+
+    public Call<List<PatientProfile>> createProfile(String accessToken, PatientProfile newProfile) {
+        return PatientApiCreateService.createProfile(
+                apiKey,
+                "Bearer " + accessToken,
+                "return=representation",
+                newProfile
         );
     }
 }

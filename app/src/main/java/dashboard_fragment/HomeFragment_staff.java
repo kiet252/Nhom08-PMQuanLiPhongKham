@@ -78,11 +78,11 @@ public class HomeFragment_staff extends Fragment {
     }
 
     private void startAddUpdatePatientIntent() {
-        Intent toAddUpdtPatient = new Intent(getContext(), AddUpdatePatientInfo_staff.class);
+        Intent IntentAddUpdatePatient = new Intent(getContext(), AddUpdatePatientInfo_staff.class);
 
-        toAddUpdtPatient.putExtra("accessToken", currentToken);
+        IntentAddUpdatePatient.putExtra("accessToken", currentToken);
 
-        startActivity(toAddUpdtPatient);
+        startActivity(IntentAddUpdatePatient);
     }
 
 
