@@ -14,7 +14,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:text="Thông tin cá nhân"
-            android:textColor="#757575"
+            android:textColor="@color/app_primary_text_color"
             android:textSize="20sp"
             android:textStyle="italic|bold" />
         <com.google.android.material.textfield.TextInputLayout
@@ -26,7 +26,8 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edtFullName"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textColor="@color/app_secondary_text_color"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -39,7 +40,8 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edtAddress"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textColor="@color/app_secondary_text_color"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -53,7 +55,8 @@
                 android:id="@+id/edtPhone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="phone" />
+                android:inputType="phone"
+                android:textColor="@color/app_secondary_text_color"/>/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
@@ -62,16 +65,17 @@
             android:layout_marginTop="16dp"
             android:text="Giới tính:"
             android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:textColor="@color/app_primary_text_color"/>/>
 
         <RadioGroup
             android:id="@+id/rgGender"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-            <RadioButton android:id="@+id/rbMale" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Nam" />
-            <RadioButton android:id="@+id/rbFemale" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="20dp" android:text="Nữ" />
-            <RadioButton android:id="@+id/rbOther" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="20dp" android:text="Khác" />
+            <RadioButton android:id="@+id/rbMale" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Nam" android:textColor="@color/app_primary_text_color"/> />
+            <RadioButton android:id="@+id/rbFemale" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="20dp" android:text="Nữ" android:textColor="@color/app_primary_text_color" />
+            <RadioButton android:id="@+id/rbOther" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="20dp" android:text="Khác" android:textColor="@color/app_primary_text_color" />
         </RadioGroup>
 
         <TextView
@@ -80,16 +84,17 @@
             android:layout_marginTop="16dp"
             android:text="Ngày sinh:"
             android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:textColor="@color/app_primary_text_color"/>/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:weightSum="3">
-            <Spinner android:id="@+id/spnDay" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" />
-            <Spinner android:id="@+id/spnMonth" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" />
-            <Spinner android:id="@+id/spnYear" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" />
+            <Spinner android:id="@+id/spnDay" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:textColor="@color/app_primary_text_color" />
+            <Spinner android:id="@+id/spnMonth" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:textColor="@color/app_primary_text_color"/>
+            <Spinner android:id="@+id/spnYear" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:textColor="@color/app_primary_text_color"/>
         </LinearLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -102,7 +107,8 @@
                 android:id="@+id/edtCCCD"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="number" />
+                android:inputType="number"
+                android:textColor="@color/app_secondary_text_color"/>
         </com.google.android.material.textfield.TextInputLayout>
 
     </LinearLayout>

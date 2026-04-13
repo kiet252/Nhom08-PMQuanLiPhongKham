@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F7FA"
     android:id="@+id/main_patient">
 
     <RelativeLayout
@@ -98,7 +97,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp"
-        android:background="@color/white"
         android:elevation="8dp">
 
         <com.google.android.material.button.MaterialButton
@@ -120,7 +118,8 @@
             android:layout_weight="1"
             android:layout_marginStart="8dp"
             android:text="THOÁT"
-            android:textColor="#F44336"
+            android:textColor="@color/dialog_cancel_btn_text_color"
+            android:backgroundTint="@color/dialog_cancel_btn_color"
             app:strokeColor="#F44336"
             app:cornerRadius="12dp" />
     </LinearLayout>

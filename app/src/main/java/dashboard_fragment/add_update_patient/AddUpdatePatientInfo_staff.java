@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,7 +18,8 @@ import com.example.nhom08_quanlyphongkham.R;
 
 public class AddUpdatePatientInfo_staff extends AppCompatActivity {
 
-    private Button BtnCreatePatient, BtnUpdatePatient, BtnSavePatientInfo;
+    private Button BtnCreatePatient, BtnUpdatePatient, BtnSavePatientInfo, BtnExitAddCreatePatient;
+    private ImageButton BtnBackAddUpdatePatient;
     private String currentToken;
     private CreatePatientFragment CurrentCreatePatientFragment;
     private UpdatePatientFragment CurrentUpdatePatientFragment;
@@ -45,12 +47,16 @@ public class AddUpdatePatientInfo_staff extends AppCompatActivity {
         BtnCreatePatient = findViewById(R.id.btnCreatePatient);
         BtnUpdatePatient = findViewById(R.id.btnUpdatePatient);
         BtnSavePatientInfo = findViewById(R.id.btnSavePatientInfo);
+        BtnBackAddUpdatePatient = findViewById(R.id.btnBackAddUpdatePatient);
+        BtnExitAddCreatePatient = findViewById(R.id.btnExitAddCreatePatient);
     }
 
     private void setupListeners() {
         BtnCreatePatient.setOnClickListener(v -> CreateNewPatientReplaceFragment());
         BtnUpdatePatient.setOnClickListener(v -> UpdatePatientReplaceFragment());
         BtnSavePatientInfo.setOnClickListener(v -> SavePatientCurrentInfo());
+        BtnBackAddUpdatePatient.setOnClickListener(v -> backToPreviousActivity());
+        BtnExitAddCreatePatient.setOnClickListener(v -> backToPreviousActivity());
     }
 
     private void CreateNewPatientReplaceFragment() {
@@ -75,6 +81,10 @@ public class AddUpdatePatientInfo_staff extends AppCompatActivity {
         } else if (currentVisibleFrag instanceof UpdatePatientFragment) {
             ((UpdatePatientFragment) currentVisibleFrag).saveData();
         }
+    }
+
+    private void backToPreviousActivity() {
+        finish();
     }
 
 }

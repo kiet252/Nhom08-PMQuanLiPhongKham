@@ -8,4 +8,7 @@
 
     <color name="change_password_dialog_cancel_btn_color">#3B3B3B</color>
     <color name="change_password_dialog_cancel_btn_text_color">#EE2400</color>
+
+    <color name="dialog_cancel_btn_color">#3B3B3B</color>
+    <color name="dialog_cancel_btn_text_color">#EE2400</color>
 </resources>
