@@ -61,13 +61,15 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnLogoutCancel"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
                     android:layout_marginTop="8dp"
                     android:text="QUAY LẠI"
-                    android:textColor="@color/app_secondary_text_color"
-                    app:cornerRadius="12dp" />
+                    android:textColor="@color/change_password_dialog_cancel_btn_text_color"
+                    android:backgroundTint="@color/change_password_dialog_cancel_btn_color"
+                    app:cornerRadius="12dp"
+                    app:strokeColor="#F44336"/>
 
             </LinearLayout>
         </LinearLayout>

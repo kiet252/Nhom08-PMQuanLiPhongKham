@@ -24,7 +24,6 @@ import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.login;
 import com.example.nhom08_quanlyphongkham.uilogin.AuthRepository;
 import com.example.nhom08_quanlyphongkham.uilogin.LoginResponse;
-import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -144,7 +143,7 @@ public class AccountFragment extends Fragment {
 
     private void Change_Password_Dialog_Show_UI(AlertDialog dialog, View dialogView) {
         Button btnConfirm = dialog.findViewById(R.id.btnUpdatePassword);
-        Button btnCancel = dialog.findViewById(R.id.btnLogout);
+        Button btnChangePassExit = dialog.findViewById(R.id.btnChangePassExit);
 
         TextInputEditText edtCurrentPassword = dialogView.findViewById(R.id.edtCurrentPassword);
         TextInputEditText edtNewPassword = dialogView.findViewById(R.id.edtNewPassword);
@@ -191,7 +190,7 @@ public class AccountFragment extends Fragment {
             verifyCurrentPassword(currentPassword, newPassword, layoutCurrentPassword, dialog);
         });
 
-        btnCancel.setOnClickListener(v ->{
+        btnChangePassExit.setOnClickListener(v ->{
             dialog.dismiss();
         });
     }

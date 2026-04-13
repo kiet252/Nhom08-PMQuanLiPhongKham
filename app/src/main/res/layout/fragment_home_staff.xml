@@ -123,7 +123,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="80dp"
                             android:gravity="center_vertical|start"
-                            android:text="CẬP NHẬT THÔNG TIN BỆNH NHÂN"
+                            android:text="TẠO/CẬP NHẬT HỒ SƠ BỆNH NHÂN"
                             android:textColor="@color/app_primary_text_color"
                             app:icon="@drawable/dashboard_icon_report"
                             app:iconPadding="16dp"
