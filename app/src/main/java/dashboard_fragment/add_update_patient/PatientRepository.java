@@ -1,7 +1,4 @@
 package dashboard_fragment.add_update_patient;
-
-import com.example.nhom08_quanlyphongkham.UserProfile;
-import com.example.nhom08_quanlyphongkham.uilogin.ProfileApiService;
 import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 
 import java.util.List;

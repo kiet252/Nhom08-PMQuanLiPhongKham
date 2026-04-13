@@ -10,31 +10,15 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.nhom08_quanlyphongkham.R;
-import com.example.nhom08_quanlyphongkham.UserProfile;
-import com.example.nhom08_quanlyphongkham.dashboard;
-import com.example.nhom08_quanlyphongkham.login;
-import com.example.nhom08_quanlyphongkham.uilogin.AuthRepository;
 import com.google.android.material.button.MaterialButton;
-
-import java.nio.channels.InterruptedByTimeoutException;
-
 import dashboard_fragment.add_update_patient.AddUpdatePatientInfo_staff;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link HomeFragment_staff#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class HomeFragment_staff extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_TOKEN = "token";
 
     private String currentToken;
     private MaterialButton BtnCreateMedReport, BtnManageMedReport, BtnAddUpdatePatientInfo, BtnManageBill;
-
-    // TODO: Rename and change types of parameters
 
     public HomeFragment_staff() {
     }
