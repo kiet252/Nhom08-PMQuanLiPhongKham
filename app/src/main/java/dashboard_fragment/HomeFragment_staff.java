@@ -1,5 +1,6 @@
 package dashboard_fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -9,6 +10,15 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.nhom08_quanlyphongkham.R;
+import com.example.nhom08_quanlyphongkham.UserProfile;
+import com.example.nhom08_quanlyphongkham.dashboard;
+import com.example.nhom08_quanlyphongkham.login;
+import com.example.nhom08_quanlyphongkham.uilogin.AuthRepository;
+import com.google.android.material.button.MaterialButton;
+
+import java.nio.channels.InterruptedByTimeoutException;
+
+import dashboard_fragment.add_update_patient.AddUpdatePatientInfo_staff;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -19,31 +29,20 @@ public class HomeFragment_staff extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String ARG_TOKEN = "token";
+
+    private String currentToken;
+    private MaterialButton BtnCreateMedReport, BtnManageMedReport, BtnAddUpdatePatientInfo, BtnManageBill;
 
     // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     public HomeFragment_staff() {
-        // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment HomeFragment_staff.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static HomeFragment_staff newInstance(String param1, String param2) {
+    public static HomeFragment_staff newInstance(String token) {
         HomeFragment_staff fragment = new HomeFragment_staff();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putString(ARG_TOKEN, token);
         fragment.setArguments(args);
         return fragment;
     }
@@ -51,16 +50,40 @@ public class HomeFragment_staff extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            currentToken = getArguments().getString(ARG_TOKEN);
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home_staff, container, false);
+        View view = inflater.inflate(R.layout.fragment_home_staff, container, false);
+        initializeViews(view);
+        setupListeners();
+
+        return view;
     }
+
+    private void initializeViews(View view) {
+        BtnCreateMedReport = view.findViewById(R.id.MBtnCreateMedReport);
+        BtnManageMedReport = view.findViewById(R.id.MBtnManageMedReport);
+        BtnAddUpdatePatientInfo = view.findViewById(R.id.MBtnAddUpdatePatientInfo);
+        BtnManageBill = view.findViewById(R.id.MBtnManageBill);
+    }
+
+    private void setupListeners() {
+        BtnAddUpdatePatientInfo.setOnClickListener(v -> startAddUpdatePatientIntent());
+    }
+
+    private void startAddUpdatePatientIntent() {
+        Intent toAddUpdtPatient = new Intent(getContext(), AddUpdatePatientInfo_staff.class);
+
+        toAddUpdtPatient.putExtra("accessToken", currentToken);
+
+        startActivity(toAddUpdtPatient);
+    }
+
+
 }

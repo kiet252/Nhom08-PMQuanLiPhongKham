@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F7FA">
+    android:background="#F5F7FA"
+    android:id="@+id/main_patient">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -14,7 +15,7 @@
         android:background="@drawable/gradient_blue_bg">
 
         <ImageButton
-            android:id="@+id/btnBack"
+            android:id="@+id/btnBackAddUpdatePatient"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
@@ -45,7 +46,7 @@
             android:weightSum="2">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnTabCreate"
+                android:id="@+id/btnCreatePatient"
                 style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -53,12 +54,12 @@
                 android:text="TẠO MỚI"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:textColor="#2196F3"
+                android:textColor="@color/app_secondary_text_color"
                 app:icon="@drawable/ic_person_add"
                 app:iconGravity="top"
                 app:iconPadding="4dp"
                 app:iconSize="28dp"
-                app:iconTint="#2196F3" />
+                app:iconTint="@color/app_secondary_text_color" />
 
             <View
                 android:layout_width="2dp"
@@ -68,7 +69,7 @@
                 android:background="@color/app_secondary_text_color" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnTabUpdate"
+                android:id="@+id/btnUpdatePatient"
                 style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -76,12 +77,12 @@
                 android:text="CẬP NHẬT"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:textColor="#757575"
+                android:textColor="@color/app_secondary_text_color"
                 app:icon="@drawable/ic_edit_patient_info"
                 app:iconGravity="top"
                 app:iconPadding="4dp"
                 app:iconSize="28dp"
-                app:iconTint="#757575" />
+                app:iconTint="@color/app_secondary_text_color" />
 
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
@@ -101,7 +102,7 @@
         android:elevation="8dp">
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSave"
+            android:id="@+id/btnSavePatient"
             android:layout_width="0dp"
             android:layout_height="55dp"
             android:layout_weight="1"
@@ -112,7 +113,7 @@
             app:cornerRadius="12dp" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnExit"
+            android:id="@+id/btnExitPatient"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="55dp"
