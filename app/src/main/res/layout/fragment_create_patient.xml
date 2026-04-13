@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="Thông tin cá nhân"
+            android:textColor="#757575"
+            android:textSize="20sp"
+            android:textStyle="italic|bold" />
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Họ và tên"
+            app:startIconDrawable="@drawable/userprofile_ic_name">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtFullName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Địa chỉ"
+            app:startIconDrawable="@drawable/userprofile_ic_address">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtAddress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Số điện thoại"
+            app:startIconDrawable="@drawable/userprofile_ic_phone">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtPhone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="phone" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Giới tính:"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/rgGender"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <RadioButton android:id="@+id/rbMale" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Nam" />
+            <RadioButton android:id="@+id/rbFemale" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="20dp" android:text="Nữ" />
+            <RadioButton android:id="@+id/rbOther" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="20dp" android:text="Khác" />
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Ngày sinh:"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="3">
+            <Spinner android:id="@+id/spnDay" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" />
+            <Spinner android:id="@+id/spnMonth" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" />
+            <Spinner android:id="@+id/spnYear" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" />
+        </LinearLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Số CCCD">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtCCCD"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

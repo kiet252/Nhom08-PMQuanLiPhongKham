@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F5F7FA">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:background="@drawable/gradient_blue_bg">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_back_white"
+            app:tint="@color/white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="TẠO/CẬP NHẬT HỒ SƠ BỆNH NHÂN"
+            android:textColor="@color/white"
+            android:textSize="19sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTabCreate"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="TẠO MỚI"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#2196F3"
+                app:icon="@drawable/ic_person_add"
+                app:iconGravity="top"
+                app:iconPadding="4dp"
+                app:iconSize="28dp"
+                app:iconTint="#2196F3" />
+
+            <View
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                android:background="@color/app_secondary_text_color" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTabUpdate"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="CẬP NHẬT"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#757575"
+                app:icon="@drawable/ic_edit_patient_info"
+                app:iconGravity="top"
+                app:iconPadding="4dp"
+                app:iconSize="28dp"
+                app:iconTint="#757575" />
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/patientFragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="@color/white"
+        android:elevation="8dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSave"
+            android:layout_width="0dp"
+            android:layout_height="55dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:backgroundTint="#2196F3"
+            android:text="LƯU"
+            android:textColor="@color/white"
+            app:cornerRadius="12dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnExit"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="55dp"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="THOÁT"
+            android:textColor="#F44336"
+            app:strokeColor="#F44336"
+            app:cornerRadius="12dp" />
+    </LinearLayout>
+
+</LinearLayout>
