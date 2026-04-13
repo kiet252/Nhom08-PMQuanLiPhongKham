@@ -56,6 +56,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="12dp"
+            android:background="@drawable/gradient_blue_rec"
             app:cardCornerRadius="12dp"
             app:cardElevation="4dp">
 
@@ -63,7 +64,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="12dp">
+                android:padding="1dp"
+                android:background="#E0E0E0">
 
                 <EditText
                     android:id="@+id/etSearch"
@@ -79,8 +81,8 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:orientation="horizontal"/>
+                    android:orientation="horizontal" />
+
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
