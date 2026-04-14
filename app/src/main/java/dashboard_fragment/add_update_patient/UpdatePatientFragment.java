@@ -26,7 +26,7 @@ public class UpdatePatientFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
     }
 
-    public void saveData() {
+    public void submitPatientData() {
         Toast.makeText(getContext(), "Update Patient Logic here!", Toast.LENGTH_SHORT).show();
     }
 }

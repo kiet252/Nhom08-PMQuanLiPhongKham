@@ -39,7 +39,7 @@ public class dashboard extends AppCompatActivity {
         else if ("Bác sĩ".equals(profile.getChuc_vu()))
             userFragment = new HomeFragment_doctor();
         else
-            userFragment = new HomeFragment_staff();
+            userFragment = HomeFragment_staff.newInstance(currentToken);
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, userFragment)

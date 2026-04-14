@@ -12,6 +12,15 @@ public class PatientProfile {
     private String cccd;
     private String so_dien_thoai;
 
+    public PatientProfile(String id, Date createdAt, String hoTen, Date ngaySinh, String gioiTinh, String diaChi) {
+        this.id = id;
+        created_at = createdAt;
+        ho_ten = hoTen;
+        ngay_sinh = ngaySinh;
+        gioi_tinh = gioiTinh;
+        dia_chi = diaChi;
+    }
+
     public String getId() {
         return id;
     }

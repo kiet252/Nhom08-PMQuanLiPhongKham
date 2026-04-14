@@ -6,32 +6,32 @@ import java.util.List;
 import retrofit2.Call;
 
 public class PatientRepository {
-    private final PatientApiGetService PatientApiGetService;
-    private final PatientApiCreateService PatientApiCreateService;
+    private static PatientApiGetService getService;
+    private static PatientApiCreateService createService;
     private final String apiKey;
 
     public PatientRepository(String apiKey) {
         this.apiKey = apiKey;
-        PatientApiGetService = SupabaseClientProvider
-                .getClient()
-                .create(PatientApiGetService.class);
 
-        PatientApiCreateService = SupabaseClientProvider
-                .getClient()
-                .create(PatientApiCreateService.class);
+        if (getService == null) {
+            getService = SupabaseClientProvider.getClient().create(PatientApiGetService.class);
+        }
+        if (createService == null) {
+            createService = SupabaseClientProvider.getClient().create(PatientApiCreateService.class);
+        }
     }
 
     public Call<List<PatientProfile>> getProfileByName(String accessToken, String hoTen) {
-        return PatientApiGetService.getProfileByName(
+        return getService.getProfileByName(
                 apiKey,
                 "Bearer " + accessToken,
-                "eq." + hoTen,
+                "ilike." + hoTen,
                 "*"
         );
     }
 
-    public Call<List<PatientProfile>> createProfile(String accessToken, PatientProfile newProfile) {
-        return PatientApiCreateService.createProfile(
+    public Call<List<PatientProfile>> createProfile(String accessToken, CreatePatientRequest newProfile) {
+        return createService.createProfile(
                 apiKey,
                 "Bearer " + accessToken,
                 "return=representation",

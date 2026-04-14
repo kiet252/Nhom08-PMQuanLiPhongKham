@@ -34,6 +34,7 @@ public class AddUpdatePatientInfo_staff extends AppCompatActivity {
         });
 
         initializeViews();
+        getIntentInfo();
         setupListeners();
     }
 
@@ -75,9 +76,9 @@ public class AddUpdatePatientInfo_staff extends AppCompatActivity {
         Fragment currentVisibleFrag = getSupportFragmentManager().findFragmentById(R.id.patientFragmentContainer);
 
         if (currentVisibleFrag instanceof CreatePatientFragment) {
-            ((CreatePatientFragment) currentVisibleFrag).saveData();
+            ((CreatePatientFragment) currentVisibleFrag).submitPatientData();
         } else if (currentVisibleFrag instanceof UpdatePatientFragment) {
-            ((UpdatePatientFragment) currentVisibleFrag).saveData();
+            ((UpdatePatientFragment) currentVisibleFrag).submitPatientData();
         }
     }
 

@@ -7,11 +7,11 @@ import retrofit2.http.Body;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
 public interface PatientApiCreateService {
-    @POST("rest/v1/profiles")
+    @POST("rest/v1/patient")
     Call<List<PatientProfile>> createProfile(
             @Header("apikey") String apiKey,
             @Header("Authorization") String authorization,
             @Header("Prefer") String prefer,
-            @Body PatientProfile newProfile
+            @Body CreatePatientRequest newProfile
     );
 }
