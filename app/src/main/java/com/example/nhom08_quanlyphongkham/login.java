@@ -14,6 +14,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.nhom08_quanlyphongkham.uilogin.AuthRepository;
 import com.example.nhom08_quanlyphongkham.uilogin.LoginResponse;
 import com.example.nhom08_quanlyphongkham.uilogin.ProfileRepository;
+import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -36,6 +37,21 @@ public class login extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+        // here
+        currentToken = SharedPrefManager.getInstance(this).getToken();
+        if (currentToken != null && !currentToken.isEmpty() && SharedPrefManager.getInstance(this).getProfile() != null && !SharedPrefManager.getInstance(this).getProfile().getID().isEmpty())
+        {
+            // Nếu có, tạo Intent để đi thẳng tới màn hình Dashboard
+            Intent intent = new Intent(this, dashboard.class);
+            intent.putExtra("accessToken", currentToken);
+            intent.putExtra("Userprofile", SharedPrefManager.getInstance(this).getProfile());
+
+            startActivity(intent);
+
+            // Quan trọng: Kết thúc Activity Login để người dùng không quay lại được bằng nút Back
+            finish();
+            return; // Dừng hàm onCreate tại đây, không chạy code bên dưới nữa
+        }
         setContentView(R.layout.login);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.login), (v, insets) -> {
@@ -103,10 +119,15 @@ public class login extends AppCompatActivity {
 
     private void handleLoginSuccess(LoginResponse loginResponse) {
         currentToken = loginResponse.getAccess_token();
-        String userId = loginResponse.getUser().getId();
+        if (currentToken == null) {
+            Toast.makeText(this, "Lỗi đăng nhập!", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        String userId = loginResponse.getUser().getId();
         fetchUserProfile(userId);
         Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+
     }
 
     private void fetchUserProfile(String userId) {
@@ -123,7 +144,8 @@ public class login extends AppCompatActivity {
 
                 logined.putExtra("accessToken", currentToken);
                 logined.putExtra("Userprofile", profile);
-
+                SharedPrefManager.getInstance(login.this).saveToken(currentToken);
+                SharedPrefManager.getInstance(login.this).saveProfile(profile);
                 startActivity(logined);
                 finish();
             }
