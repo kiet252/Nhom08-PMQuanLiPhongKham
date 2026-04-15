@@ -38,8 +38,9 @@ public class AddUpdatePatientInfo_staff extends AppCompatActivity {
 
         initializeViews();
         getIntentInfo();
-        CreateNewPatientReplaceFragment();
         setupListeners();
+
+        //CreateNewPatientReplaceFragment();
     }
 
     private void getIntentInfo() {

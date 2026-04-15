@@ -27,6 +27,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import dashboard_fragment.add_update_patient.ExternalCall;
+import dashboard_fragment.add_update_patient.PatientDatabaseConstraintsChecker;
 import dashboard_fragment.add_update_patient.PatientProfile;
 import dashboard_fragment.add_update_patient.PatientRepository;
 import retrofit2.Call;
@@ -37,7 +38,7 @@ public class CreatePatientFragment extends Fragment {
     private RadioButton selectedRadioButton;
     private Spinner SpnBirthDay, SpnBirthMonth, SpnBirthYear;
     private String currentToken;
-
+    private PatientRepository repository;
     public CreatePatientFragment(String token) {
         currentToken = token;
     }
@@ -54,6 +55,8 @@ public class CreatePatientFragment extends Fragment {
         initializeViews(view);
         initializeValuesForMonthAndYearSpinners();
         setupListeners();
+
+        repository = new PatientRepository(getString(R.string.abAIkey));
 
         return view;
     }
@@ -144,9 +147,6 @@ public class CreatePatientFragment extends Fragment {
     public void submitPatientData() {
         if (!allCredentialsValid()) return;
 
-        String apiKey = getString(R.string.abAIkey);
-        PatientRepository repository = new PatientRepository(apiKey);
-
         repository.createProfile(currentToken, PatientToCreate()).enqueue(new retrofit2.Callback<List<PatientProfile>>() {
             @Override
             public void onResponse(@NonNull Call<List<PatientProfile>> call, @NonNull retrofit2.Response<List<PatientProfile>> response) {
@@ -236,7 +236,7 @@ public class CreatePatientFragment extends Fragment {
             return false;
         }
 
-        if (!phoneNum.matches("^0\\d{9}$")) {
+        if (!PatientDatabaseConstraintsChecker.isValidPhoneNumInDB(phoneNum)) {
             EdtPhone.setError("Số điện thoại phải bắt đầu bằng số 0 và gồm 10 số!");
             EdtPhone.requestFocus();
             return false;
@@ -283,8 +283,8 @@ public class CreatePatientFragment extends Fragment {
             return false;
         }
 
-        if (!cccd.matches("^\\d{12}$")) {
-            EdtCCCD.setError("Căn cưới công dân phải đúng 12 số!");
+        if (!PatientDatabaseConstraintsChecker.isValidCCCDInDB(cccd)) {
+            EdtCCCD.setError("Căn cước công dân phải đúng 12 số!");
             EdtCCCD.requestFocus();
             return false;
         }
