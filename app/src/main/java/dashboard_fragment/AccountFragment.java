@@ -24,6 +24,7 @@ import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.login;
 import com.example.nhom08_quanlyphongkham.uilogin.AuthRepository;
 import com.example.nhom08_quanlyphongkham.uilogin.LoginResponse;
+import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -260,10 +261,7 @@ public class AccountFragment extends Fragment {
 
         btnLogoutConfirm.setOnClickListener(v->{
             SharedPreferences sharedPreferences = dialog.getContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.clear();//Xoa token
-            editor.apply();
-
+            SharedPrefManager.getInstance(dialog.getContext()).clear();//xoa
             dialog.dismiss();
 
             Intent intent = new Intent(dialog.getContext(), login.class);
