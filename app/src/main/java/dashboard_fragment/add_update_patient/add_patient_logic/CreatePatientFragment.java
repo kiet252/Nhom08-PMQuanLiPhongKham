@@ -1,4 +1,4 @@
-package dashboard_fragment.add_update_patient;
+package dashboard_fragment.add_update_patient.add_patient_logic;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -20,21 +20,22 @@ import androidx.fragment.app.Fragment;
 import com.example.nhom08_quanlyphongkham.R;
 
 import java.io.IOException;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import dashboard_fragment.add_update_patient.ExternalCall;
+import dashboard_fragment.add_update_patient.PatientProfile;
+import dashboard_fragment.add_update_patient.PatientRepository;
 import retrofit2.Call;
 
 public class CreatePatientFragment extends Fragment {
-    EditText EdtFullName, EdtAddress, EdtPhone, EdtCCCD;
-    RadioGroup RgGender;
-    RadioButton selectedRadioButton;
-    Spinner SpnBirthDay, SpnBirthMonth, SpnBirthYear;
+    private EditText EdtFullName, EdtAddress, EdtPhone, EdtCCCD;
+    private RadioGroup RgGender;
+    private RadioButton selectedRadioButton;
+    private Spinner SpnBirthDay, SpnBirthMonth, SpnBirthYear;
     private String currentToken;
 
     public CreatePatientFragment(String token) {
@@ -48,7 +49,7 @@ public class CreatePatientFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_create_patient, container, false);
+        View view = inflater.inflate(R.layout.staff_fragment_create_patient, container, false);
 
         initializeViews(view);
         initializeValuesForMonthAndYearSpinners();
@@ -58,16 +59,16 @@ public class CreatePatientFragment extends Fragment {
     }
 
     private void initializeViews(View view) {
-        EdtFullName = view.findViewById(R.id.edtFullName);
-        EdtAddress = view.findViewById(R.id.edtAddress);
-        EdtPhone = view.findViewById(R.id.edtPhone);
-        EdtCCCD = view.findViewById(R.id.edtCCCD);
+        EdtFullName = view.findViewById(R.id.edtCreatePatientFullName);
+        EdtAddress = view.findViewById(R.id.edtCreatePatientAddress);
+        EdtPhone = view.findViewById(R.id.edtCreatePatientPhone);
+        EdtCCCD = view.findViewById(R.id.edtCreatePatientCCCD);
 
-        RgGender = view.findViewById(R.id.rgGender);
+        RgGender = view.findViewById(R.id.rgCreatePatientGender);
 
-        SpnBirthDay = view.findViewById(R.id.spnDay);
-        SpnBirthMonth = view.findViewById(R.id.spnMonth);
-        SpnBirthYear = view.findViewById(R.id.spnYear);
+        SpnBirthDay = view.findViewById(R.id.spnCreatePatientDay);
+        SpnBirthMonth = view.findViewById(R.id.spnCreatePatientMonth);
+        SpnBirthYear = view.findViewById(R.id.spnCreatePatientYear);
     }
 
     private void initializeValuesForMonthAndYearSpinners() {

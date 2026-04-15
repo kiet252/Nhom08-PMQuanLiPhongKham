@@ -1,4 +1,4 @@
-package dashboard_fragment.add_update_patient;
+package dashboard_fragment.add_update_patient.add_patient_logic;
 
 import java.util.Date;
 

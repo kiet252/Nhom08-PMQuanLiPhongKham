@@ -7,17 +7,22 @@
     android:padding="16dp">
 
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilUpdatePatientSearchPatientLayout"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Nhập mã bệnh nhân hoặc CCCD để tìm"
-        app:endIconMode="custom"
-        app:endIconDrawable="@android:drawable/ic_menu_search">
+        app:endIconCheckable="true"
+        app:endIconContentDescription="Search Button"
+        app:endIconDrawable="@android:drawable/ic_menu_search"
+        app:endIconMode="custom">
+
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edtSearchPatient"
+            android:id="@+id/edtUpdatePatientSearchPatient"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/app_secondary_text_color"/>
+            android:textColor="@color/app_secondary_text_color" />
+
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
@@ -60,7 +65,7 @@
                 android:enabled="false"
                 app:startIconDrawable="@drawable/userprofile_ic_name">
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/edtEditFullName"
+                    android:id="@+id/edtUpdatePatientFullName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColor="@color/app_secondary_text_color" />
@@ -74,7 +79,7 @@
                 android:hint="Ngày sinh (Cố định)"
                 android:enabled="false">
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/edtEditBirthday"
+                    android:id="@+id/edtUpdatePatientBirthday"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColor="@color/app_secondary_text_color" />
@@ -93,7 +98,7 @@
                 android:hint="Địa chỉ"
                 app:startIconDrawable="@drawable/userprofile_ic_address">
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/edtEditAddress"
+                    android:id="@+id/edtUpdatePatientAddress"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColor="@color/app_secondary_text_color"/>
@@ -107,7 +112,7 @@
                 android:hint="Số điện thoại"
                 app:startIconDrawable="@drawable/userprofile_ic_phone">
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/edtEditPhone"
+                    android:id="@+id/edtUpdatePatientPhone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="phone"
@@ -122,13 +127,13 @@
                 android:textStyle="bold" />
 
             <RadioGroup
-                android:id="@+id/rgEditGender"
+                android:id="@+id/rgUpdatePatientGender"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-                <RadioButton android:id="@+id/rbEditMale" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Nam" android:textColor="@color/app_primary_text_color"/>
-                <RadioButton android:id="@+id/rbEditFemale" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="20dp" android:text="Nữ" android:textColor="@color/app_primary_text_color" />
-                <RadioButton android:id="@+id/rbEditOther" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="20dp" android:text="Khác" android:textColor="@color/app_primary_text_color" />
+                <RadioButton android:id="@+id/rbUpdatePatientMale" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Nam" android:textColor="@color/app_primary_text_color"/>
+                <RadioButton android:id="@+id/rbUpdatePatientFemale" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="20dp" android:text="Nữ" android:textColor="@color/app_primary_text_color" />
+                <RadioButton android:id="@+id/rbUpdatePatientOther" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="20dp" android:text="Khác" android:textColor="@color/app_primary_text_color" />
             </RadioGroup>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -138,7 +143,7 @@
                 android:layout_marginTop="12dp"
                 android:hint="Cập nhật số CCCD">
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/edtEditCCCD"
+                    android:id="@+id/edtUpdatePatientCCCD"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="number"

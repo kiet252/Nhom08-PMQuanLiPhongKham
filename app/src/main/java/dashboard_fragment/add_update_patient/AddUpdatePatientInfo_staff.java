@@ -14,6 +14,9 @@ import androidx.fragment.app.Fragment;
 
 import com.example.nhom08_quanlyphongkham.R;
 
+import dashboard_fragment.add_update_patient.add_patient_logic.CreatePatientFragment;
+import dashboard_fragment.add_update_patient.update_patient_logic.UpdatePatientFragment;
+
 public class AddUpdatePatientInfo_staff extends AppCompatActivity {
 
     private Button BtnCreatePatient, BtnUpdatePatient, BtnSavePatientInfo, BtnExitAddCreatePatient;
@@ -26,7 +29,7 @@ public class AddUpdatePatientInfo_staff extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.add_update_patient_info);
+        setContentView(R.layout.staff_add_update_patient_info);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_patient), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -35,6 +38,7 @@ public class AddUpdatePatientInfo_staff extends AppCompatActivity {
 
         initializeViews();
         getIntentInfo();
+        CreateNewPatientReplaceFragment();
         setupListeners();
     }
 
@@ -66,7 +70,7 @@ public class AddUpdatePatientInfo_staff extends AppCompatActivity {
     }
 
     private void UpdatePatientReplaceFragment() {
-        CurrentUpdatePatientFragment = new UpdatePatientFragment();
+        CurrentUpdatePatientFragment = new UpdatePatientFragment(currentToken);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.patientFragmentContainer, CurrentUpdatePatientFragment)
                 .commit();
