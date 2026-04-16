@@ -87,7 +87,7 @@
                             android:background="@color/app_secondary_text_color" />
 
                         <com.google.android.material.button.MaterialButton
-                            android:id="@+id/MBtnCreateMedReport"
+                            android:id="@+id/MBtnCreateExaminationForm"
                             style="@style/Widget.MaterialComponents.Button.TextButton"
                             android:layout_width="match_parent"
                             android:layout_height="80dp"

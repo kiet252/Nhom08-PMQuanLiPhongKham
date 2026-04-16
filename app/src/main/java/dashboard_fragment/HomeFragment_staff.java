@@ -12,13 +12,14 @@ import android.view.ViewGroup;
 import com.example.nhom08_quanlyphongkham.R;
 import com.google.android.material.button.MaterialButton;
 import dashboard_fragment.add_update_patient.AddUpdatePatientInfo_staff;
+import dashboard_fragment.create_examination_form.CreateExaminationForm_staff;
 
 public class HomeFragment_staff extends Fragment {
 
     private static final String ARG_TOKEN = "token";
 
     private String currentToken;
-    private MaterialButton BtnCreateMedReport, BtnManageMedReport, BtnAddUpdatePatientInfo, BtnManageBill;
+    private MaterialButton BtnCreateExForm, BtnManageMedReport, BtnAddUpdatePatientInfo, BtnManageBill;
 
     public HomeFragment_staff() {
     }
@@ -51,7 +52,7 @@ public class HomeFragment_staff extends Fragment {
     }
 
     private void initializeViews(View view) {
-        BtnCreateMedReport = view.findViewById(R.id.MBtnCreateMedReport);
+        BtnCreateExForm = view.findViewById(R.id.MBtnCreateExaminationForm);
         BtnManageMedReport = view.findViewById(R.id.MBtnManageMedReport);
         BtnAddUpdatePatientInfo = view.findViewById(R.id.MBtnAddUpdatePatientInfo);
         BtnManageBill = view.findViewById(R.id.MBtnManageBill);
@@ -59,6 +60,7 @@ public class HomeFragment_staff extends Fragment {
 
     private void setupListeners() {
         BtnAddUpdatePatientInfo.setOnClickListener(v -> startAddUpdatePatientIntent());
+        BtnCreateExForm.setOnClickListener(v->startCreateExaminationFormIntent());
     }
 
     private void startAddUpdatePatientIntent() {
@@ -68,6 +70,13 @@ public class HomeFragment_staff extends Fragment {
 
         startActivity(IntentAddUpdatePatient);
     }
+    private void startCreateExaminationFormIntent()
+    {
+        Intent IntentCreateExaminationForm = new Intent(getContext(), CreateExaminationForm_staff.class);
 
+        IntentCreateExaminationForm.putExtra("accessToken", currentToken);
+
+        startActivity(IntentCreateExaminationForm);
+    }
 
 }

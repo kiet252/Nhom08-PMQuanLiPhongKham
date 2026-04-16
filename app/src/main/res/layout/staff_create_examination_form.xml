@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F8F9FA">
+    android:background="#F8F9FA"
+    android:id="@+id/main_examination">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -100,12 +101,31 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:layout_marginTop="12dp"
-                        android:padding="8dp"
-                        android:background="#F0F7FF">
+                        android:padding="8dp">
 
-                        <TextView android:id="@+id/tvCreateExaminationFormFullName" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Họ tên: --" android:textColor="@color/black"/>
-                        <TextView android:id="@+id/tvCreateExaminationFormBirthday" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Ngày sinh: --" android:layout_marginTop="4dp"/>
-                        <TextView android:id="@+id/tvCreateExaminationFormAddress" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Địa chỉ: --" android:layout_marginTop="4dp"/>
+                        <TextView
+                            android:id="@+id/tvCreateExaminationFormFullName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Họ tên: --"
+                            android:textColor="@color/black"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/tvCreateExaminationFormBirthday"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Ngày sinh: --"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/tvCreateExaminationFormAddress"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Địa chỉ: --"
+                            android:textSize="16sp" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -304,13 +324,13 @@
             app:cornerRadius="12dp" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnCreateExaminationFormCancelSlip"
+            android:id="@+id/btnCreateExaminationFormDeleteCurrentSlip"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="55dp"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
-            android:text="HỦY"
+            android:text="XÓA"
             android:textColor="#F44336"
             app:strokeColor="#F44336"
             app:cornerRadius="12dp" />

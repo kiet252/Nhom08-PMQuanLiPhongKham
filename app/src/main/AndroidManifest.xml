@@ -17,6 +17,9 @@
             android:name="dashboard_fragment.add_update_patient.AddUpdatePatientInfo_staff"
             android:exported="false" />
         <activity
+            android:name="dashboard_fragment.create_examination_form.CreateExaminationForm_staff"
+            android:exported="false" />
+        <activity
             android:name=".login"
             android:exported="true">
             <intent-filter>
