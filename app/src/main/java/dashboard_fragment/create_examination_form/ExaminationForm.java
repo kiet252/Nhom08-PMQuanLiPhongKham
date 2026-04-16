@@ -8,7 +8,7 @@ public class ExaminationForm {
     private String patient_id;
     private String doctor_id;
     private Date ngay_kham;
-    private Time gio_du_kien;
+    private String gio_du_kien;
     private int so_thu_tu_trong_ngay;
     private String trieu_chung_ban_dau;
     private int phi_kham;
@@ -20,7 +20,7 @@ public class ExaminationForm {
     public String getPatient_id(){ return patient_id; }
     public String getDoctor_id(){ return doctor_id; }
     public Date getNgay_kham() { return ngay_kham; }
-    public Time getGio_du_kien() { return gio_du_kien; }
+    public String getGio_du_kien() { return gio_du_kien; }
     public int getSo_thu_tu_trong_ngay() { return so_thu_tu_trong_ngay; }
     public String getTrieu_chung_ban_dau() { return trieu_chung_ban_dau; }
     public int getPhi_kham() { return phi_kham; }

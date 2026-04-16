@@ -2,11 +2,15 @@ package dashboard_fragment.create_examination_form;
 
 import static androidx.core.content.ContentProviderCompat.requireContext;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,6 +27,8 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -51,6 +57,7 @@ public class CreateExaminationForm_staff extends AppCompatActivity {
             return insets;
         });
         initializeViews();
+        initializeValuesForPaymentMethod();
         setupListeners();
         getIntentInfo();
         ExFormRepository = new ExaminationFormRepository(getString(R.string.abAIkey));
@@ -81,10 +88,123 @@ public class CreateExaminationForm_staff extends AppCompatActivity {
         ActvDoctor = findViewById(R.id.actvCreateExaminationFormDoctor);
         ActvPaymentMethod = findViewById(R.id.actvCreateExaminationFormPaymentMethod);
     }
+
+    private void showDatePicker() {
+        Calendar calendar = Calendar.getInstance();
+
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+                this,
+                (view, selectedYear, selectedMonth, selectedDay) -> {
+                    String date = selectedDay + "/" + (selectedMonth + 1) + "/" + selectedYear;
+                    EdtDateExam.setText(date);
+                },
+                year, month, day
+        );
+
+        long today = System.currentTimeMillis();
+
+        Calendar maxDate = Calendar.getInstance();
+        maxDate.add(Calendar.DAY_OF_MONTH, 30);
+
+        datePickerDialog.getDatePicker().setMinDate(today);
+        datePickerDialog.getDatePicker().setMaxDate(maxDate.getTimeInMillis());
+
+        datePickerDialog.show();
+    }
+
+    private void showTimePicker(){
+        Calendar now = Calendar.getInstance();
+
+        int hour = now.get(Calendar.HOUR_OF_DAY);
+        int minute = now.get(Calendar.MINUTE);
+
+        TimePickerDialog timePickerDialog = new TimePickerDialog(
+                this,
+                (view, selectedHour, selectedMinute) -> {
+
+                    String dateStr = EdtDateExam.getText().toString().trim();
+
+                    if (dateStr.isEmpty()) {
+                        Toast.makeText(this, "Vui lòng chọn ngày trước!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    try {
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                        Date selectedDate = sdf.parse(dateStr);
+
+                        Calendar selectedCal = Calendar.getInstance();
+                        selectedCal.setTime(selectedDate);
+
+                        Calendar today = Calendar.getInstance();
+
+                        today.set(Calendar.HOUR_OF_DAY, 0);
+                        today.set(Calendar.MINUTE, 0);
+                        today.set(Calendar.SECOND, 0);
+
+                        selectedCal.set(Calendar.HOUR_OF_DAY, 0);
+                        selectedCal.set(Calendar.MINUTE, 0);
+                        selectedCal.set(Calendar.SECOND, 0);
+
+                        boolean isToday = selectedCal.get(Calendar.YEAR) == today.get(Calendar.YEAR)
+                                && selectedCal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR);
+
+                        if (isToday) {
+                            Calendar currentTime = Calendar.getInstance();
+
+                            if (selectedHour < currentTime.get(Calendar.HOUR_OF_DAY) ||
+                                    (selectedHour == currentTime.get(Calendar.HOUR_OF_DAY)
+                                            && selectedMinute <= currentTime.get(Calendar.MINUTE))) {
+
+                                Toast.makeText(this, "Giờ dự kiến phải lớn hơn thời gian hiện tại!", Toast.LENGTH_SHORT).show();
+
+
+                                EdtTimeExam.setText("");
+                                EdtTimeExam.setError("Giờ không hợp lệ");
+
+                                return;
+                            }
+                        }
+
+                        EdtTimeExam.setError(null);
+                        String time = String.format("%02d:%02d", selectedHour, selectedMinute);
+                        EdtTimeExam.setText(time);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(this, "Lỗi xử lý ngày!", Toast.LENGTH_SHORT).show();
+                    }
+                },
+                hour,
+                minute,
+                true
+        );
+
+        timePickerDialog.show();
+    }
+    private void initializeValuesForPaymentMethod(){
+        String[] paymentMethods = {"Tiền mặt", "Chuyển khoản"};
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_dropdown_item_1line,
+                paymentMethods
+        );
+
+        ActvPaymentMethod.setAdapter(adapter);
+    }
     private void setupListeners() {
         BtnBackCreateSlip.setOnClickListener(v -> backToPreviousActivity());
         BtnCreateSlip.setOnClickListener(v->CreateSlip());
         BtnSearchPatient.setOnClickListener(v->sendPatientSearchRequest());
+
+        EdtDateExam.setOnClickListener(v -> showDatePicker());
+        EdtTimeExam.setOnClickListener(v-> showTimePicker());
+        ActvPaymentMethod.setOnClickListener(v->ActvPaymentMethod.showDropDown());
     }
     private void backToPreviousActivity() {
         finish();
@@ -132,7 +252,7 @@ public class CreateExaminationForm_staff extends AppCompatActivity {
     private void modifyCurrentPatientViewsValues() {
         if (foundPatient == null) return;
 
-        TvFullName.setText("Họ và tên: "+foundPatient.getHo_ten());
+        TvFullName.setText("Họ tên: "+foundPatient.getHo_ten());
         TvAddress.setText("Địa chỉ: "+foundPatient.getDia_chi());
 
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
