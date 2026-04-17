@@ -27,4 +27,13 @@ public class ExaminationFormRepository {
                 newForm
         );
     }
+    public Call<List<ExaminationForm>> getFormsByDate(String accessToken, String ngayKham) {
+        return createService.getFormsByDate(
+                apiKey,
+                "Bearer " + accessToken,
+                "eq." + ngayKham,
+                "so_tiep_nhan",
+                "so_tiep_nhan.desc"
+        );
+    }
 }

@@ -178,11 +178,11 @@
                     </LinearLayout>
 
                     <TextView
-                        android:id="@+id/tvCreateExaminationFormSTT"
+                        android:id="@+id/tvCreateExaminationFormSTN"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="Số thứ tự trong ngày: 01"
+                        android:text="Số tiếp nhận: 01"
                         android:textColor="#E91E63"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -275,7 +275,7 @@
                         android:layout_marginTop="16dp"
                         android:padding="10dp"
                         android:background="#F8F9FA"
-                        android:visibility="gone"> <TextView
+                        android:visibility="gone"><TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Quét mã để chuyển khoản"
@@ -290,6 +290,7 @@
                             android:scaleType="fitCenter"/>
 
                         <TextView
+                            android:id="@+id/tvTransferContent"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Nội dung: [MaBN] [HoTen]"

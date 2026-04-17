@@ -17,4 +17,11 @@ public interface ProfileApiService {
             @Query("id") String id,
             @Query("select") String select
     );
+    @GET("rest/v1/profiles")
+    Call<List<UserProfile>> getDoctors(
+            @Header("apikey") String apiKey,
+            @Header("Authorization") String authorization,
+            @Query("chuc_vu") String chucVu,
+            @Query("select") String select
+    );
 }

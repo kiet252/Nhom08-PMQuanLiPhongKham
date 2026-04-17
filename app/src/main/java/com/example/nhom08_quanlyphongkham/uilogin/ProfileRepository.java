@@ -26,4 +26,13 @@ public class ProfileRepository {
                 "*"
         );
     }
+    public Call<List<UserProfile>> getDoctors(String accessToken) {
+        return profileApiService.getDoctors(
+                apiKey,
+                "Bearer " + accessToken,
+                "eq.Bác sĩ",
+                "*"
+        );
+    }
+
 }
