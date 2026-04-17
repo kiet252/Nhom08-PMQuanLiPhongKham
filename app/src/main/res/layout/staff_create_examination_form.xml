@@ -4,7 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F8F9FA"
     android:id="@+id/main_examination">
 
     <RelativeLayout
@@ -15,10 +14,13 @@
 
         <ImageButton
             android:id="@+id/btnBackCreateSlip"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="4dp"
+            android:scaleType="centerInside"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_back_white"
+            android:contentDescription="Back"
             app:tint="@color/white" />
 
         <TextView
@@ -90,7 +92,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:layout_gravity="center_vertical"
-                            android:backgroundTint="#2196F3"
+                            android:backgroundTint="@color/app_primary_btn_color"
                             android:text="Tìm"
                             app:cornerRadius="8dp" />
                     </LinearLayout>
@@ -108,7 +110,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="Họ tên: --"
-                            android:textColor="@color/black"
+                            android:textColor="@color/app_primary_text_color"
                             android:textSize="16sp" />
 
                         <TextView
@@ -117,6 +119,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:text="Ngày sinh: --"
+                            android:textColor="@color/app_primary_text_color"
                             android:textSize="16sp" />
 
                         <TextView
@@ -125,6 +128,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:text="Địa chỉ: --"
+                            android:textColor="@color/app_primary_text_color"
                             android:textSize="16sp" />
                     </LinearLayout>
                 </LinearLayout>
@@ -310,7 +314,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp"
-        android:background="@color/white"
         android:elevation="8dp">
 
         <com.google.android.material.button.MaterialButton
@@ -319,7 +322,7 @@
             android:layout_height="55dp"
             android:layout_weight="1"
             android:layout_marginEnd="8dp"
-            android:backgroundTint="#2196F3"
+            android:backgroundTint="@color/app_primary_btn_color"
             android:text="TẠO PHIẾU"
             android:textColor="@color/white"
             app:cornerRadius="12dp" />
