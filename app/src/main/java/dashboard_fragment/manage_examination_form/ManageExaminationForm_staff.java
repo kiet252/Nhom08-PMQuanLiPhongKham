@@ -83,7 +83,7 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
 
     private void setupRecycler() {
         RvExaminationsList.setLayoutManager(new LinearLayoutManager(this));
-        groupAdapter = new ExaminationFormGroupAdapter(this);
+        groupAdapter = new ExaminationFormGroupAdapter(this, currentToken);
         RvExaminationsList.setAdapter(groupAdapter);
     }
 
