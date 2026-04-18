@@ -12,15 +12,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import dashboard_fragment.add_update_patient.PatientProfile;
@@ -33,6 +36,7 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
     Button BtnSearch, BtnFilter, BtnSort;
     EditText EdtSearch;
     RecyclerView RvExaminationsList;
+    ExaminationFormGroupAdapter groupAdapter;
     String currentToken;
     ExaminationFormRepository repository;
 
@@ -53,6 +57,7 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
         initializeViews();
         getIntentInfo();
         setupListeners();
+        setupRecycler();
 
         repository = new ExaminationFormRepository(getString(R.string.abAIkey));
     }
@@ -74,6 +79,12 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
     private void getIntentInfo() {
         Intent currentIntent = getIntent();
         currentToken = currentIntent.getStringExtra("accessToken");
+    }
+
+    private void setupRecycler() {
+        RvExaminationsList.setLayoutManager(new LinearLayoutManager(this));
+        groupAdapter = new ExaminationFormGroupAdapter(this);
+        RvExaminationsList.setAdapter(groupAdapter);
     }
 
     private void findExaminationFormsByPatientCCCDOrID() {
@@ -116,11 +127,16 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
     }
 
     private void refreshExaminationFormsList() {
-        formsByDate = new LinkedHashMap<>();
+        formsByDate.clear();
 
         listExaminationFormsByDates();
 
-        Toast.makeText(this, "Add multiple goup logic here!", Toast.LENGTH_SHORT).show();
+        List<ExaminationFormGroup> groups = new ArrayList<>();
+        for (Map.Entry<String, List<ExaminationForm>> entry : formsByDate.entrySet()) {
+            groups.add(new ExaminationFormGroup(entry.getKey(), entry.getValue()));
+        }
+
+        groupAdapter.submitList(groups);
     }
 
     private void listExaminationFormsByDates() {
