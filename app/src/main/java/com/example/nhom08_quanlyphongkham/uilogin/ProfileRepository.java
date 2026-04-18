@@ -1,5 +1,7 @@
 package com.example.nhom08_quanlyphongkham.uilogin;
 
+import android.content.Context;
+
 import com.example.nhom08_quanlyphongkham.UserProfile;
 
 import java.util.List;
@@ -11,25 +13,23 @@ public class ProfileRepository {
     private final ProfileApiService profileApiService;
     private final String apiKey;
 
-    public ProfileRepository(String apiKey) {
+    public ProfileRepository(Context context, String apiKey) {
         this.apiKey = apiKey;
-        profileApiService = SupabaseClientProvider
-                .getClient()
+        this.profileApiService = SupabaseClientProvider
+                .getClient(context)
                 .create(ProfileApiService.class);
     }
 
-    public Call<List<UserProfile>> getProfile(String accessToken, String userId) {
+    public Call<List<UserProfile>> getProfile(String userId) {
         return profileApiService.getProfile(
                 apiKey,
-                "Bearer " + accessToken,
                 "eq." + userId,
                 "*"
         );
     }
-    public Call<List<UserProfile>> getListProfile(String accessToken, String role) {
+    public Call<List<UserProfile>> getListProfile(String role) {
         return profileApiService.getListProfiles(
                 apiKey,
-                "Bearer " + accessToken,
                 role,
                 "id,ho_ten,chuc_vu"
         );

@@ -74,7 +74,7 @@ public class AccountFragment extends Fragment {
             currentToken = getArguments().getString(ARG_TOKEN);
         }
 
-        authRepository = new AuthRepository(getString(R.string.abAIkey));
+        authRepository = new AuthRepository(requireContext(), getString(R.string.abAIkey));
     }
 
     @Override
@@ -218,7 +218,7 @@ public class AccountFragment extends Fragment {
     }
 
     private void changePassword(String newPassword, AlertDialog dialog) {
-        authRepository.updatePassword(currentToken, newPassword).enqueue(new Callback<LoginResponse>() {
+        authRepository.updatePassword(newPassword).enqueue(new Callback<LoginResponse>() {
             @Override
             public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
                 if (!response.isSuccessful() || response.body() == null) {

@@ -61,8 +61,8 @@ public class login extends AppCompatActivity {
             return insets;
         });
 
-        authRepository = new AuthRepository(getString(R.string.abAIkey));
-        profileRepository = new ProfileRepository(getString(R.string.abAIkey));
+        authRepository = new AuthRepository(this, getString(R.string.abAIkey));
+        profileRepository = new ProfileRepository(this, getString(R.string.abAIkey));
 
         initializeViews();
         setupListeners();
@@ -133,7 +133,7 @@ public class login extends AppCompatActivity {
     }
 
     private void fetchUserProfile(String userId) {
-        profileRepository.getProfile(currentToken, userId).enqueue(new Callback<List<UserProfile>>() {
+        profileRepository.getProfile(userId).enqueue(new Callback<List<UserProfile>>() {
             @Override
             public void onResponse(@NonNull Call<List<UserProfile>> call, @NonNull Response<List<UserProfile>> response) {
                 if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {

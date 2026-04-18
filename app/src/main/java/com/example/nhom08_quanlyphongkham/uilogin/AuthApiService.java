@@ -19,7 +19,6 @@ public interface AuthApiService {
     @PUT("auth/v1/user")
     Call<LoginResponse> updatePassword(
             @Header("apikey") String apiKey,
-            @Header("Authorization") String authorization,
             @Body UpdatePasswordRequest request
     );
 

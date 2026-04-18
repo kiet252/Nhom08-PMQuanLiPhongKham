@@ -45,11 +45,11 @@ public class admin_manage_staff extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         // 3. Khởi tạo Repository và lấy Token
-        ProfileRepository profileRepository = new ProfileRepository(getString(R.string.abAIkey));
+        ProfileRepository profileRepository = new ProfileRepository(this, getString(R.string.abAIkey));
         String currentToken = SharedPrefManager.getInstance(this).getToken();
 
         // 4. Gọi API với xử lý UI mới
-        profileRepository.getListProfile(currentToken, "neq.Quản trị viên").enqueue(new Callback<List<UserProfile>>() {
+        profileRepository.getListProfile("neq.Quản trị viên").enqueue(new Callback<List<UserProfile>>() {
             @Override
             public void onResponse(Call<List<UserProfile>> call, Response<List<UserProfile>> response) {
                 if (response.isSuccessful() && response.body() != null) {
