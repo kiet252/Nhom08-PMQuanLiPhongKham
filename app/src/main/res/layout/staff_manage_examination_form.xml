@@ -45,13 +45,13 @@
                 android:hint="Nhập CCCD hoặc Mã BN"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/edtSearch"
+                    android:id="@+id/edtManageExFormSearch"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSearch"
+                android:id="@+id/btnManageExFormSearch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -68,7 +68,7 @@
             android:layout_marginTop="8dp">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSort"
+                android:id="@+id/btnManageExFormSort"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -80,7 +80,7 @@
                 app:iconTint="@color/app_primary_btn_color"/>
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnFilterDoctor"
+                android:id="@+id/btnManageExFormFilterDoctor"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -98,7 +98,7 @@
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvExaminationList"
+        android:id="@+id/rvManageExFormExaminationsList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"

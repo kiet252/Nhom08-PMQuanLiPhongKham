@@ -65,13 +65,16 @@ public class CreateExaminationForm_staff extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
         initializeViews();
         initializeValuesForPaymentMethod();
         setupListeners();
         getIntentInfo();
+
         ExFormRepository = new ExaminationFormRepository(getString(R.string.abAIkey));
         PaRepository = new PatientRepository(getString(R.string.abAIkey));
         profileRepository = new ProfileRepository(getString(R.string.abAIkey));
+
         loadDoctors();
         TvSTN.setText("Số tiếp nhận: --");
 
@@ -200,66 +203,59 @@ public class CreateExaminationForm_staff extends AppCompatActivity {
         int hour = now.get(Calendar.HOUR_OF_DAY);
         int minute = now.get(Calendar.MINUTE);
 
-        TimePickerDialog timePickerDialog = new TimePickerDialog(
-                this,
-                (view, selectedHour, selectedMinute) -> {
+        TimePickerDialog timePickerDialog = new TimePickerDialog(this, (view, selectedHour, selectedMinute) -> {
 
-                    String dateStr = EdtDateExam.getText().toString().trim();
+            String dateStr = EdtDateExam.getText().toString().trim();
 
-                    if (dateStr.isEmpty()) {
-                        Toast.makeText(this, "Vui lòng chọn ngày trước!", Toast.LENGTH_SHORT).show();
+            if (dateStr.isEmpty()) {
+                Toast.makeText(this, "Vui lòng chọn ngày trước!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                Date selectedDate = sdf.parse(dateStr);
+
+                Calendar selectedCal = Calendar.getInstance();
+                selectedCal.setTime(selectedDate);
+
+                Calendar today = Calendar.getInstance();
+
+                today.set(Calendar.HOUR_OF_DAY, 0);
+                today.set(Calendar.MINUTE, 0);
+                today.set(Calendar.SECOND, 0);
+
+                selectedCal.set(Calendar.HOUR_OF_DAY, 0);
+                selectedCal.set(Calendar.MINUTE, 0);
+                selectedCal.set(Calendar.SECOND, 0);
+
+                boolean isToday = selectedCal.get(Calendar.YEAR) == today.get(Calendar.YEAR)
+                        && selectedCal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR);
+
+                if (isToday) {
+                    Calendar currentTime = Calendar.getInstance();
+
+                    if (selectedHour < currentTime.get(Calendar.HOUR_OF_DAY) || (selectedHour == currentTime.get(Calendar.HOUR_OF_DAY)
+                            && selectedMinute <= currentTime.get(Calendar.MINUTE))) {
+
+                        Toast.makeText(this, "Giờ dự kiến phải lớn hơn thời gian hiện tại!", Toast.LENGTH_SHORT).show();
+
+
+                        EdtTimeExam.setText("");
+                        EdtTimeExam.setError("Giờ không hợp lệ");
+
                         return;
                     }
+                }
 
-                    try {
-                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-                        Date selectedDate = sdf.parse(dateStr);
+                EdtTimeExam.setError(null);
+                String time = String.format("%02d:%02d", selectedHour, selectedMinute);
+                EdtTimeExam.setText(time);
 
-                        Calendar selectedCal = Calendar.getInstance();
-                        selectedCal.setTime(selectedDate);
-
-                        Calendar today = Calendar.getInstance();
-
-                        today.set(Calendar.HOUR_OF_DAY, 0);
-                        today.set(Calendar.MINUTE, 0);
-                        today.set(Calendar.SECOND, 0);
-
-                        selectedCal.set(Calendar.HOUR_OF_DAY, 0);
-                        selectedCal.set(Calendar.MINUTE, 0);
-                        selectedCal.set(Calendar.SECOND, 0);
-
-                        boolean isToday = selectedCal.get(Calendar.YEAR) == today.get(Calendar.YEAR)
-                                && selectedCal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR);
-
-                        if (isToday) {
-                            Calendar currentTime = Calendar.getInstance();
-
-                            if (selectedHour < currentTime.get(Calendar.HOUR_OF_DAY) ||
-                                    (selectedHour == currentTime.get(Calendar.HOUR_OF_DAY)
-                                            && selectedMinute <= currentTime.get(Calendar.MINUTE))) {
-
-                                Toast.makeText(this, "Giờ dự kiến phải lớn hơn thời gian hiện tại!", Toast.LENGTH_SHORT).show();
-
-
-                                EdtTimeExam.setText("");
-                                EdtTimeExam.setError("Giờ không hợp lệ");
-
-                                return;
-                            }
-                        }
-
-                        EdtTimeExam.setError(null);
-                        String time = String.format("%02d:%02d", selectedHour, selectedMinute);
-                        EdtTimeExam.setText(time);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Toast.makeText(this, "Lỗi xử lý ngày!", Toast.LENGTH_SHORT).show();
-                    }
-                },
-                hour,
-                minute,
-                true
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(this, "Lỗi xử lý ngày!", Toast.LENGTH_SHORT).show();
+            }}, hour, minute, true
         );
 
         timePickerDialog.show();
