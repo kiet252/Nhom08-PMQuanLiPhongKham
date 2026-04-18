@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="20dp"
-    android:background="@drawable/bg_dialog_white_rounded">
+    android:background="@drawable/bg_dialog_examination_form_details">
 
     <TextView
         android:id="@+id/tvFilterDoctorTitle"

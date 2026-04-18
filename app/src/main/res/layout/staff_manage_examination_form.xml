@@ -73,9 +73,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Sắp xếp"
-                android:textColor="#2196F3"
+                android:textColor="@color/app_primary_btn_color"
                 android:textSize="14sp"
                 android:textStyle="bold"
+                android:backgroundTint="@color/manage_ex_form_patient_bg_color"
                 app:icon="@drawable/ic_sort"
                 app:iconTint="@color/app_primary_btn_color"/>
 
@@ -86,6 +87,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:text="Lọc"
+                android:backgroundTint="@color/manage_ex_form_patient_bg_color"
                 android:textColor="@color/app_primary_btn_color"
                 android:textSize="14sp"
                 android:textStyle="bold"
