@@ -22,4 +22,10 @@ public interface AuthApiService {
             @Header("Authorization") String authorization,
             @Body UpdatePasswordRequest request
     );
+
+    @POST("auth/v1/token?grant_type=refresh_token")
+    Call<LoginResponse> refreshToken(
+            @Header("apikey") String apiKey,
+            @Body RefreshTokenRequest request
+    );
 }

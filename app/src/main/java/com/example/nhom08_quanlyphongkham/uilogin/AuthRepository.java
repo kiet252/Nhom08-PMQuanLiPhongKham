@@ -17,7 +17,9 @@ public class AuthRepository {
     public Call<LoginResponse> login(String email, String password) {
         return authApiService.login(apiKey, new LoginRequest(email, password));
     }
-
+    public Call<LoginResponse> refreshToken(String refreshToken) {
+        return authApiService.refreshToken(apiKey, new RefreshTokenRequest(refreshToken));
+    }
     public Call<LoginResponse> updatePassword(String accessToken, String newPassword) {
         return authApiService.updatePassword(
                 apiKey,

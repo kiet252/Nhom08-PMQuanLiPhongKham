@@ -26,4 +26,12 @@ public class ProfileRepository {
                 "*"
         );
     }
+    public Call<List<UserProfile>> getListProfile(String accessToken, String role) {
+        return profileApiService.getListProfiles(
+                apiKey,
+                "Bearer " + accessToken,
+                role,
+                "id,ho_ten,chuc_vu"
+        );
+    }
 }

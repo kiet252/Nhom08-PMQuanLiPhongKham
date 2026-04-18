@@ -12,6 +12,7 @@ import com.google.gson.Gson;
 public class SharedPrefManager {
     private static final String PREF_NAME = "name";
     private static final String KEY_TOKEN = "key_token";
+    private static final String KEY_REFRESH_TOKEN = "key_refresh_token";
     private static SharedPrefManager instance;
     private SharedPreferences sharedPreferences;
 
@@ -44,15 +45,20 @@ public class SharedPrefManager {
     }
 
     // 1. Hàm lưu Token
-    public void saveToken(String token) {
+    public void saveTokens(String accessToken, String refreshToken) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(KEY_TOKEN, token);
-        editor.apply(); // Dùng apply() để chạy ngầm, không gây lag giao diện
+        editor.putString(KEY_TOKEN, accessToken);
+        editor.putString(KEY_REFRESH_TOKEN, refreshToken);
+        editor.apply();
     }
 
     // 2. Hàm lấy Token
     public String getToken() {
         return sharedPreferences.getString(KEY_TOKEN, null); // Trả về null nếu chưa có token
+    }
+
+    public String getRefreshToken() {
+        return sharedPreferences.getString(KEY_REFRESH_TOKEN, null); // Trả về null nếu chưa có token
     }
 
     // 3. Hàm xóa dữ liệu (Dùng khi Logout)

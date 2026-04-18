@@ -33,6 +33,7 @@ public class login extends AppCompatActivity {
     private AuthRepository authRepository;
     private ProfileRepository profileRepository;
     private String currentToken;
+    private String currentRefreshToken;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -119,6 +120,7 @@ public class login extends AppCompatActivity {
 
     private void handleLoginSuccess(LoginResponse loginResponse) {
         currentToken = loginResponse.getAccess_token();
+        currentRefreshToken = loginResponse.getRefresh_token();
         if (currentToken == null) {
             Toast.makeText(this, "Lỗi đăng nhập!", Toast.LENGTH_SHORT).show();
             return;
@@ -140,12 +142,13 @@ public class login extends AppCompatActivity {
                 }
 
                 UserProfile profile = response.body().get(0);
+                SharedPrefManager.getInstance(login.this).saveTokens(currentToken, currentRefreshToken);
+                SharedPrefManager.getInstance(login.this).saveProfile(profile);
                 Intent logined = new Intent(login.this, dashboard.class);
 
                 logined.putExtra("accessToken", currentToken);
+                logined.putExtra("refreshToken", currentRefreshToken);
                 logined.putExtra("Userprofile", profile);
-                SharedPrefManager.getInstance(login.this).saveToken(currentToken);
-                SharedPrefManager.getInstance(login.this).saveProfile(profile);
                 startActivity(logined);
                 finish();
             }
@@ -154,6 +157,7 @@ public class login extends AppCompatActivity {
             public void onFailure(@NonNull Call<List<UserProfile>> call, @NonNull Throwable t) {
                 Toast.makeText(login.this, "Lỗi tài khoản: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
+
 
         });
     }
