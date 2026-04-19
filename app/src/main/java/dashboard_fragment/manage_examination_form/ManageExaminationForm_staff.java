@@ -2,6 +2,7 @@ package dashboard_fragment.manage_examination_form;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -229,6 +230,29 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
         
         PopupMenu popup = new PopupMenu(this, BtnSort); // anchor under button
         popup.getMenuInflater().inflate(R.menu.sort_examination_date_menu, popup.getMenu());
+
+        MenuItem ascItem = popup.getMenu().findItem(R.id.action_sort_date_asc);
+        MenuItem descItem = popup.getMenu().findItem(R.id.action_sort_date_desc);
+
+        ascItem.setIcon(null);
+        descItem.setIcon(null);
+
+        if (Boolean.TRUE.equals(isAscending)) {
+            ascItem.setIcon(R.drawable.ic_check_blue);
+        } else {
+            descItem.setIcon(R.drawable.ic_check_blue);
+        }
+
+        try {
+            java.lang.reflect.Field field = popup.getClass().getDeclaredField("mPopup");
+            field.setAccessible(true);
+            Object menuPopupHelper = field.get(popup);
+            menuPopupHelper.getClass()
+                    .getDeclaredMethod("setForceShowIcon", boolean.class)
+                    .invoke(menuPopupHelper, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         popup.setOnMenuItemClickListener(item -> {
             int id = item.getItemId();
