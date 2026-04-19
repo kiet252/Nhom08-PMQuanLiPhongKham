@@ -21,36 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:orientation="vertical">
-
-        <RadioButton
-            android:id="@+id/rbAllDoctors"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:paddingVertical="8dp"
-            android:text="Tất cả"
-            android:textColor="#333333"
-            android:textSize="15sp" />
-
-        <RadioButton
-            android:id="@+id/rbDoctor1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingVertical="8dp"
-            android:text="BS Messi"
-            android:textColor="#333333"
-            android:textSize="15sp" />
-
-        <RadioButton
-            android:id="@+id/rbDoctor3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingVertical="8dp"
-            android:text="BS Trần Thị B"
-            android:textColor="#333333"
-            android:textSize="15sp" />
-    </RadioGroup>
+        android:orientation="vertical"/>
 
     <LinearLayout
         android:layout_width="match_parent"

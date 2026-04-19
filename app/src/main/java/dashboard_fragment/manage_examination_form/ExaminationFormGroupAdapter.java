@@ -57,7 +57,7 @@ public class ExaminationFormGroupAdapter extends RecyclerView.Adapter<Examinatio
             TextView tvSequence = row.findViewById(R.id.tvSequenceNumber);
             TextView tvName = row.findViewById(R.id.tvPatientName);
 
-            PatientBriefDto patient = form.patient;
+            PatientBriefDto patient = form.getPatient();
 
             tvTime.setText(form.getGio_du_kien());
             tvSequence.setText(String.valueOf(form.getSo_tiep_nhan()));
@@ -88,7 +88,7 @@ public class ExaminationFormGroupAdapter extends RecyclerView.Adapter<Examinatio
                 dialogView.findViewById(R.id.btnCloseDetail);
 
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
-        PatientBriefDto patient = form.patient;
+        PatientBriefDto patient = form.getPatient();
 
         tvPatientName.setText("Họ tên: " + (patient != null ? patient.getHo_ten() : "--"));
         tvBirthday.setText("Ngày sinh: " + (patient != null && patient.getNgay_sinh() != null ? sdf.format(patient.getNgay_sinh()) : "--"));

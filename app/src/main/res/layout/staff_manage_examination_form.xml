@@ -12,7 +12,7 @@
         android:padding="16dp"
         android:background="@drawable/gradient_blue_bg">
         <ImageButton
-            android:id="@+id/btnBack"
+            android:id="@+id/btnManageExFormBack"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
