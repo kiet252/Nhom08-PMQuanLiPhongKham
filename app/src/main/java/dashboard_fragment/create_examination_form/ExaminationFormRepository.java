@@ -3,6 +3,7 @@ package dashboard_fragment.create_examination_form;
 import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -11,6 +12,7 @@ import dashboard_fragment.create_examination_form.create_ex_form_logic.CreateExF
 import dashboard_fragment.create_examination_form.create_ex_form_logic.ExFormApiCreateService;
 import dashboard_fragment.create_examination_form.get_ex_form_logic.ExFormApiGetByDateService;
 import dashboard_fragment.manage_examination_form.get_all_ex_form_logic.ExFormApiGetFormsByPatientCCCDOrIDService;
+import dashboard_fragment.manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import retrofit2.Call;
 
 public class ExaminationFormRepository {
@@ -50,17 +52,22 @@ public class ExaminationFormRepository {
         );
     }
 
-    public Call<List<ExaminationForm>> getAllFormsByPatientCCCDOrID(String accessToken, String searchValue) {
+    public Call<List<ExaminationFormWithPatientDto>> getAllFormsByPatientCCCDOrID(String accessToken, String searchValue) {
         boolean isNumeric = searchValue != null && searchValue.matches("^\\d+$");
         boolean isCccd = PatientDatabaseConstraintsChecker.isValidCCCDInDB(searchValue);
         boolean isId = isNumeric && !isCccd;
 
-        return getFormByPatientCCCDOrIDService.getFormsByCCCDOrID(
+        List<String> predicates = new ArrayList<>();
+        if (isCccd) predicates.add("patient.cccd.eq." + searchValue);
+        if (isId)   predicates.add("patient_id.eq." + searchValue); // FK in examination_form
+
+        String orFilter = predicates.isEmpty() ? null : "(" + String.join(",", predicates) + ")";
+
+        return getFormByPatientCCCDOrIDService.searchFormsByCccdOrPatientId(
                 apiKey,
                 "Bearer " + accessToken,
-                "*,patient:patient_id!inner(id,cccd,ho_ten)", // change patient_id to your real FK column
-                isCccd ? "eq." + searchValue : null,
-                isId ? "eq." + searchValue : null,
+                "*,patient:patient_id!inner(id,cccd,ho_ten,ngay_sinh,dia_chi)",
+                orFilter,
                 "gio_du_kien.asc"
         );
     }

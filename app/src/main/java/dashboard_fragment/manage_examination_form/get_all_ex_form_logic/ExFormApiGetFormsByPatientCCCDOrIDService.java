@@ -10,12 +10,11 @@ import retrofit2.http.Query;
 
 public interface ExFormApiGetFormsByPatientCCCDOrIDService {
     @GET("rest/v1/examination_form")
-    Call<List<ExaminationForm>> getFormsByCCCDOrID(
+    Call<List<ExaminationFormWithPatientDto>> searchFormsByCccdOrPatientId(
             @Header("apikey") String apiKey,
             @Header("Authorization") String authorization,
             @Query(value = "select", encoded = true) String select,
-            @Query(value = "patient.cccd", encoded = true) String patientCccd,
-            @Query(value = "patient.id", encoded = true) String patientId,
+            @Query(value = "or", encoded = true) String orFilter,
             @Query("order") String order
     );
 }

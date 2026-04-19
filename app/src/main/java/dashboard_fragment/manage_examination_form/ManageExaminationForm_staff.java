@@ -16,20 +16,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.nhom08_quanlyphongkham.R;
-import com.example.nhom08_quanlyphongkham.UserProfile;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
-import dashboard_fragment.add_update_patient.PatientProfile;
-import dashboard_fragment.create_examination_form.CreateExaminationForm_staff;
-import dashboard_fragment.create_examination_form.ExaminationForm;
 import dashboard_fragment.create_examination_form.ExaminationFormRepository;
+import dashboard_fragment.manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import retrofit2.Call;
 
 public class ManageExaminationForm_staff extends AppCompatActivity {
@@ -40,8 +35,8 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
     String currentToken;
     ExaminationFormRepository repository;
 
-    List<ExaminationForm> ResultExaminationForms;
-    Map<String, List<ExaminationForm>> formsByDate = new LinkedHashMap<>();
+    List<ExaminationFormWithPatientDto> ResultExaminationFormsAndPatients;
+    Map<String, List<ExaminationFormWithPatientDto>> formsByDate = new LinkedHashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,14 +93,14 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
             return;
         }
 
-        repository.getAllFormsByPatientCCCDOrID(currentToken, searchValue).enqueue(new retrofit2.Callback<List<ExaminationForm>>() {
+        repository.getAllFormsByPatientCCCDOrID(currentToken, searchValue).enqueue(new retrofit2.Callback<List<ExaminationFormWithPatientDto>>() {
             @Override
-            public void onResponse(@NonNull Call<List<ExaminationForm>> call, @NonNull retrofit2.Response<List<ExaminationForm>> response) {
+            public void onResponse(@NonNull Call<List<ExaminationFormWithPatientDto>> call, @NonNull retrofit2.Response<List<ExaminationFormWithPatientDto>> response) {
                 if (response.isSuccessful()) {
                     if (response.body() != null && !response.body().isEmpty()) {
                         Toast.makeText(ManageExaminationForm_staff.this, "Tìm thành công!", Toast.LENGTH_SHORT).show();
 
-                        ResultExaminationForms = response.body();
+                        ResultExaminationFormsAndPatients = response.body();
                         refreshExaminationFormsList();
                     } else {
                         Toast.makeText(ManageExaminationForm_staff.this, "Không tìm thấy bệnh nhân!", Toast.LENGTH_SHORT).show();
@@ -120,7 +115,7 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(@NonNull Call<List<ExaminationForm>> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<List<ExaminationFormWithPatientDto>> call, @NonNull Throwable t) {
                 Toast.makeText(ManageExaminationForm_staff.this, "Lỗi kết nối khi tải bệnh nhân: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
@@ -128,21 +123,20 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
 
     private void refreshExaminationFormsList() {
         formsByDate.clear();
-
         listExaminationFormsByDates();
 
-        List<ExaminationFormGroup> groups = new ArrayList<>();
-        for (Map.Entry<String, List<ExaminationForm>> entry : formsByDate.entrySet()) {
-            groups.add(new ExaminationFormGroup(entry.getKey(), entry.getValue()));
+        List<ExaminationFormDateGroup> groups = new ArrayList<>();
+        for (Map.Entry<String, List<ExaminationFormWithPatientDto>> entry : formsByDate.entrySet()) {
+            groups.add(new ExaminationFormDateGroup(entry.getKey(), entry.getValue()));
         }
 
         groupAdapter.submitList(groups);
     }
 
     private void listExaminationFormsByDates() {
-        for (ExaminationForm form : ResultExaminationForms) {
-            String key = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(form.getNgay_kham());
-            formsByDate.computeIfAbsent(key, k -> new ArrayList<>()).add(form);
+        for (ExaminationFormWithPatientDto formPatientDto : ResultExaminationFormsAndPatients) {
+            String key = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(formPatientDto.getNgay_kham());
+            formsByDate.computeIfAbsent(key, k -> new ArrayList<>()).add(formPatientDto);
         }
     }
 }

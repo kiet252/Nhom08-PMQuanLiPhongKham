@@ -15,24 +15,18 @@ import com.example.nhom08_quanlyphongkham.R;
 import java.util.ArrayList;
 import java.util.List;
 
-import dashboard_fragment.add_update_patient.PatientProfile;
-import dashboard_fragment.create_examination_form.ExaminationForm;
+import dashboard_fragment.manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
+import dashboard_fragment.manage_examination_form.get_all_ex_form_logic.PatientBriefDto;
 
 public class ExaminationFormGroupAdapter extends RecyclerView.Adapter<ExaminationFormGroupAdapter.GroupVH> {
     private final Context context;
-    private final String accessToken;
-    private final dashboard_fragment.add_update_patient.PatientRepository patientRepository;
-    private List<ExaminationFormGroup> groups = new ArrayList<>();
+    private List<ExaminationFormDateGroup> groups = new ArrayList<>();
 
     public ExaminationFormGroupAdapter(Context context, String accessToken) {
         this.context = context;
-        this.accessToken = accessToken;
-        this.patientRepository = new dashboard_fragment.add_update_patient.PatientRepository(
-                context.getString(com.example.nhom08_quanlyphongkham.R.string.abAIkey)
-        );
     }
 
-    public void submitList(List<ExaminationFormGroup> newGroups) {
+    public void submitList(List<ExaminationFormDateGroup> newGroups) {
         groups = newGroups;
         notifyDataSetChanged();
     }
@@ -47,73 +41,54 @@ public class ExaminationFormGroupAdapter extends RecyclerView.Adapter<Examinatio
 
     @Override
     public void onBindViewHolder(@NonNull GroupVH holder, int position) {
-        ExaminationFormGroup group = groups.get(position);
+        ExaminationFormDateGroup group = groups.get(position);
         holder.tvDateGroup.setText(group.getDate());
 
         holder.layoutPatientsContainer.removeAllViews();
 
-        for (ExaminationForm form : group.getForms()) {
-            View row = LayoutInflater.from(context).inflate(R.layout.item_examination_patient_row, holder.layoutPatientsContainer, false);
+        for (ExaminationFormWithPatientDto form : group.getForms()) {
+            View row = LayoutInflater.from(context).inflate(
+                    R.layout.item_examination_patient_row,
+                    holder.layoutPatientsContainer,
+                    false
+            );
 
             TextView tvTime = row.findViewById(R.id.tvTime);
             TextView tvSequence = row.findViewById(R.id.tvSequenceNumber);
             TextView tvName = row.findViewById(R.id.tvPatientName);
 
+            PatientBriefDto patient = form.patient;
+
             tvTime.setText(form.getGio_du_kien());
             tvSequence.setText(String.valueOf(form.getSo_tiep_nhan()));
-            tvName.setText(form.getPatient_id());
+            tvName.setText(patient != null ? patient.getHo_ten() : "--");
 
-            row.setOnClickListener(v -> loadPatientAndShowDialog(form));
+            row.setOnClickListener(v -> showExaminationFormDetails(form));
 
             holder.layoutPatientsContainer.addView(row);
         }
     }
 
-    private void loadPatientAndShowDialog(ExaminationForm form) {
-        patientRepository.getProfileByIdOrCccd(accessToken, form.getPatient_id())
-                .enqueue(new retrofit2.Callback<java.util.List<dashboard_fragment.add_update_patient.PatientProfile>>() {
-                    @Override
-                    public void onResponse(
-                            @androidx.annotation.NonNull retrofit2.Call<java.util.List<dashboard_fragment.add_update_patient.PatientProfile>> call,
-                            @androidx.annotation.NonNull retrofit2.Response<java.util.List<dashboard_fragment.add_update_patient.PatientProfile>> response
-                    ) {
-                        dashboard_fragment.add_update_patient.PatientProfile patient = null;
-                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
-                            patient = response.body().get(0);
-                        }
-                        showExaminationFormDetails(form, patient);
-                    }
+    private void showExaminationFormDetails(ExaminationFormWithPatientDto form) {
+        View dialogView = LayoutInflater.from(context).inflate(
+                R.layout.examination_detail_dialog,
+                null,
+                false
+        );
 
-                    @Override
-                    public void onFailure(
-                            @androidx.annotation.NonNull retrofit2.Call<java.util.List<dashboard_fragment.add_update_patient.PatientProfile>> call,
-                            @androidx.annotation.NonNull Throwable t
-                    ) {
-                        showExaminationFormDetails(form, null);
-                        android.widget.Toast.makeText(context, "Lỗi tải thông tin bệnh nhân: " + t.getMessage(), android.widget.Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-    private void showExaminationFormDetails(
-            ExaminationForm form,
-            @androidx.annotation.Nullable dashboard_fragment.add_update_patient.PatientProfile patient
-    ) {
-        View dialogView = LayoutInflater.from(context)
-                .inflate(com.example.nhom08_quanlyphongkham.R.layout.examination_detail_dialog, null, false);
-
-        TextView tvPatientName = dialogView.findViewById(com.example.nhom08_quanlyphongkham.R.id.tvDetailPatientName);
-        TextView tvBirthday = dialogView.findViewById(com.example.nhom08_quanlyphongkham.R.id.tvDetailBirthday);
-        TextView tvAddress = dialogView.findViewById(com.example.nhom08_quanlyphongkham.R.id.tvDetailAddress);
-        TextView tvExamDate = dialogView.findViewById(com.example.nhom08_quanlyphongkham.R.id.tvDetailExamDate);
-        TextView tvExamTime = dialogView.findViewById(com.example.nhom08_quanlyphongkham.R.id.tvDetailExamTime);
-        TextView tvSequence = dialogView.findViewById(com.example.nhom08_quanlyphongkham.R.id.tvDetailSequence);
-        TextView tvStatus = dialogView.findViewById(com.example.nhom08_quanlyphongkham.R.id.tvDetailStatus);
-        TextView tvSymptoms = dialogView.findViewById(com.example.nhom08_quanlyphongkham.R.id.tvDetailSymptoms);
+        TextView tvPatientName = dialogView.findViewById(R.id.tvDetailPatientName);
+        TextView tvBirthday = dialogView.findViewById(R.id.tvDetailBirthday);
+        TextView tvAddress = dialogView.findViewById(R.id.tvDetailAddress);
+        TextView tvExamDate = dialogView.findViewById(R.id.tvDetailExamDate);
+        TextView tvExamTime = dialogView.findViewById(R.id.tvDetailExamTime);
+        TextView tvSequence = dialogView.findViewById(R.id.tvDetailSequence);
+        TextView tvStatus = dialogView.findViewById(R.id.tvDetailStatus);
+        TextView tvSymptoms = dialogView.findViewById(R.id.tvDetailSymptoms);
         com.google.android.material.button.MaterialButton btnClose =
-                dialogView.findViewById(com.example.nhom08_quanlyphongkham.R.id.btnCloseDetail);
+                dialogView.findViewById(R.id.btnCloseDetail);
 
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
+        PatientBriefDto patient = form.patient;
 
         tvPatientName.setText("Họ tên: " + (patient != null ? patient.getHo_ten() : "--"));
         tvBirthday.setText("Ngày sinh: " + (patient != null && patient.getNgay_sinh() != null ? sdf.format(patient.getNgay_sinh()) : "--"));
@@ -138,7 +113,6 @@ public class ExaminationFormGroupAdapter extends RecyclerView.Adapter<Examinatio
     public int getItemCount() {
         return groups.size();
     }
-
     static class GroupVH extends RecyclerView.ViewHolder {
         TextView tvDateGroup;
         LinearLayout layoutPatientsContainer;
