@@ -69,6 +69,7 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
         isAscending = true;
         repository = new ExaminationFormRepository(getString(R.string.abAIkey));
 
+        loadAllFormsAndPatiendDTO();
     }
 
     private void initializeViews() {
@@ -103,28 +104,61 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
     private void findExaminationFormsByPatientCCCDOrID() {
         if (EdtSearch == null) return;
 
-        String searchValue = EdtSearch.getText().toString().trim();
+        String keyword = EdtSearch.getText().toString().trim();
 
-        if (searchValue.isEmpty()) {
-            EdtSearch.setError("Vui lòng nhập CCCD hoặc mã BN cần tìm!");
-            EdtSearch.requestFocus();
+        if (keyword.isEmpty()) {
+            // Empty => show all current forms again
+            selectedDoctorId = null;
+            ResultExaminationFormsAndPatients = new ArrayList<>(AllForms);
+            applySort();
+            refreshExaminationFormsList();
             return;
         }
 
-        repository.getAllFormsByPatientCCCDOrID(currentToken, searchValue).enqueue(new retrofit2.Callback<List<ExaminationFormWithPatientDto>>() {
+        //filter the patient with the searched patient_id or cccd
+        boolean isNumeric = keyword.matches("^\\d+$");
+        List<ExaminationFormWithPatientDto> filtered = new ArrayList<>();
+
+        for (ExaminationFormWithPatientDto form : AllForms) {
+            if (form == null || form.getPatient() == null) continue;
+
+            String patientId = form.getPatient_id();
+            String patientCccd = form.getPatient().getCccd();
+
+            boolean matchId = isNumeric && patientId != null && patientId.equals(keyword);
+            boolean matchCccd = patientCccd != null && patientCccd.equals(keyword);
+
+            if (matchId || matchCccd) {
+                filtered.add(form);
+            }
+        }
+
+        if (filtered.isEmpty()) {
+            Toast.makeText(this, "Không tìm thấy bệnh nhân!", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Tìm thành công!", Toast.LENGTH_SHORT).show();
+        }
+
+        selectedDoctorId = null; // reset doctor filter when new search is applied
+        ResultExaminationFormsAndPatients = filtered;
+        applySort();
+        refreshExaminationFormsList();
+    }
+
+    private void loadAllFormsAndPatiendDTO() {
+        repository.getAllFormsWithPatient(currentToken).enqueue(new retrofit2.Callback<List<ExaminationFormWithPatientDto>>() {
             @Override
             public void onResponse(@NonNull Call<List<ExaminationFormWithPatientDto>> call, @NonNull retrofit2.Response<List<ExaminationFormWithPatientDto>> response) {
                 if (response.isSuccessful()) {
                     if (response.body() != null && !response.body().isEmpty()) {
-                        Toast.makeText(ManageExaminationForm_staff.this, "Tìm thành công!", Toast.LENGTH_SHORT).show();
-
                         AllForms = new ArrayList<>(response.body());
                         selectedDoctorId = null;
                         ResultExaminationFormsAndPatients = new ArrayList<>(AllForms);
+
                         applySort();
                         refreshExaminationFormsList();
                     } else {
-                        Toast.makeText(ManageExaminationForm_staff.this, "Không tìm thấy bệnh nhân!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ManageExaminationForm_staff.this, "Không tìm thấy phiếu khám!", Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     try {
@@ -137,7 +171,7 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
 
             @Override
             public void onFailure(@NonNull Call<List<ExaminationFormWithPatientDto>> call, @NonNull Throwable t) {
-                Toast.makeText(ManageExaminationForm_staff.this, "Lỗi kết nối khi tải bệnh nhân: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ManageExaminationForm_staff.this, "Lỗi kết nối khi tải phiếu khám: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

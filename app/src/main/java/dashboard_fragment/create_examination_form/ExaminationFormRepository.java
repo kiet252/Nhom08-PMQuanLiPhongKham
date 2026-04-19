@@ -3,22 +3,20 @@ package dashboard_fragment.create_examination_form;
 import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 
 
-import java.util.ArrayList;
 import java.util.List;
 
 
-import dashboard_fragment.add_update_patient.PatientDatabaseConstraintsChecker;
 import dashboard_fragment.create_examination_form.create_ex_form_logic.CreateExFormRequest;
 import dashboard_fragment.create_examination_form.create_ex_form_logic.ExFormApiCreateService;
 import dashboard_fragment.create_examination_form.get_ex_form_logic.ExFormApiGetByDateService;
-import dashboard_fragment.manage_examination_form.get_all_ex_form_logic.ExFormApiGetFormsByPatientCCCDOrIDService;
+import dashboard_fragment.manage_examination_form.get_all_ex_form_logic.ExFormApiGetFormsWithPatient;
 import dashboard_fragment.manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import retrofit2.Call;
 
 public class ExaminationFormRepository {
     private static ExFormApiCreateService createService;
     private static ExFormApiGetByDateService getByDateService;
-    private static ExFormApiGetFormsByPatientCCCDOrIDService getFormByPatientCCCDOrIDService;
+    private static ExFormApiGetFormsWithPatient getFormByPatientCCCDOrIDService;
     private final String apiKey;
     public ExaminationFormRepository(String apiKey){
         this.apiKey = apiKey;
@@ -31,7 +29,7 @@ public class ExaminationFormRepository {
         }
 
         if (getFormByPatientCCCDOrIDService == null) {
-            getFormByPatientCCCDOrIDService = SupabaseClientProvider.getClient().create(ExFormApiGetFormsByPatientCCCDOrIDService.class);
+            getFormByPatientCCCDOrIDService = SupabaseClientProvider.getClient().create(ExFormApiGetFormsWithPatient.class);
         }
     }
     public Call<List<ExaminationForm>> createForm(String accessToken, CreateExFormRequest newForm) {
@@ -52,24 +50,12 @@ public class ExaminationFormRepository {
         );
     }
 
-    public Call<List<ExaminationFormWithPatientDto>> getAllFormsByPatientCCCDOrID(String accessToken, String searchValue) {
-        boolean isNumeric = searchValue != null && searchValue.matches("^\\d+$");
-        boolean isCccd = PatientDatabaseConstraintsChecker.isValidCCCDInDB(searchValue);
-        boolean isId = isNumeric && !isCccd;
-
-        List<String> predicates = new ArrayList<>();
-        if (isCccd) predicates.add("patient.cccd.eq." + searchValue);
-        if (isId)   predicates.add("patient_id.eq." + searchValue); // FK in examination_form
-
-        String orFilter = predicates.isEmpty() ? null : "(" + String.join(",", predicates) + ")";
-
-        return getFormByPatientCCCDOrIDService.searchFormsByCccdOrPatientId(
+    public Call<List<ExaminationFormWithPatientDto>> getAllFormsWithPatient(String accessToken) {
+        return getFormByPatientCCCDOrIDService.getAllFormsWithPatientAndDoctor(
                 apiKey,
                 "Bearer " + accessToken,
                 "*,patient:patient!examination_form_patient_id_fkey(id,cccd,ho_ten,ngay_sinh,dia_chi),doctor:profiles!examination_form_doctor_id_fkey(id,ho_ten,chuc_vu)",
-                orFilter,
                 "gio_du_kien.asc"
         );
-
     }
 }
