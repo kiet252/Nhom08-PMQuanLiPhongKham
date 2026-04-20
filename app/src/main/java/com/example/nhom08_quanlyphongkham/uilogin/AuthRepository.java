@@ -23,7 +23,6 @@ public class AuthRepository {
     }
 
     public Call<LoginResponse> refreshToken(String refreshToken) {
-        // Pass the key from strings.xml here
         return authApiService.refreshToken(
                 context.getString(R.string.abAIkey),
                 new RefreshTokenRequest(refreshToken)

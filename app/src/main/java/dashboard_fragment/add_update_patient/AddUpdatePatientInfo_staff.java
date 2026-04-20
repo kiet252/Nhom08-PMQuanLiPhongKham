@@ -25,7 +25,6 @@ public class AddUpdatePatientInfo_staff extends AppCompatActivity {
 
     private MaterialButton BtnCreatePatient, BtnUpdatePatient, BtnSavePatientInfo, BtnExitAddCreatePatient;
     private ImageButton BtnBackAddUpdatePatient;
-    private String currentToken;
     private CreatePatientFragment CurrentCreatePatientFragment;
     private UpdatePatientFragment CurrentUpdatePatientFragment;
 
@@ -41,15 +40,10 @@ public class AddUpdatePatientInfo_staff extends AppCompatActivity {
         });
 
         initializeViews();
-        getIntentInfo();
         setupListeners();
         CreateNewPatientReplaceFragment();
     }
 
-    private void getIntentInfo() {
-        Intent currentIntent = getIntent();
-        currentToken = currentIntent.getStringExtra("accessToken");
-    }
     private void initializeViews() {
         BtnCreatePatient = findViewById(R.id.btnCreatePatient);
         BtnUpdatePatient = findViewById(R.id.btnUpdatePatient);
@@ -68,7 +62,7 @@ public class AddUpdatePatientInfo_staff extends AppCompatActivity {
 
     private void CreateNewPatientReplaceFragment() {
         updateTabUI(true);
-        CurrentCreatePatientFragment = new CreatePatientFragment(currentToken);
+        CurrentCreatePatientFragment = new CreatePatientFragment();
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.patientFragmentContainer, CurrentCreatePatientFragment)
                 .commit();
@@ -76,7 +70,7 @@ public class AddUpdatePatientInfo_staff extends AppCompatActivity {
 
     private void UpdatePatientReplaceFragment() {
         updateTabUI(false);
-        CurrentUpdatePatientFragment = new UpdatePatientFragment(currentToken);
+        CurrentUpdatePatientFragment = new UpdatePatientFragment();
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.patientFragmentContainer, CurrentUpdatePatientFragment)
                 .commit();

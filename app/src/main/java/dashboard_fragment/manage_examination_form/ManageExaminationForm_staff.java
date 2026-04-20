@@ -43,7 +43,6 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
     EditText EdtSearch;
     RecyclerView RvExaminationsList;
     ExaminationFormGroupAdapter groupAdapter;
-    String currentToken;
     ExaminationFormRepository repository;
     Boolean isAscending;
     private List<ExaminationFormWithPatientDto> AllForms = new ArrayList<>();
@@ -63,7 +62,6 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
         });
 
         initializeViews();
-        getIntentInfo();
         setupListeners();
         setupRecycler();
 
@@ -91,14 +89,9 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
         BtnBack.setOnClickListener(v -> backToPreviousActivity());
     }
 
-    private void getIntentInfo() {
-        Intent currentIntent = getIntent();
-        currentToken = currentIntent.getStringExtra("accessToken");
-    }
-
     private void setupRecycler() {
         RvExaminationsList.setLayoutManager(new LinearLayoutManager(this));
-        groupAdapter = new ExaminationFormGroupAdapter(this, currentToken);
+        groupAdapter = new ExaminationFormGroupAdapter(this);
         RvExaminationsList.setAdapter(groupAdapter);
     }
 

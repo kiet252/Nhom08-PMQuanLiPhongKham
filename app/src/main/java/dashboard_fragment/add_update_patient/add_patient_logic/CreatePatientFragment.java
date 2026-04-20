@@ -37,10 +37,8 @@ public class CreatePatientFragment extends Fragment {
     private RadioGroup RgGender;
     private RadioButton selectedRadioButton;
     private Spinner SpnBirthDay, SpnBirthMonth, SpnBirthYear;
-    private String currentToken;
     private PatientRepository repository;
-    public CreatePatientFragment(String token) {
-        currentToken = token;
+    public CreatePatientFragment() {
     }
 
     @Override

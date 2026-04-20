@@ -34,11 +34,9 @@ public class UpdatePatientFragment extends Fragment {
     private TextInputLayout TilSearchPatientLayout;
     private RadioGroup RgGender;
     private RadioButton selectedRadioButton;
-    private String currentToken;
     private PatientRepository repository;
     private PatientProfile foundPatient;
-    public UpdatePatientFragment(String token) {
-        currentToken = token;
+    public UpdatePatientFragment() {
     }
 
     @Override

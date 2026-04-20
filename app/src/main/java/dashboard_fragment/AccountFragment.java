@@ -45,9 +45,8 @@ import retrofit2.Response;
 public class AccountFragment extends Fragment {
 
     private static final String ARG_PROFILE = "arg_profile";
-    private static final String ARG_TOKEN = "token";
     private UserProfile userprofile;
-    private String currentToken;
+
     TextView textviewProfile, textviewEmail, textviewPhone, textviewBirthday, textviewGender, textviewAddress, textviewJobTitle;
     Button btnEditPass;
     Button btnLogout;
@@ -56,11 +55,10 @@ public class AccountFragment extends Fragment {
     public AccountFragment() {
     }
 
-    public static AccountFragment newInstance(UserProfile profile, String token) {
+    public static AccountFragment newInstance(UserProfile profile) {
         AccountFragment fragment = new AccountFragment();
         Bundle args = new Bundle();
         args.putSerializable(ARG_PROFILE, profile);
-        args.putString(ARG_TOKEN, token);
         fragment.setArguments(args);
         return fragment;
     }
@@ -71,7 +69,6 @@ public class AccountFragment extends Fragment {
 
         if (getArguments() != null) {
             userprofile = (UserProfile) getArguments().getSerializable(ARG_PROFILE);
-            currentToken = getArguments().getString(ARG_TOKEN);
         }
 
         authRepository = new AuthRepository(requireContext());
@@ -254,24 +251,20 @@ public class AccountFragment extends Fragment {
         dialog.show();
     }
     private void Logout_Dialog_Show_UI(AlertDialog dialog, View dialogView) {
-        Button btnLogoutConfirm = dialog.findViewById(R.id.btnLogoutConfirm);
-        Button btnLogoutCancel = dialog.findViewById(R.id.btnLogoutCancel);
+        Button btnLogoutConfirm = dialogView.findViewById(R.id.btnLogoutConfirm);
+        Button btnLogoutCancel = dialogView.findViewById(R.id.btnLogoutCancel);
 
-        btnLogoutConfirm.setOnClickListener(v->{
-            SharedPreferences sharedPreferences = dialog.getContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-            SharedPrefManager.getInstance(dialog.getContext()).clear();//xoa
+        btnLogoutConfirm.setOnClickListener(v -> {
+            // Clean up using your manager
+            SharedPrefManager.getInstance(requireContext()).clear();
             dialog.dismiss();
 
-            Intent intent = new Intent(dialog.getContext(), login.class);
+            Intent intent = new Intent(requireContext(), login.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            dialog.getContext().startActivity(intent);
+            startActivity(intent);
+            requireActivity().finish();
+        });
 
-            if (dialog.getContext() instanceof Activity) {
-                ((Activity) dialog.getContext()).finish();
-            }
-        });
-        btnLogoutCancel.setOnClickListener(v ->{
-            dialog.dismiss();
-        });
+        btnLogoutCancel.setOnClickListener(v -> dialog.dismiss());
     }
 }

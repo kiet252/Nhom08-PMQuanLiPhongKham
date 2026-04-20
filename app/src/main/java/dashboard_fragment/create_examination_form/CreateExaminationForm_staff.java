@@ -47,7 +47,6 @@ public class CreateExaminationForm_staff extends AppCompatActivity {
     private TextInputEditText EdtSearchPatient, EdtDateExam, EdtTimeExam, EdtSymptoms, EdtFee, EdtStatus;
     private AutoCompleteTextView ActvDoctor, ActvPaymentMethod;
     private LinearLayout LayoutQRCode;
-    private String currentToken;
     private ExaminationFormRepository ExFormRepository;
     private PatientRepository PaRepository;
     private PatientProfile foundPatient;
@@ -69,7 +68,6 @@ public class CreateExaminationForm_staff extends AppCompatActivity {
         initializeViews();
         initializeValuesForPaymentMethod();
         setupListeners();
-        getIntentInfo();
 
         ExFormRepository = new ExaminationFormRepository(this);
         PaRepository = new PatientRepository(this);
@@ -78,10 +76,6 @@ public class CreateExaminationForm_staff extends AppCompatActivity {
         loadDoctors();
         TvSTN.setText("Số tiếp nhận: --");
 
-    }
-    private void getIntentInfo() {
-        Intent currentIntent = getIntent();
-        currentToken = currentIntent.getStringExtra("accessToken");
     }
     private void initializeViews() {
         BtnBackCreateSlip = findViewById(R.id.btnBackCreateSlip);
@@ -109,7 +103,7 @@ public class CreateExaminationForm_staff extends AppCompatActivity {
     }
 
     private void loadDoctors(){
-        profileRepository.getDoctors(currentToken).enqueue(new Callback<List<UserProfile>>() {
+        profileRepository.getDoctors().enqueue(new Callback<List<UserProfile>>() {
             @Override
             public void onResponse(@NonNull Call<List<UserProfile>> call, @NonNull Response<List<UserProfile>> response) {
 

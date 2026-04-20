@@ -20,7 +20,6 @@ public class ExaminationFormRepository {
     public ExaminationFormRepository(Context context){
         this.context = context;
 
-        // Pass context to the client provider
         Retrofit client = SupabaseClientProvider.getClient(context);
 
         this.createService = client.create(ExFormApiCreateService.class);
@@ -29,7 +28,6 @@ public class ExaminationFormRepository {
     }
 
     public Call<List<ExaminationForm>> createForm(CreateExFormRequest newForm) {
-        // No more accessToken or apiKey strings passed here!
         return createService.createForm("return=representation", newForm);
     }
 

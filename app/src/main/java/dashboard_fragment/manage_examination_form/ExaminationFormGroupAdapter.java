@@ -22,7 +22,7 @@ public class ExaminationFormGroupAdapter extends RecyclerView.Adapter<Examinatio
     private final Context context;
     private List<ExaminationFormDateGroup> groups = new ArrayList<>();
 
-    public ExaminationFormGroupAdapter(Context context, String accessToken) {
+    public ExaminationFormGroupAdapter(Context context) {
         this.context = context;
     }
 
