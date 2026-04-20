@@ -60,7 +60,40 @@ public class HomeFragment_admin extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home_admin, container, false);
+        // Nạp đúng giao diện của màn hình Home
+        View view = inflater.inflate(R.layout.fragment_home_admin, container, false);
+        // I. Nút XEM BÁO CÁO VÀ THỐNG KÊ
+        // 1. Tìm nút bấm XEM BÁO CÁO trên màn hình Home
+        View btnXemBaoCao = view.findViewById(R.id.btn_xem_bao_cao);
+        // 2. Xử lý khi nhấn nút
+        btnXemBaoCao.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Đang ở Home -> Tạo màn hình Báo Cáo mới để chuyển sang
+                ReportsFragment_Admin reportsFragment = new ReportsFragment_Admin();
+
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, reportsFragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
+        });
+        // II. Nút CÀI ĐẶT THÔNG BÁO CHUNG
+        // 1. Tìm nút bấm CÀI ĐẶT THÔNG BÁO CHUNG trên màn hình Home
+        View btnCaiDatThongBao = view.findViewById(R.id.btn_cai_dat_thong_bao);
+        // 2. Xử lí khi nhấn nút
+        btnCaiDatThongBao.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                NotificationSettingsFragment_Admin notificationsettingsFragment = new NotificationSettingsFragment_Admin();
+
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, notificationsettingsFragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
+        });
+        return view;
     }
+
 }

@@ -14,6 +14,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Nhom08QuanLyPhongKham">
         <activity
+            android:name=".NotificationSettingsFragment_Admin"
+            android:exported="false" />
+        <activity
+            android:name=".ReportsFragment_Admin"
+            android:exported="false" />
+        <activity
             android:name=".UserProfileActivity"
             android:exported="true" />
         <activity
@@ -27,8 +33,7 @@
         </activity>
         <activity
             android:name=".dashboard"
-            android:exported="true">
-        </activity>
+            android:exported="true" />
     </application>
 
 </manifest>
