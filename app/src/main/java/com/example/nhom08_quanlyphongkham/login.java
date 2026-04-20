@@ -125,7 +125,7 @@ public class login extends AppCompatActivity {
             Toast.makeText(this, "Lỗi đăng nhập!", Toast.LENGTH_SHORT).show();
             return;
         }
-
+        SharedPrefManager.getInstance(login.this).saveTokens(currentToken, currentRefreshToken);
         String userId = loginResponse.getUser().getId();
         fetchUserProfile(userId);
         Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
@@ -136,13 +136,13 @@ public class login extends AppCompatActivity {
         profileRepository.getProfile(userId).enqueue(new Callback<List<UserProfile>>() {
             @Override
             public void onResponse(@NonNull Call<List<UserProfile>> call, @NonNull Response<List<UserProfile>> response) {
+
                 if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {
                     Toast.makeText(login.this, "Không tìm được người dùng!", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 UserProfile profile = response.body().get(0);
-                SharedPrefManager.getInstance(login.this).saveTokens(currentToken, currentRefreshToken);
                 SharedPrefManager.getInstance(login.this).saveProfile(profile);
                 Intent logined = new Intent(login.this, dashboard.class);
 

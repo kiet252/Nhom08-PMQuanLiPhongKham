@@ -23,6 +23,7 @@ public class ProfileRepository {
     public Call<List<UserProfile>> getProfile(String userId) {
         return profileApiService.getProfile(
                 apiKey,
+
                 "eq." + userId,
                 "*"
         );
