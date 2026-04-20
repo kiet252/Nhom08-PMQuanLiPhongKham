@@ -9,17 +9,15 @@ import retrofit2.http.POST;
 import retrofit2.http.PUT;
 
 public interface AuthApiService {
-    @Headers("Content-Type: application/json")
     @POST("auth/v1/token?grant_type=password")
-    Call<LoginResponse> login(
-            @Header("apikey") String apiKey,
-            @Body LoginRequest request
-    );
+    Call<LoginResponse> login(@Body LoginRequest request);
 
     @PUT("auth/v1/user")
-    Call<LoginResponse> updatePassword(
+    Call<LoginResponse> updatePassword(@Body UpdatePasswordRequest request);
+    
+    @POST("auth/v1/token?grant_type=refresh_token")
+    Call<LoginResponse> refreshToken(
             @Header("apikey") String apiKey,
-            @Header("Authorization") String authorization,
-            @Body UpdatePasswordRequest request
+            @Body RefreshTokenRequest request
     );
 }

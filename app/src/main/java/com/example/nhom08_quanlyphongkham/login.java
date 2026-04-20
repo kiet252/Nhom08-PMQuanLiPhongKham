@@ -14,6 +14,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.nhom08_quanlyphongkham.uilogin.AuthRepository;
 import com.example.nhom08_quanlyphongkham.uilogin.LoginResponse;
 import com.example.nhom08_quanlyphongkham.uilogin.ProfileRepository;
+import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -32,10 +33,26 @@ public class login extends AppCompatActivity {
     private AuthRepository authRepository;
     private ProfileRepository profileRepository;
     private String currentToken;
+    private String currentRefreshToken;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+        // here
+        currentToken = SharedPrefManager.getInstance(this).getToken();
+        if (currentToken != null && !currentToken.isEmpty() && SharedPrefManager.getInstance(this).getProfile() != null && !SharedPrefManager.getInstance(this).getProfile().getID().isEmpty())
+        {
+            // Nếu có, tạo Intent để đi thẳng tới màn hình Dashboard
+            Intent intent = new Intent(this, dashboard.class);
+            intent.putExtra("accessToken", currentToken);
+            intent.putExtra("Userprofile", SharedPrefManager.getInstance(this).getProfile());
+
+            startActivity(intent);
+
+            // Quan trọng: Kết thúc Activity Login để người dùng không quay lại được bằng nút Back
+            finish();
+            return; // Dừng hàm onCreate tại đây, không chạy code bên dưới nữa
+        }
         setContentView(R.layout.login);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.login), (v, insets) -> {
@@ -44,8 +61,8 @@ public class login extends AppCompatActivity {
             return insets;
         });
 
-        authRepository = new AuthRepository(getString(R.string.abAIkey));
-        profileRepository = new ProfileRepository(getString(R.string.abAIkey));
+        authRepository = new AuthRepository(this);
+        profileRepository = new ProfileRepository(this);
 
         initializeViews();
         setupListeners();
@@ -103,27 +120,35 @@ public class login extends AppCompatActivity {
 
     private void handleLoginSuccess(LoginResponse loginResponse) {
         currentToken = loginResponse.getAccess_token();
+        currentRefreshToken = loginResponse.getRefresh_token();
+        if (currentToken == null) {
+            Toast.makeText(this, "Lỗi đăng nhập!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        SharedPrefManager.getInstance(login.this).saveTokens(currentToken, currentRefreshToken);
         String userId = loginResponse.getUser().getId();
-
         fetchUserProfile(userId);
         Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+
     }
 
     private void fetchUserProfile(String userId) {
-        profileRepository.getProfile(currentToken, userId).enqueue(new Callback<List<UserProfile>>() {
+        profileRepository.getProfile(userId).enqueue(new Callback<List<UserProfile>>() {
             @Override
             public void onResponse(@NonNull Call<List<UserProfile>> call, @NonNull Response<List<UserProfile>> response) {
+
                 if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {
                     Toast.makeText(login.this, "Không tìm được người dùng!", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 UserProfile profile = response.body().get(0);
+                SharedPrefManager.getInstance(login.this).saveProfile(profile);
                 Intent logined = new Intent(login.this, dashboard.class);
 
                 logined.putExtra("accessToken", currentToken);
+                logined.putExtra("refreshToken", currentRefreshToken);
                 logined.putExtra("Userprofile", profile);
-
                 startActivity(logined);
                 finish();
             }
@@ -132,6 +157,7 @@ public class login extends AppCompatActivity {
             public void onFailure(@NonNull Call<List<UserProfile>> call, @NonNull Throwable t) {
                 Toast.makeText(login.this, "Lỗi tài khoản: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
+
 
         });
     }

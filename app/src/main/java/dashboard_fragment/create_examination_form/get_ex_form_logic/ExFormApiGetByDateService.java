@@ -11,8 +11,6 @@ import retrofit2.http.Query;
 public interface ExFormApiGetByDateService {
     @GET("rest/v1/examination_form")
     Call<List<ExaminationForm>> getFormsByDate(
-            @Header("apikey") String apiKey,
-            @Header("Authorization") String authorization,
             @Query("ngay_kham") String ngayKham,
             @Query("select") String select,
             @Query("order") String order

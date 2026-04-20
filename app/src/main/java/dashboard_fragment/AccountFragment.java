@@ -24,6 +24,8 @@ import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.login;
 import com.example.nhom08_quanlyphongkham.uilogin.AuthRepository;
 import com.example.nhom08_quanlyphongkham.uilogin.LoginResponse;
+import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
+import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -72,7 +74,7 @@ public class AccountFragment extends Fragment {
             currentToken = getArguments().getString(ARG_TOKEN);
         }
 
-        authRepository = new AuthRepository(getString(R.string.abAIkey));
+        authRepository = new AuthRepository(requireContext());
     }
 
     @Override
@@ -143,7 +145,7 @@ public class AccountFragment extends Fragment {
 
     private void Change_Password_Dialog_Show_UI(AlertDialog dialog, View dialogView) {
         Button btnConfirm = dialog.findViewById(R.id.btnUpdatePassword);
-        Button btnChangePassExit = dialog.findViewById(R.id.btnChangePassExit);
+        Button btnCancel = dialog.findViewById(R.id.btnChangePassExit);
 
         TextInputEditText edtCurrentPassword = dialogView.findViewById(R.id.edtCurrentPassword);
         TextInputEditText edtNewPassword = dialogView.findViewById(R.id.edtNewPassword);
@@ -190,7 +192,7 @@ public class AccountFragment extends Fragment {
             verifyCurrentPassword(currentPassword, newPassword, layoutCurrentPassword, dialog);
         });
 
-        btnChangePassExit.setOnClickListener(v ->{
+        btnCancel.setOnClickListener(v ->{
             dialog.dismiss();
         });
     }
@@ -210,13 +212,11 @@ public class AccountFragment extends Fragment {
             public void onFailure(@NonNull Call<LoginResponse> call, @NonNull Throwable t) {
                 Toast.makeText(requireContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
-
-
         });
     }
 
     private void changePassword(String newPassword, AlertDialog dialog) {
-        authRepository.updatePassword(currentToken, newPassword).enqueue(new Callback<LoginResponse>() {
+        authRepository.updatePassword(newPassword).enqueue(new Callback<LoginResponse>() {
             @Override
             public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
                 if (!response.isSuccessful() || response.body() == null) {
@@ -259,10 +259,7 @@ public class AccountFragment extends Fragment {
 
         btnLogoutConfirm.setOnClickListener(v->{
             SharedPreferences sharedPreferences = dialog.getContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.clear();//Xoa token
-            editor.apply();
-
+            SharedPrefManager.getInstance(dialog.getContext()).clear();//xoa
             dialog.dismiss();
 
             Intent intent = new Intent(dialog.getContext(), login.class);

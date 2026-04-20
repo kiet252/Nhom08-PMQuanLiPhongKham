@@ -13,8 +13,6 @@ import retrofit2.http.Query;
 public interface PatientApiUpdateService {
     @PATCH("rest/v1/patient")
     Call<Void> updatePatient(
-            @Header("apikey") String apiKey,
-            @Header("Authorization") String authorization,
             @Query("id") String idFilter,
             @Body UpdatePatientRequest body
     );

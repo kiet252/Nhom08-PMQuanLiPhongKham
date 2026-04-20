@@ -13,8 +13,6 @@ import retrofit2.http.Query;
 public interface ExFormApiCreateService {
     @POST("rest/v1/examination_form")
     Call<List<ExaminationForm>> createForm(
-            @Header("apikey") String apiKey,
-            @Header("Authorization") String authorization,
             @Header("Prefer") String prefer,
             @Body CreateExFormRequest newForm
     );

@@ -71,9 +71,9 @@ public class CreateExaminationForm_staff extends AppCompatActivity {
         setupListeners();
         getIntentInfo();
 
-        ExFormRepository = new ExaminationFormRepository(getString(R.string.abAIkey));
-        PaRepository = new PatientRepository(getString(R.string.abAIkey));
-        profileRepository = new ProfileRepository(getString(R.string.abAIkey));
+        ExFormRepository = new ExaminationFormRepository(this);
+        PaRepository = new PatientRepository(this);
+        profileRepository = new ProfileRepository(this);
 
         loadDoctors();
         TvSTN.setText("Số tiếp nhận: --");
@@ -364,7 +364,7 @@ public class CreateExaminationForm_staff extends AppCompatActivity {
                     selectedDoctorID
             );
 
-            ExFormRepository.createForm(currentToken, request).enqueue(new Callback<List<ExaminationForm>>() {
+            ExFormRepository.createForm(request).enqueue(new Callback<List<ExaminationForm>>() {
                 @Override
                 public void onResponse(@NonNull Call<List<ExaminationForm>> call,
                                        @NonNull Response<List<ExaminationForm>> response) {
@@ -416,7 +416,7 @@ public class CreateExaminationForm_staff extends AppCompatActivity {
             return;
         }
 
-        PaRepository.getProfileByIdOrCccd(currentToken, SearchValue).enqueue(new retrofit2.Callback<List<PatientProfile>>() {
+        PaRepository.getProfileByIdOrCccd(SearchValue).enqueue(new retrofit2.Callback<List<PatientProfile>>() {
             @Override
             public void onResponse(@NonNull Call<List<PatientProfile>> call, @NonNull retrofit2.Response<List<PatientProfile>> response) {
                 if (response.isSuccessful()) {
@@ -488,7 +488,7 @@ public class CreateExaminationForm_staff extends AppCompatActivity {
 
             String apiDate = apiFormat.format(selectedDate);
 
-            ExFormRepository.getFormsByDate(currentToken, apiDate).enqueue(new Callback<List<ExaminationForm>>() {
+            ExFormRepository.getFormsByDate(apiDate).enqueue(new Callback<List<ExaminationForm>>() {
                 @Override
                 public void onResponse(@NonNull Call<List<ExaminationForm>> call,
                                        @NonNull Response<List<ExaminationForm>> response) {

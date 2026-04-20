@@ -10,8 +10,6 @@ import retrofit2.http.Query;
 public interface ExFormApiGetFormsWithPatient {
     @GET("rest/v1/examination_form")
     Call<List<ExaminationFormWithPatientDto>> getAllFormsWithPatientAndDoctor(
-            @Header("apikey") String apiKey,
-            @Header("Authorization") String authorization,
             @Query(value = "select", encoded = true) String select,
             @Query("order") String order,
             @Query("trang_thai") String trangThai

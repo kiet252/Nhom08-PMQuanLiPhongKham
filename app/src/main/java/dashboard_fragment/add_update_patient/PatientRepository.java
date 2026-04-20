@@ -1,4 +1,6 @@
 package dashboard_fragment.add_update_patient;
+import android.content.Context;
+
 import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 
 import java.util.List;
@@ -10,56 +12,36 @@ import dashboard_fragment.add_update_patient.update_patient_logic.find_patient_l
 import dashboard_fragment.add_update_patient.update_patient_logic.update_patient_logic.PatientApiUpdateService;
 import dashboard_fragment.add_update_patient.update_patient_logic.update_patient_logic.UpdatePatientRequest;
 import retrofit2.Call;
+import retrofit2.Retrofit;
 
 public class PatientRepository {
-    private static PatientApiGetService getService;
-    private static PatientApiCreateService createService;
+    private final PatientApiGetService getService;
+    private final PatientApiCreateService createService;
+    private final PatientApiUpdateService updateService;
+    private final Context context;
 
-    private static PatientApiUpdateService updateService;
-    private final String apiKey;
+    public PatientRepository(Context context) {
+        this.context = context;
 
-    public PatientRepository(String apiKey) {
-        this.apiKey = apiKey;
+        // Use the context to get the Retrofit client
+        Retrofit client = SupabaseClientProvider.getClient(context);
 
-        if (getService == null) {
-            getService = SupabaseClientProvider.getClient().create(PatientApiGetService.class);
-        }
-        if (createService == null) {
-            createService = SupabaseClientProvider.getClient().create(PatientApiCreateService.class);
-        }
-        if (updateService == null) {
-            updateService = SupabaseClientProvider.getClient().create(PatientApiUpdateService.class);
-        }
+        this.getService = client.create(PatientApiGetService.class);
+        this.createService = client.create(PatientApiCreateService.class);
+        this.updateService = client.create(PatientApiUpdateService.class);
     }
 
-    public Call<List<PatientProfile>> getProfileByIdOrCccd(String accessToken, String input) {
+    public Call<List<PatientProfile>> getProfileByIdOrCccd(String input) {
         String orFilter = "(id.eq." + input + ",cccd.eq." + input + ")";
-
-        return getService.getProfileByIdOrCccd(
-                apiKey,
-                "Bearer " + accessToken,
-                orFilter,
-                "*"
-        );
+        return getService.getProfileByIdOrCccd(orFilter, "*");
     }
 
-    public Call<List<PatientProfile>> createProfile(String accessToken, CreatePatientRequest newProfile) {
-        return createService.createProfile(
-                apiKey,
-                "Bearer " + accessToken,
-                "return=representation",
-                newProfile
-        );
+    public Call<List<PatientProfile>> createProfile(CreatePatientRequest newProfile) {
+        return createService.createProfile("return=representation", newProfile);
     }
 
-    public Call<Void> updateProfile(String accessToken, String patientId, UpdatePatientRequest updatedProfile) {
+    public Call<Void> updateProfile(String patientId, UpdatePatientRequest updatedProfile) {
         String idFilter = "eq." + patientId;
-
-        return updateService.updatePatient(
-                apiKey,
-                "Bearer " + accessToken,
-                idFilter,
-                updatedProfile
-        );
+        return updateService.updatePatient(idFilter, updatedProfile);
     }
 }

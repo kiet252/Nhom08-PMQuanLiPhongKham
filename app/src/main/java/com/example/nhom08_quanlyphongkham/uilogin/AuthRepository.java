@@ -1,28 +1,36 @@
 package com.example.nhom08_quanlyphongkham.uilogin;
 
+import android.content.Context;
+
+import com.example.nhom08_quanlyphongkham.R;
+
 import dashboard_fragment.change_password_request.UpdatePasswordRequest;
 import retrofit2.Call;
 
 public class AuthRepository {
     private final AuthApiService authApiService;
-    private final String apiKey;
+    private final Context context;
 
-    public AuthRepository(String apiKey) {
-        this.apiKey = apiKey;
-        authApiService = SupabaseClientProvider
-                .getClient()
+    public AuthRepository(Context context) {
+        this.context = context;
+        this.authApiService = SupabaseClientProvider
+                .getClient(context)
                 .create(AuthApiService.class);
     }
 
     public Call<LoginResponse> login(String email, String password) {
-        return authApiService.login(apiKey, new LoginRequest(email, password));
+        return authApiService.login(new LoginRequest(email, password));
     }
 
-    public Call<LoginResponse> updatePassword(String accessToken, String newPassword) {
-        return authApiService.updatePassword(
-                apiKey,
-                "Bearer " + accessToken,
-                new UpdatePasswordRequest(newPassword)
+    public Call<LoginResponse> refreshToken(String refreshToken) {
+        // Pass the key from strings.xml here
+        return authApiService.refreshToken(
+                context.getString(R.string.abAIkey),
+                new RefreshTokenRequest(refreshToken)
         );
+    }
+
+    public Call<LoginResponse> updatePassword(String newPassword) {
+        return authApiService.updatePassword(new UpdatePasswordRequest(newPassword));
     }
 }

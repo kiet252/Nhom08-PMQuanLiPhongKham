@@ -53,7 +53,7 @@ public class UpdatePatientFragment extends Fragment {
         initializeViews(view);
         setupListeners();
 
-        repository = new PatientRepository(getString(R.string.abAIkey));
+        repository = new PatientRepository(requireContext());
 
         return view;
     }
@@ -83,7 +83,7 @@ public class UpdatePatientFragment extends Fragment {
             return;
         }
 
-        repository.getProfileByIdOrCccd(currentToken, SearchValue).enqueue(new retrofit2.Callback<List<PatientProfile>>() {
+        repository.getProfileByIdOrCccd(SearchValue).enqueue(new retrofit2.Callback<List<PatientProfile>>() {
             @Override
             public void onResponse(@NonNull Call<List<PatientProfile>> call, @NonNull retrofit2.Response<List<PatientProfile>> response) {
                 if (response.isSuccessful()) {
@@ -161,7 +161,7 @@ public class UpdatePatientFragment extends Fragment {
 
         UpdatePatientRequest request = new UpdatePatientRequest(requestSDT, requestDiaChi, requestCCCD, requestGioiTinh);
 
-        repository.updateProfile(currentToken, foundPatient.getId(), request).enqueue(new retrofit2.Callback<Void>() {
+        repository.updateProfile(foundPatient.getId(), request).enqueue(new retrofit2.Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
                 if (response.isSuccessful()) {

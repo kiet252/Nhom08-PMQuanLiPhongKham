@@ -68,7 +68,7 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
         setupRecycler();
 
         isAscending = true;
-        repository = new ExaminationFormRepository(getString(R.string.abAIkey));
+        repository = new ExaminationFormRepository(this);
 
         loadAllFormsAndPatiendDTO();
     }
@@ -147,7 +147,7 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
     }
 
     private void loadAllFormsAndPatiendDTO() {
-        repository.getAllFormsWithPatient(currentToken).enqueue(new retrofit2.Callback<List<ExaminationFormWithPatientDto>>() {
+        repository.getAllFormsWithPatient().enqueue(new retrofit2.Callback<List<ExaminationFormWithPatientDto>>() {
             @Override
             public void onResponse(@NonNull Call<List<ExaminationFormWithPatientDto>> call, @NonNull retrofit2.Response<List<ExaminationFormWithPatientDto>> response) {
                 if (response.isSuccessful()) {

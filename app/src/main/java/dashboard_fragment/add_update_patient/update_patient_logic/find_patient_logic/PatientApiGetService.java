@@ -11,8 +11,6 @@ import retrofit2.http.Query;
 public interface PatientApiGetService {
     @GET("rest/v1/patient")
     Call<List<PatientProfile>> getProfileByIdOrCccd(
-            @Header("apikey") String apiKey,
-            @Header("Authorization") String authorization,
             @Query("or") String orFilter,
             @Query("select") String select
     );

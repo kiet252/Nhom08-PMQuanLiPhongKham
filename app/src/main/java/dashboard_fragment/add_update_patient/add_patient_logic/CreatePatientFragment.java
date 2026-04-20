@@ -56,7 +56,7 @@ public class CreatePatientFragment extends Fragment {
         initializeValuesForMonthAndYearSpinners();
         setupListeners();
 
-        repository = new PatientRepository(getString(R.string.abAIkey));
+        repository = new PatientRepository(requireContext());
 
         return view;
     }
@@ -147,7 +147,7 @@ public class CreatePatientFragment extends Fragment {
     public void submitPatientData() {
         if (!allCredentialsValid()) return;
 
-        repository.createProfile(currentToken, PatientToCreate()).enqueue(new retrofit2.Callback<List<PatientProfile>>() {
+        repository.createProfile(PatientToCreate()).enqueue(new retrofit2.Callback<List<PatientProfile>>() {
             @Override
             public void onResponse(@NonNull Call<List<PatientProfile>> call, @NonNull retrofit2.Response<List<PatientProfile>> response) {
                 if (response.isSuccessful()) {

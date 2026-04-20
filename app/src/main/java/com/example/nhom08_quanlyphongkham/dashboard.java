@@ -25,7 +25,7 @@ public class dashboard extends AppCompatActivity {
         currentToken = getIntent().getStringExtra("accessToken");
         profile = (UserProfile) getIntent().getSerializableExtra("Userprofile");
 
-        if(currentToken == null || currentToken.isEmpty()){
+        if(currentToken == null || currentToken.isEmpty() && profile == null ){
             goToLogin();
             return;
         }
@@ -39,7 +39,7 @@ public class dashboard extends AppCompatActivity {
         else if ("Bác sĩ".equals(profile.getChuc_vu()))
             userFragment = new HomeFragment_doctor();
         else
-            userFragment = HomeFragment_staff.newInstance(currentToken);
+            userFragment = new HomeFragment_staff();
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, userFragment)
