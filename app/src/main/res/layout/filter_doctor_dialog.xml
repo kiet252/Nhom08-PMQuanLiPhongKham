@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Lọc theo bác sĩ"
-        android:textColor="#222222"
+        android:textColor="@color/app_primary_text_color"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -36,7 +36,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Hủy"
-            android:textColor="#666666" />
+            android:textColor="@color/app_secondary_text_color" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnApplyFilter"
