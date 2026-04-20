@@ -55,7 +55,8 @@ public class ExaminationFormRepository {
                 apiKey,
                 "Bearer " + accessToken,
                 "*,patient:patient!examination_form_patient_id_fkey(id,cccd,ho_ten,ngay_sinh,dia_chi),doctor:profiles!examination_form_doctor_id_fkey(id,ho_ten,chuc_vu)",
-                "gio_du_kien.asc"
+                "gio_du_kien.asc",
+                "not.in.(Vắng,Đã hủy,Đã khám)"
         );
     }
 }

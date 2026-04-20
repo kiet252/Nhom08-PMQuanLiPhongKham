@@ -13,6 +13,7 @@ public interface ExFormApiGetFormsWithPatient {
             @Header("apikey") String apiKey,
             @Header("Authorization") String authorization,
             @Query(value = "select", encoded = true) String select,
-            @Query("order") String order
+            @Query("order") String order,
+            @Query("trang_thai") String trangThai
     );
 }
