@@ -1,5 +1,8 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android" android:height="24dp" android:tint="#000000" android:viewportHeight="24" android:viewportWidth="24" android:width="24dp">
-
-    <path android:fillColor="#FF000000"
-        android:pathData="@string/path_icon_android_head_placeholder"/>
-</vector>
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:drawable="@drawable/ic_calendar_fixed"
+        android:width="25dp"
+        android:height="25dp"
+        android:gravity="center" />
+</layer-list>
