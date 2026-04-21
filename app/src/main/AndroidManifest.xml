@@ -33,6 +33,11 @@
         <activity
             android:name=".staff_detail"
             android:exported="false" />
+        <activity
+            android:name="dashboard_fragment.change_password_request.set_staff_detail"
+            android:exported="false" />
+        <activity android:name=".create_staff" android:exported="false" />
+
     </application>
 
 </manifest>
