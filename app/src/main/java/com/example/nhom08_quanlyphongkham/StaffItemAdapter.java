@@ -14,11 +14,17 @@ import java.util.List;
 public class StaffItemAdapter extends RecyclerView.Adapter<StaffItemAdapter.StaffViewHolder> {
 
     private List<StaffItem> staffList;
-
+    private OnItemClickListener listener;
     public StaffItemAdapter(List<StaffItem> staffList) {
         this.staffList = staffList;
     }
-
+    public interface OnItemClickListener
+    {
+        void onItemClick(StaffItem item);
+    }
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
+    }
     @Override
     public StaffViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         // Nạp layout Card của bạn vào
@@ -37,6 +43,12 @@ public class StaffItemAdapter extends RecyclerView.Adapter<StaffItemAdapter.Staf
 
         // Nếu sau này dùng Glide để load ảnh:
         // Glide.with(holder.itemView.getContext()).load(staff.getUrl()).into(holder.imgAvatar);
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onItemClick(staff);
+            }
+        });
+
     }
 
     @Override

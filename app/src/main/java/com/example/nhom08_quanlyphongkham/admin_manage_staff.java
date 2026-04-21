@@ -1,5 +1,6 @@
 package com.example.nhom08_quanlyphongkham;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -42,6 +43,18 @@ public class admin_manage_staff extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         staffList = new ArrayList<>();
         adapter = new StaffItemAdapter(staffList);
+        adapter.setOnItemClickListener(new StaffItemAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(StaffItem item) {
+                // Hành động khi click vào item: Chuyển sang màn hình chi tiết
+                Intent intent = new Intent(admin_manage_staff.this, staff_detail.class);
+
+                // Truyền ID hoặc dữ liệu nhân viên qua màn hình chi tiết
+                intent.putExtra("id", item.getId());
+
+                startActivity(intent);
+            }
+        });
         recyclerView.setAdapter(adapter);
 
         // 3. Khởi tạo Repository và lấy Token

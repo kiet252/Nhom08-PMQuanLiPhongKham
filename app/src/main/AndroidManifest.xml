@@ -30,7 +30,9 @@
             android:name=".dashboard"
             android:exported="true">
         </activity>
-
+        <activity
+            android:name=".staff_detail"
+            android:exported="false" />
     </application>
 
 </manifest>
