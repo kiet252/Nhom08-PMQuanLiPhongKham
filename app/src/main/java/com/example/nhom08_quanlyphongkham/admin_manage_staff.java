@@ -158,7 +158,7 @@ public class admin_manage_staff extends AppCompatActivity {
     }
 
     private void showFilterDialog() {
-        String[] roles = {"Tất cả", "Bác sĩ", "Y tá", "Nhân viên", "Tiếp tân"};
+        String[] roles = {"Tất cả", "Bác sĩ", "Nhân viên"};
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Chọn chức vụ để hiển thị");
         builder.setItems(roles, (dialog, which) -> {

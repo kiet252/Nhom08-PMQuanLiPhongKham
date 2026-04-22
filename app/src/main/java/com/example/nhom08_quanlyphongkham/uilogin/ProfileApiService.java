@@ -23,4 +23,5 @@ public interface ProfileApiService {
             @Query("chuc_vu") String role, // Tham số này sẽ truyền "neq.Quản trị viên"
             @Query("select") String select
     );
+
 }

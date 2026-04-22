@@ -75,12 +75,12 @@ public class staff_detail extends AppCompatActivity {
                         String formattedDate = sdf.format(userProfile.getNgay_sinh());
                         birthday.setText(formattedDate);
                     }
-//                    if (userProfile.getNgay_sinh() != null) {
-//                        // Định dạng ngày/tháng/năm
-//                        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
-//                        String formattedDate = sdf.format(userProfile.getNgay_sinh());
-//                        date_created.setText(formattedDate);
-//                    }
+                    if (userProfile.getCreated_at() != null) {
+                        // Định dạng ngày/tháng/năm
+                        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
+                        String formattedDate = sdf.format(userProfile.getCreated_at());
+                        date_created.setText(formattedDate);
+                    }
 
                     // Với hình ảnh, bạn nên dùng thư viện Glide hoặc Picasso để load link
 //                     Glide.with(staff_detail.this).load(userProfile.getPictureLink()).into(picture_link);
