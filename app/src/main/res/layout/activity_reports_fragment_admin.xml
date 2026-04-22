@@ -54,13 +54,13 @@
                         android:layout_marginBottom="12dp">
 
                         <EditText
-                            android:id="@+id/et_ma_hoa_don"
+                            android:id="@+id/et_ma_don_kham"
                             android:layout_width="0dp"
                             android:layout_height="48dp"
                             android:layout_weight="1"
-                            android:layout_marginEnd="8dp"
+                            android:layout_marginEnd="6dp"
                             android:background="@drawable/bg_border_rounded"
-                            android:hint="Mã hóa đơn..."
+                            android:hint="Mã ĐK"
                             android:paddingHorizontal="12dp"
                             android:textSize="14sp"
                             android:singleLine="true"/>
@@ -69,12 +69,22 @@
                             android:id="@+id/et_ten_benh_nhan"
                             android:layout_width="0dp"
                             android:layout_height="48dp"
-                            android:layout_weight="1"
+                            android:layout_weight="2.5"
+                            android:layout_marginEnd="6dp"
                             android:background="@drawable/bg_border_rounded"
-                            android:hint="Tên bệnh nhân..."
+                            android:hint="Tên bệnh nhân"
                             android:paddingHorizontal="12dp"
                             android:textSize="14sp"
                             android:singleLine="true"/>
+
+                        <Button
+                            android:id="@+id/btn_tim_kiem"
+                            android:layout_width="wrap_content"
+                            android:layout_height="48dp"
+                            android:backgroundTint="#4A81B0"
+                            android:text="Tìm kiếm"
+                            android:textColor="#FFFFFF"
+                            app:cornerRadius="6dp" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -85,12 +95,12 @@
 
                         <TextView
                             android:id="@+id/tv_tu_ngay"
-                            android:layout_width="0dp"
+                            android:layout_width="50dp"
                             android:layout_height="48dp"
                             android:layout_weight="1"
                             android:background="@drawable/bg_border_rounded"
                             android:gravity="center_vertical"
-                            android:hint="Từ ngày"
+                            android:hint="Ngày bắt đầu"
                             android:paddingHorizontal="12dp"
                             android:textSize="14sp"
                             android:layout_marginEnd="8dp"
@@ -99,26 +109,18 @@
 
                         <TextView
                             android:id="@+id/tv_den_ngay"
-                            android:layout_width="0dp"
+                            android:layout_width="50dp"
                             android:layout_height="48dp"
                             android:layout_weight="1"
                             android:background="@drawable/bg_border_rounded"
                             android:gravity="center_vertical"
-                            android:hint="Đến ngày"
+                            android:hint="Ngày kết thúc"
                             android:paddingHorizontal="12dp"
                             android:textSize="14sp"
                             android:layout_marginEnd="8dp"
                             app:drawableStartCompat="@drawable/ic_calendar"
                             android:drawablePadding="8dp"/>
 
-                        <Button
-                            android:id="@+id/btn_tim_kiem"
-                            android:layout_width="wrap_content"
-                            android:layout_height="54dp"
-                            android:backgroundTint="#4A81B0"
-                            android:text="Tìm kiếm"
-                            android:textColor="#FFFFFF"
-                            app:cornerRadius="6dp" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
