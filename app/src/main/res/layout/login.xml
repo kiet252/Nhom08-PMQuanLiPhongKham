@@ -1,88 +1,140 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/login"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    >
+    android:orientation="vertical"
+    android:background="#DFF0FB"
+    android:id="@+id/login">
 
-    <View
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="280dp"
-        android:background="@drawable/gradient_blue_bg" />
+        android:layout_height="0dp"
+        android:layout_weight="4">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:orientation="vertical"
-        android:padding="20dp">
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_gravity="center"
-            android:layout_marginBottom="-50dp"
-            android:translationZ="10dp"
-            app:cardCornerRadius="50dp"
-            app:cardElevation="8dp">
-
-            <ImageView
-                android:id="@+id/imgLogo"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="15dp"
-                android:scaleType="centerInside"
-                android:src="@drawable/login_clinic_icon_default" />
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.card.MaterialCardView
+        <ImageView
+            android:id="@+id/ivClinicIllustration"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="4dp"
-            app:cardUseCompatPadding="true">
+            android:layout_height="match_parent"
+            android:contentDescription="Clinic Illustration"
+            android:scaleType="centerCrop"
+            android:src="@drawable/image_clinic" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="130dp"
+            android:layout_gravity="bottom"
+            android:background="@drawable/bg_image_fader" />
+    </FrameLayout>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="6"
+        android:layout_marginTop="-40dp"
+        app:cardBackgroundColor="#FFFFFF"
+        app:cardCornerRadius="36dp"
+        app:cardElevation="0dp"
+        app:cardMaxElevation="0dp">
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingLeft="24dp"
-                android:paddingTop="60dp"
-                android:paddingRight="24dp"
+                android:paddingStart="28dp"
+                android:paddingTop="32dp"
+                android:paddingEnd="28dp"
                 android:paddingBottom="40dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginEnd="12dp"
+                        app:cardBackgroundColor="#1A8FE3"
+                        app:cardCornerRadius="10dp"
+                        app:cardElevation="0dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_cross_white" />
+                    </androidx.cardview.widget.CardView>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Phòng Khám"
+                            android:textColor="#0D3F6E"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.1"
+                            android:text="TAI · MŨI · HỌNG"
+                            android:textColor="#1A8FE3"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </LinearLayout>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginBottom="8dp"
-                    android:text="Chào mừng trở lại!"
-                    android:textColor="@color/app_primary_text_color"
-                    android:textSize="22sp"
+                    android:layout_marginTop="32dp"
+                    android:text="Đăng nhập"
+                    android:textColor="#0D3F6E"
+                    android:textSize="24sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
+                    android:layout_marginTop="8dp"
                     android:layout_marginBottom="32dp"
-                    android:text="Đăng nhập để tiếp tục"
-                    android:textColor="@color/app_secondary_text_color"
-                    android:textSize="14sp" />
+                    android:text="Chào mừng trở lại! Vui lòng đăng nhập để tiếp tục."
+                    android:textColor="#7EAED4"
+                    android:textSize="16sp" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Email đăng nhập"
-                    android:textColorHint="@color/app_secondary_text_color"
-                    app:startIconDrawable="@drawable/dashboard_icon_avatar">
+                    app:boxCornerRadiusBottomEnd="16dp"
+                    app:boxCornerRadiusBottomStart="16dp"
+                    app:boxCornerRadiusTopEnd="16dp"
+                    app:boxCornerRadiusTopStart="16dp"
+                    app:startIconDrawable="@drawable/ic_email"
+                    app:startIconTint="#0D3F6E">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edtEmail"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:padding="18dp"
+                        android:hint="Email đăng nhập"
+                        android:inputType="textEmailAddress"
+                        android:textColor="#0D3F6E"
+                        android:textColorHint="#0D3F6E" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -90,31 +142,53 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:hint="Mật khẩu"
-                    android:textColorHint="@color/app_secondary_text_color"
+                    app:boxCornerRadiusBottomEnd="16dp"
+                    app:boxCornerRadiusBottomStart="16dp"
+                    app:boxCornerRadiusTopEnd="16dp"
+                    app:boxCornerRadiusTopStart="16dp"
                     app:passwordToggleEnabled="true"
-                    app:startIconDrawable="@drawable/login_icon_lock">
+                    app:startIconDrawable="@drawable/ic_lock"
+                    app:startIconTint="#0D3F6E">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edtPassword"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:padding="18dp"
+                        android:hint="Mật khẩu"
                         android:inputType="textPassword"
-                        android:textColorHint="@color/app_secondary_text_color"/>
+                        android:textColor="#0D3F6E"
+                        android:textColorHint="#0D3F6E" />
                 </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:id="@+id/tvForgotPassword"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginTop="12dp"
+                    android:text="Quên mật khẩu?"
+                    android:textColor="#1A8FE3"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnLogin"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="64dp"
                     android:layout_marginTop="32dp"
-                    android:backgroundTint="@color/app_primary_btn_color"
+                    android:backgroundTint="#0D3F6E"
                     android:text="ĐĂNG NHẬP"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    app:cornerRadius="12dp" />
+                    app:cornerRadius="16dp"
+                    app:icon="@drawable/ic_login_door"
+                    app:iconGravity="textStart"
+                    app:iconPadding="12dp"
+                    app:iconTint="#FFFFFF"
+                    app:iconSize="24dp"/>
 
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-    </LinearLayout>
-</RelativeLayout>
+        </androidx.core.widget.NestedScrollView>
+    </androidx.cardview.widget.CardView>
+</LinearLayout>
