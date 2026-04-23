@@ -48,8 +48,8 @@ public class AccountFragment extends Fragment {
     private UserProfile userprofile;
 
     TextView textviewProfile, textviewEmail, textviewPhone, textviewBirthday, textviewGender, textviewAddress, textviewJobTitle;
-    Button btnEditPass;
-    Button btnLogout;
+    View btnEditPass;
+    View btnLogout;
     private AuthRepository authRepository;
 
     public AccountFragment() {
@@ -99,7 +99,7 @@ public class AccountFragment extends Fragment {
     }
 
     private void setViewProfile() {
-        String GreetingText = "Xin chào, " + userprofile.getHo_ten();
+        String GreetingText =  userprofile.getHo_ten();
 
         textviewProfile.setText(GreetingText);
 
