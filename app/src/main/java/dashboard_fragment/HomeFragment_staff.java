@@ -3,6 +3,7 @@ package dashboard_fragment;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -20,7 +21,7 @@ public class HomeFragment_staff extends Fragment {
     private static final String ARG_TOKEN = "token";
 
     private String currentToken;
-    private MaterialButton BtnCreateExForm, BtnManageMedReport, BtnAddUpdatePatientInfo, BtnManageBill;
+    private CardView BtnCreateExForm, BtnManageMedReport, BtnAddUpdatePatientInfo, BtnManageBill;
 
     public HomeFragment_staff() {
     }
@@ -53,10 +54,10 @@ public class HomeFragment_staff extends Fragment {
     }
 
     private void initializeViews(View view) {
-        BtnCreateExForm = view.findViewById(R.id.MBtnCreateExaminationForm);
-        BtnManageMedReport = view.findViewById(R.id.MBtnManageMedReport);
-        BtnAddUpdatePatientInfo = view.findViewById(R.id.MBtnAddUpdatePatientInfo);
-        BtnManageBill = view.findViewById(R.id.MBtnManageBill);
+        BtnCreateExForm = view.findViewById(R.id.CardViewCreateExaminationForm);
+        BtnManageMedReport = view.findViewById(R.id.CardViewManageMedReport);
+        BtnAddUpdatePatientInfo = view.findViewById(R.id.CardViewAddUpdatePatientInfo);
+        BtnManageBill = view.findViewById(R.id.CardViewManageBill);
     }
 
     private void setupListeners() {
