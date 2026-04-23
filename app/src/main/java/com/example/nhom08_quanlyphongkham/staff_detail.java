@@ -1,10 +1,13 @@
 package com.example.nhom08_quanlyphongkham;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.nhom08_quanlyphongkham.uilogin.ProfileRepository;
@@ -21,6 +24,7 @@ import retrofit2.Response;
 
 public class staff_detail extends AppCompatActivity {
     private UserProfile userProfile;
+    private String id;
     private TextView name;
     private TextView email;
     private TextView date_created;
@@ -38,7 +42,7 @@ public class staff_detail extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.staff_detail);
 
-        String id = getIntent().getStringExtra("id");
+        id = getIntent().getStringExtra("id");
         name = findViewById(R.id.tvDetailName);
         email = findViewById(R.id.tvDetailEmail);
         date_created = findViewById(R.id.tvDetailCreatedAt);
@@ -52,6 +56,38 @@ public class staff_detail extends AppCompatActivity {
         ImageButton btnBackDetail = findViewById(R.id.btnBackDetail);
         ImageButton btnEdit = findViewById(R.id.btnEdit);
 
+        loadData(id);
+
+        btnBackDetail.setOnClickListener(v -> {
+            finish();
+        });
+
+
+        btnEdit.setOnClickListener(v -> {
+            if (userProfile != null) {
+                Intent intent = new Intent(staff_detail.this, set_staff_detail.class);
+                intent.putExtra("user_profile", userProfile); // Truyền cả Object (UserProfile đã có Serializable)
+                editLauncher.launch(intent);
+            }
+        });
+        // Tìm nút xóa (đã có id trong layout staff_detail.xml)
+        com.google.android.material.button.MaterialButton btnDelete = findViewById(R.id.btnDeleteStaff);
+
+        btnDelete.setOnClickListener(v -> {
+            showDeleteConfirmationDialog();
+        });
+    }
+    ActivityResultLauncher<Intent> editLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    // Khi nhận được RESULT_OK, gọi hàm load data của bạn
+                    loadData(id);
+                }
+            }
+    );
+    private void loadData(String id)
+    {
         ProfileRepository profile = new ProfileRepository(this, getString(R.string.abAIkey));
         profile.getProfile(id).enqueue(new Callback<List<UserProfile>>() {
             @Override
@@ -89,27 +125,8 @@ public class staff_detail extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<List<UserProfile>> call, Throwable t) {
-            return;
+                return;
             }
-        });
-
-        btnBackDetail.setOnClickListener(v -> {
-            finish();
-        });
-
-
-        btnEdit.setOnClickListener(v -> {
-            if (userProfile != null) {
-                Intent intent = new Intent(staff_detail.this, set_staff_detail.class);
-                intent.putExtra("user_profile", userProfile); // Truyền cả Object (UserProfile đã có Serializable)
-                startActivity(intent);
-            }
-        });
-        // Tìm nút xóa (đã có id trong layout staff_detail.xml)
-        com.google.android.material.button.MaterialButton btnDelete = findViewById(R.id.btnDeleteStaff);
-
-        btnDelete.setOnClickListener(v -> {
-            showDeleteConfirmationDialog();
         });
     }
     private void showDeleteConfirmationDialog() {
