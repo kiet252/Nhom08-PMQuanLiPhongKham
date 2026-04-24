@@ -14,6 +14,7 @@ import com.example.nhom08_quanlyphongkham.R;
 import com.google.android.material.button.MaterialButton;
 import dashboard_fragment.add_update_patient.AddUpdatePatientInfo_staff;
 import dashboard_fragment.create_examination_form.CreateExaminationForm_staff;
+import dashboard_fragment.manage_bill.ManageBill_staff;
 import dashboard_fragment.manage_examination_form.ManageExaminationForm_staff;
 
 public class HomeFragment_staff extends Fragment {
@@ -64,6 +65,7 @@ public class HomeFragment_staff extends Fragment {
         BtnAddUpdatePatientInfo.setOnClickListener(v -> startAddUpdatePatientIntent());
         BtnCreateExForm.setOnClickListener(v -> startCreateExaminationFormIntent());
         BtnManageMedReport.setOnClickListener(v -> startManageExaminationFormIntent());
+        BtnManageBill.setOnClickListener(v-> startManageBillIntent());
     }
 
     private void startAddUpdatePatientIntent() {
@@ -90,4 +92,11 @@ public class HomeFragment_staff extends Fragment {
         startActivity(IntentManageExaminationForm);
     }
 
+    private void startManageBillIntent() {
+        Intent IntentManageBill= new Intent(getContext(), ManageBill_staff.class);
+
+        IntentManageBill.putExtra("accessToken", currentToken);
+
+        startActivity(IntentManageBill);
+    }
 }

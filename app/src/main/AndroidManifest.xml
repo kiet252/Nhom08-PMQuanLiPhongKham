@@ -14,6 +14,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Nhom08QuanLyPhongKham">
         <activity
+            android:name="dashboard_fragment.manage_bill.BillDetail_staff"
+            android:exported="false" />
+        <activity
+            android:name="dashboard_fragment.manage_bill.ManageBill_staff"
+            android:exported="false" />
+        <activity
             android:name="dashboard_fragment.manage_examination_form.ManageExaminationForm_staff"
             android:exported="false" />
         <activity
