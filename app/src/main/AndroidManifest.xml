@@ -14,6 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Nhom08QuanLyPhongKham">
         <activity
+            android:name="dashboard_fragment.edit_profile.EditProfile"
+            android:exported="false" />
+        <activity
             android:name="dashboard_fragment.manage_bill.BillDetail_staff"
             android:exported="false" />
         <activity

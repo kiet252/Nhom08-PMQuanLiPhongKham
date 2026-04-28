@@ -377,6 +377,12 @@
                             app:tint="#75E042" />
                     </LinearLayout>
 
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="72dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="#F1F5F9" />
 
                     <LinearLayout
                         android:id="@+id/btnEditPass"
@@ -432,8 +438,15 @@
                             android:layout_height="20dp"
                             android:src="@drawable/ic_chevron_right"
                             app:tint="#E0805B" />
+
                     </LinearLayout>
 
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="72dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="#F1F5F9" />
 
                     <LinearLayout
                         android:id="@+id/btnLogout"
