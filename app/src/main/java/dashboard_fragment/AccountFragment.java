@@ -9,6 +9,8 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
@@ -33,6 +35,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import dashboard_fragment.edit_profile.EditProfile;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -48,6 +51,8 @@ public class AccountFragment extends Fragment {
     private UserProfile userprofile;
 
     TextView textviewProfile, textviewEmail, textviewPhone, textviewBirthday, textviewGender, textviewAddress, textviewJobTitle;
+    View btnEditProfile;
+
     View btnEditPass;
     View btnLogout;
     private AuthRepository authRepository;
@@ -94,6 +99,7 @@ public class AccountFragment extends Fragment {
         textviewAddress = view.findViewById(R.id.txtAddress);
         textviewJobTitle = view.findViewById(R.id.txtJobTitle);
 
+        btnEditProfile = view.findViewById(R.id.btnEditProfile);
         btnEditPass = view.findViewById(R.id.btnEditPass);
         btnLogout = view.findViewById(R.id.btnLogout);
     }
@@ -119,6 +125,7 @@ public class AccountFragment extends Fragment {
     }
 
     private void setupListeners() {
+        btnEditProfile.setOnClickListener(v -> openEditProfile());
         btnEditPass.setOnClickListener(v -> showChangePasswordDialog());
         btnLogout.setOnClickListener(v->showLogoutDialog());
     }
@@ -266,5 +273,60 @@ public class AccountFragment extends Fragment {
         });
 
         btnLogoutCancel.setOnClickListener(v -> dialog.dismiss());
+    }
+    private final ActivityResultLauncher<Intent> editProfileLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Intent data = result.getData();
+
+                    String hoTen = data.getStringExtra("updated_ho_ten");
+                    String soDienThoai = data.getStringExtra("updated_so_dien_thoai");
+                    String diaChi = data.getStringExtra("updated_dia_chi");
+                    String gioiTinh = data.getStringExtra("updated_gioitinh");
+
+                    if (userprofile != null) {
+                        userprofile = new UserProfile(
+                                userprofile.getID(),
+                                userprofile.getEmail(),
+                                userprofile.getUser_name(),
+                                hoTen != null ? hoTen : userprofile.getHo_ten(),
+                                userprofile.getNgay_sinh(),
+                                soDienThoai != null ? soDienThoai : userprofile.getSo_dien_thoai(),
+                                diaChi != null ? diaChi : userprofile.getDia_chi(),
+                                gioiTinh != null ? gioiTinh : userprofile.getGioitinh(),
+                                userprofile.getChuc_vu()
+                        );
+                    }
+
+                    if (hoTen != null) textviewProfile.setText(hoTen);
+                    if (soDienThoai != null) textviewPhone.setText(soDienThoai);
+                    if (diaChi != null) textviewAddress.setText(diaChi);
+                    if (gioiTinh != null) textviewGender.setText(gioiTinh);
+                }
+            }
+    );
+
+    private void openEditProfile() {
+        UserProfile latestProfile = SharedPrefManager.getInstance(requireContext()).getProfile();
+        if (latestProfile != null) {
+            userprofile = latestProfile;
+        }
+
+        Intent intent = new Intent(requireContext(), EditProfile.class);
+        intent.putExtra("accessToken", SharedPrefManager.getInstance(requireContext()).getToken());
+        intent.putExtra("Userprofile", userprofile);
+        editProfileLauncher.launch(intent);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        UserProfile latestProfile = SharedPrefManager.getInstance(requireContext()).getProfile();
+        if (latestProfile != null) {
+            userprofile = latestProfile;
+            setViewProfile();
+        }
     }
 }

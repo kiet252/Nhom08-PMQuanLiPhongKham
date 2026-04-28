@@ -52,6 +52,10 @@ public class dashboard extends AppCompatActivity {
             } else if (itemId == R.id.nav_notifications) {
                 selectedFragment = new NotificationFragment();
             } else if (itemId == R.id.nav_account) {
+                UserProfile latestProfile = SharedPrefManager.getInstance(this).getProfile();
+                if (latestProfile != null) {
+                    profile = latestProfile;
+                }
                 selectedFragment = AccountFragment.newInstance(profile);
             }
 
