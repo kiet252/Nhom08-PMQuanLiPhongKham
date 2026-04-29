@@ -17,7 +17,10 @@
         android:text="Ngày khám"
         android:textColor="@color/app_primary_btn_color"
         android:textSize="14sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:drawableStart="@drawable/ic_date_exam_wrapper"
+        android:drawablePadding="8dp"
+        android:gravity="center_vertical"/>
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"

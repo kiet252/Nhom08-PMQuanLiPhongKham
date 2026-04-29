@@ -287,31 +287,31 @@
                                 android:id="@+id/rbGenderMale"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:buttonTint="#2196F3"
                                 android:paddingVertical="6dp"
                                 android:text="Nam"
                                 android:textColor="#1E293B"
-                                android:textSize="15sp" />
+                                android:textSize="15sp"
+                                app:buttonTint="#0D3F6E"/>
 
                             <RadioButton
                                 android:id="@+id/rbGenderFemale"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:buttonTint="#2196F3"
                                 android:paddingVertical="6dp"
                                 android:text="Nữ"
                                 android:textColor="#1E293B"
-                                android:textSize="15sp" />
+                                android:textSize="15sp"
+                                app:buttonTint="#0D3F6E"/>
 
                             <RadioButton
                                 android:id="@+id/rbGenderOther"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:buttonTint="#2196F3"
                                 android:paddingVertical="6dp"
                                 android:text="Khác"
                                 android:textColor="#1E293B"
-                                android:textSize="15sp" />
+                                android:textSize="15sp"
+                                app:buttonTint="#0D3F6E"/>
                         </RadioGroup>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>

@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:text="Thông tin bệnh nhân"
-            android:textColor="@color/app_primary_btn_color"
+            android:textColor="#0D3F6E"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -68,7 +68,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:text="Thông tin phiếu khám"
-            android:textColor="@color/app_primary_btn_color"
+            android:textColor="#0D3F6E"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -114,7 +114,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="Triệu chứng ban đầu"
-            android:textColor="@color/app_primary_text_color"
+            android:textColor="#0D3F6E"
             android:textSize="15sp"
             android:textStyle="bold" />
 
@@ -141,7 +141,7 @@
                 android:layout_height="wrap_content"
                 android:text="Đóng"
                 android:textColor="@android:color/white"
-                app:backgroundTint="@color/app_primary_btn_color"
+                app:backgroundTint="#0D3F6E"
                 app:cornerRadius="10dp" />
         </LinearLayout>
 

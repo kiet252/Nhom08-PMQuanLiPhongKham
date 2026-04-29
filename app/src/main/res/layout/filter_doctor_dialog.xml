@@ -45,7 +45,7 @@
             android:layout_marginStart="8dp"
             android:text="Áp dụng"
             android:textColor="@android:color/white"
-            app:backgroundTint="@color/app_primary_btn_color"
+            app:backgroundTint="#0D3F6E"
             app:cornerRadius="10dp" />
     </LinearLayout>
 
