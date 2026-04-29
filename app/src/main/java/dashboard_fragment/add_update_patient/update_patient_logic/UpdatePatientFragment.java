@@ -164,6 +164,7 @@ public class UpdatePatientFragment extends Fragment {
             public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
                 if (response.isSuccessful()) {
                     Toast.makeText(getContext(), "Cập nhật thông tin thành công!", Toast.LENGTH_SHORT).show();
+                    resetForm();
                 } else if (response.code() == 409) {
                     EdtCCCD.setError("Số CCCD này đã tồn tại trong hệ thống!");
                     EdtCCCD.requestFocus();
@@ -250,5 +251,25 @@ public class UpdatePatientFragment extends Fragment {
         }
         return true;
     }
+
+    @ExternalCall
+    public void resetForm() {
+        EdtSearchPatient.setText("");
+        EdtFullName.setText("");
+        EdtBirthday.setText("");
+        EdtAddress.setText("");
+        EdtPhone.setText("");
+        EdtCCCD.setText("");
+
+        EdtSearchPatient.setError(null);
+        EdtAddress.setError(null);
+        EdtPhone.setError(null);
+        EdtCCCD.setError(null);
+
+        RgGender.clearCheck();
+        selectedRadioButton = null;
+        foundPatient = null;
+    }
+
 
 }

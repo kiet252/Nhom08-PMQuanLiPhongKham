@@ -1,11 +1,7 @@
 package dashboard_fragment.add_update_patient;
 
-import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 
 import androidx.activity.EdgeToEdge;
@@ -23,7 +19,7 @@ import dashboard_fragment.add_update_patient.update_patient_logic.UpdatePatientF
 
 public class AddUpdatePatientInfo_staff extends AppCompatActivity {
 
-    private MaterialButton BtnCreatePatient, BtnUpdatePatient, BtnSavePatientInfo, BtnExitAddCreatePatient;
+    private MaterialButton BtnCreatePatient, BtnUpdatePatient, BtnSavePatientInfo, BtnDeleteCurrentFormAddCreatePatient;
     private ImageButton BtnBackAddUpdatePatient;
     private CreatePatientFragment CurrentCreatePatientFragment;
     private UpdatePatientFragment CurrentUpdatePatientFragment;
@@ -49,7 +45,7 @@ public class AddUpdatePatientInfo_staff extends AppCompatActivity {
         BtnUpdatePatient = findViewById(R.id.btnUpdatePatient);
         BtnSavePatientInfo = findViewById(R.id.btnSavePatientInfo);
         BtnBackAddUpdatePatient = findViewById(R.id.btnBackAddUpdatePatient);
-        BtnExitAddCreatePatient = findViewById(R.id.btnExitAddCreatePatient);
+        BtnDeleteCurrentFormAddCreatePatient = findViewById(R.id.btnDeleteCurrentFormAddCreatePatient);
     }
 
     private void setupListeners() {
@@ -57,7 +53,7 @@ public class AddUpdatePatientInfo_staff extends AppCompatActivity {
         BtnUpdatePatient.setOnClickListener(v -> UpdatePatientReplaceFragment());
         BtnSavePatientInfo.setOnClickListener(v -> SavePatientCurrentInfo());
         BtnBackAddUpdatePatient.setOnClickListener(v -> backToPreviousActivity());
-        BtnExitAddCreatePatient.setOnClickListener(v -> backToPreviousActivity());
+        BtnDeleteCurrentFormAddCreatePatient.setOnClickListener(v -> resetCurrentForm());
     }
 
     private void CreateNewPatientReplaceFragment() {
@@ -113,6 +109,15 @@ public class AddUpdatePatientInfo_staff extends AppCompatActivity {
     }
     private void backToPreviousActivity() {
         finish();
+    }
+    private void resetCurrentForm(){
+        Fragment currentVisibleFrag = getSupportFragmentManager().findFragmentById(R.id.patientFragmentContainer);
+
+        if (currentVisibleFrag instanceof CreatePatientFragment) {
+            ((CreatePatientFragment) currentVisibleFrag).resetForm();
+        } else if (currentVisibleFrag instanceof UpdatePatientFragment) {
+            ((UpdatePatientFragment) currentVisibleFrag).resetForm();
+        }
     }
 
 }

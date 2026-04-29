@@ -151,6 +151,7 @@ public class CreatePatientFragment extends Fragment {
                 if (response.isSuccessful()) {
                     if (response.body() != null && !response.body().isEmpty()) {
                         Toast.makeText(requireContext(), "Thêm thành công!", Toast.LENGTH_SHORT).show();
+                        resetForm();
                     } else {
                         Log.e("API_DEBUG", "Success but empty body");
                     }
@@ -288,4 +289,35 @@ public class CreatePatientFragment extends Fragment {
         }
         return true;
     }
+
+    @ExternalCall
+    public void resetForm() {
+        EdtFullName.setText("");
+        EdtAddress.setText("");
+        EdtPhone.setText("");
+        EdtCCCD.setText("");
+
+        EdtFullName.setError(null);
+        EdtAddress.setError(null);
+        EdtPhone.setError(null);
+        EdtCCCD.setError(null);
+
+        RgGender.clearCheck();
+        selectedRadioButton = null;
+
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+
+        for (int i = 0; i < SpnBirthYear.getCount(); i++) {
+            Object item = SpnBirthYear.getItemAtPosition(i);
+            if (item instanceof Integer && (Integer) item == currentYear) {
+                SpnBirthYear.setSelection(i);
+                break;
+            }
+        }
+
+        SpnBirthMonth.setSelection(0);
+        updateDaySpinner();
+        SpnBirthDay.setSelection(0);
+    }
+
 }
