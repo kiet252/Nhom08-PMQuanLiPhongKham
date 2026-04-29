@@ -1,7 +1,9 @@
 package dashboard_fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -9,41 +11,26 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.nhom08_quanlyphongkham.R;
+import com.google.android.material.button.MaterialButton;
+import dashboard_fragment.add_update_patient.AddUpdatePatientInfo_staff;
+import dashboard_fragment.create_examination_form.CreateExaminationForm_staff;
+import dashboard_fragment.manage_bill.ManageBill_staff;
+import dashboard_fragment.manage_examination_form.ManageExaminationForm_staff;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link HomeFragment_staff#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class HomeFragment_staff extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String ARG_TOKEN = "token";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private String currentToken;
+    private CardView BtnCreateExForm, BtnManageMedReport, BtnAddUpdatePatientInfo, BtnManageBill;
 
     public HomeFragment_staff() {
-        // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment HomeFragment_staff.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static HomeFragment_staff newInstance(String param1, String param2) {
+    public static HomeFragment_staff newInstance(String token) {
         HomeFragment_staff fragment = new HomeFragment_staff();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putString(ARG_TOKEN, token);
         fragment.setArguments(args);
         return fragment;
     }
@@ -51,16 +38,65 @@ public class HomeFragment_staff extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            currentToken = getArguments().getString(ARG_TOKEN);
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home_staff, container, false);
+        View view = inflater.inflate(R.layout.fragment_home_staff, container, false);
+        initializeViews(view);
+        setupListeners();
+
+        return view;
+    }
+
+    private void initializeViews(View view) {
+        BtnCreateExForm = view.findViewById(R.id.CardViewCreateExaminationForm);
+        BtnManageMedReport = view.findViewById(R.id.CardViewManageMedReport);
+        BtnAddUpdatePatientInfo = view.findViewById(R.id.CardViewAddUpdatePatientInfo);
+        BtnManageBill = view.findViewById(R.id.CardViewManageBill);
+    }
+
+    private void setupListeners() {
+        BtnAddUpdatePatientInfo.setOnClickListener(v -> startAddUpdatePatientIntent());
+        BtnCreateExForm.setOnClickListener(v -> startCreateExaminationFormIntent());
+        BtnManageMedReport.setOnClickListener(v -> startManageExaminationFormIntent());
+        BtnManageBill.setOnClickListener(v-> startManageBillIntent());
+    }
+
+    private void startAddUpdatePatientIntent() {
+        Intent IntentAddUpdatePatient = new Intent(getContext(), AddUpdatePatientInfo_staff.class);
+
+        IntentAddUpdatePatient.putExtra("accessToken", currentToken);
+
+        startActivity(IntentAddUpdatePatient);
+    }
+    private void startCreateExaminationFormIntent()
+    {
+        Intent IntentCreateExaminationForm = new Intent(getContext(), CreateExaminationForm_staff.class);
+
+        IntentCreateExaminationForm.putExtra("accessToken", currentToken);
+
+        startActivity(IntentCreateExaminationForm);
+    }
+
+    private void startManageExaminationFormIntent() {
+        Intent IntentManageExaminationForm = new Intent(getContext(), ManageExaminationForm_staff.class);
+
+        IntentManageExaminationForm.putExtra("accessToken", currentToken);
+
+        startActivity(IntentManageExaminationForm);
+    }
+
+    private void startManageBillIntent() {
+        Intent IntentManageBill= new Intent(getContext(), ManageBill_staff.class);
+
+        IntentManageBill.putExtra("accessToken", currentToken);
+
+        startActivity(IntentManageBill);
     }
 }

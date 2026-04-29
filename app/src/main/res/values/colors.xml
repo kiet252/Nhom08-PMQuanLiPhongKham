@@ -13,4 +13,10 @@
 
     <color name="change_password_dialog_cancel_btn_color">#FFFFFFFF</color>
     <color name="change_password_dialog_cancel_btn_text_color">#EE2400</color>
+
+    <color name="dialog_cancel_btn_color">#FFFFFFFF</color>
+    <color name="dialog_cancel_btn_text_color">#EE2400</color>
+
+    <color name="manage_ex_form_patient_bg_color">#F4F7FA</color>
+    <color name="manage_ex_form_group_bg_color">#E3F2FD</color>
 </resources>

@@ -16,6 +16,25 @@
         >
 
 
+        android:theme="@style/Theme.Nhom08QuanLyPhongKham">
+        <activity
+            android:name="dashboard_fragment.edit_profile.EditProfile"
+            android:exported="false" />
+        <activity
+            android:name="dashboard_fragment.manage_bill.BillDetail_staff"
+            android:exported="false" />
+        <activity
+            android:name="dashboard_fragment.manage_bill.ManageBill_staff"
+            android:exported="false" />
+        <activity
+            android:name="dashboard_fragment.manage_examination_form.ManageExaminationForm_staff"
+            android:exported="false" />
+        <activity
+            android:name="dashboard_fragment.add_update_patient.AddUpdatePatientInfo_staff"
+            android:exported="false" />
+        <activity
+            android:name="dashboard_fragment.create_examination_form.CreateExaminationForm_staff"
+            android:exported="false" />
         <activity
             android:name=".login"
             android:exported="true">
@@ -38,6 +57,7 @@
             android:exported="false" />
         <activity android:name=".create_staff" android:exported="false" />
 
+            android:exported="true" />
     </application>
 
 </manifest>

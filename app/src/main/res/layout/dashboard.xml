@@ -12,8 +12,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         app:elevation="16dp"
-        app:itemIconTint="#2196F3"
-        app:itemTextColor="#2196F3"
+        app:backgroundTint="#F0F7FF"
+        app:itemIconTint="#0D5FA8"
+        app:itemTextColor="#0D5FA8"
         app:menu="@menu/bottom_menu" />
 
     <FrameLayout

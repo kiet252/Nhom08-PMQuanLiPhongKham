@@ -50,6 +50,7 @@ dependencies {
 // 3. Module core để các module trên chạy được
     implementation("io.github.jan-tennert.supabase:supabase-kt:3.5.0")
     implementation("io.github.jan-tennert.supabase:realtime-kt:3.0.1")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

@@ -61,8 +61,8 @@ public class login extends AppCompatActivity {
             return insets;
         });
 
-        authRepository = new AuthRepository(this, getString(R.string.abAIkey));
-        profileRepository = new ProfileRepository(this, getString(R.string.abAIkey));
+        authRepository = new AuthRepository(this);
+        profileRepository = new ProfileRepository(this);
 
         initializeViews();
         setupListeners();
@@ -146,9 +146,6 @@ public class login extends AppCompatActivity {
                 SharedPrefManager.getInstance(login.this).saveProfile(profile);
                 Intent logined = new Intent(login.this, dashboard.class);
 
-                logined.putExtra("accessToken", currentToken);
-                logined.putExtra("refreshToken", currentRefreshToken);
-                logined.putExtra("Userprofile", profile);
                 startActivity(logined);
                 finish();
             }
@@ -157,8 +154,6 @@ public class login extends AppCompatActivity {
             public void onFailure(@NonNull Call<List<UserProfile>> call, @NonNull Throwable t) {
                 Toast.makeText(login.this, "Lỗi tài khoản: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
-
-
         });
     }
 }

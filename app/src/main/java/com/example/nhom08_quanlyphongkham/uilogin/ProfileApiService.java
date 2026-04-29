@@ -16,14 +16,12 @@ import retrofit2.http.Query;
 public interface ProfileApiService {
     @GET("rest/v1/profiles")
     Call<List<UserProfile>> getProfile(
-            @Header("apikey") String apiKey,
             @Query("id") String id,
             @Query("select") String select
     );
 
     @GET("rest/v1/profiles")
     Call<List<UserProfile>> getListProfiles(
-            @Header("apikey") String apiKey,
             @Query("chuc_vu") String role, // Tham số này sẽ truyền "neq.Quản trị viên"
             @Query("select") String select
     );
@@ -35,5 +33,11 @@ public interface ProfileApiService {
             @Header("Prefer") String prefer,
             @Query("id") String filter,
             @Body Map<String, Object> updates
+    );
+}
+    @GET("rest/v1/profiles")
+    Call<List<UserProfile>> getDoctors(
+            @Query("chuc_vu") String chucVu,
+            @Query("select") String select
     );
 }

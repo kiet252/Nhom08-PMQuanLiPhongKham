@@ -9,6 +9,8 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
@@ -33,6 +35,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import dashboard_fragment.edit_profile.EditProfile;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -45,22 +48,22 @@ import retrofit2.Response;
 public class AccountFragment extends Fragment {
 
     private static final String ARG_PROFILE = "arg_profile";
-    private static final String ARG_TOKEN = "token";
     private UserProfile userprofile;
-    private String currentToken;
+
     TextView textviewProfile, textviewEmail, textviewPhone, textviewBirthday, textviewGender, textviewAddress, textviewJobTitle;
-    Button btnEditPass;
-    Button btnLogout;
+    View btnEditProfile;
+
+    View btnEditPass;
+    View btnLogout;
     private AuthRepository authRepository;
 
     public AccountFragment() {
     }
 
-    public static AccountFragment newInstance(UserProfile profile, String token) {
+    public static AccountFragment newInstance(UserProfile profile) {
         AccountFragment fragment = new AccountFragment();
         Bundle args = new Bundle();
         args.putSerializable(ARG_PROFILE, profile);
-        args.putString(ARG_TOKEN, token);
         fragment.setArguments(args);
         return fragment;
     }
@@ -71,10 +74,9 @@ public class AccountFragment extends Fragment {
 
         if (getArguments() != null) {
             userprofile = (UserProfile) getArguments().getSerializable(ARG_PROFILE);
-            currentToken = getArguments().getString(ARG_TOKEN);
         }
 
-        authRepository = new AuthRepository(requireContext(), getString(R.string.abAIkey));
+        authRepository = new AuthRepository(requireContext());
     }
 
     @Override
@@ -97,12 +99,13 @@ public class AccountFragment extends Fragment {
         textviewAddress = view.findViewById(R.id.txtAddress);
         textviewJobTitle = view.findViewById(R.id.txtJobTitle);
 
+        btnEditProfile = view.findViewById(R.id.btnEditProfile);
         btnEditPass = view.findViewById(R.id.btnEditPass);
         btnLogout = view.findViewById(R.id.btnLogout);
     }
 
     private void setViewProfile() {
-        String GreetingText = "Xin chào, " + userprofile.getHo_ten();
+        String GreetingText =  userprofile.getHo_ten();
 
         textviewProfile.setText(GreetingText);
 
@@ -122,6 +125,7 @@ public class AccountFragment extends Fragment {
     }
 
     private void setupListeners() {
+        btnEditProfile.setOnClickListener(v -> openEditProfile());
         btnEditPass.setOnClickListener(v -> showChangePasswordDialog());
         btnLogout.setOnClickListener(v->showLogoutDialog());
     }
@@ -145,7 +149,7 @@ public class AccountFragment extends Fragment {
 
     private void Change_Password_Dialog_Show_UI(AlertDialog dialog, View dialogView) {
         Button btnConfirm = dialog.findViewById(R.id.btnUpdatePassword);
-        Button btnCancel = dialog.findViewById(R.id.btnLogout);
+        Button btnCancel = dialog.findViewById(R.id.btnChangePassExit);
 
         TextInputEditText edtCurrentPassword = dialogView.findViewById(R.id.edtCurrentPassword);
         TextInputEditText edtNewPassword = dialogView.findViewById(R.id.edtNewPassword);
@@ -212,8 +216,6 @@ public class AccountFragment extends Fragment {
             public void onFailure(@NonNull Call<LoginResponse> call, @NonNull Throwable t) {
                 Toast.makeText(requireContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
-
-
         });
     }
 
@@ -256,24 +258,75 @@ public class AccountFragment extends Fragment {
         dialog.show();
     }
     private void Logout_Dialog_Show_UI(AlertDialog dialog, View dialogView) {
-        Button btnLogoutConfirm = dialog.findViewById(R.id.btnLogoutConfirm);
-        Button btnLogoutCancel = dialog.findViewById(R.id.btnLogoutCancel);
+        Button btnLogoutConfirm = dialogView.findViewById(R.id.btnLogoutConfirm);
+        Button btnLogoutCancel = dialogView.findViewById(R.id.btnLogoutCancel);
 
-        btnLogoutConfirm.setOnClickListener(v->{
-            SharedPreferences sharedPreferences = dialog.getContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-            SharedPrefManager.getInstance(dialog.getContext()).clear();//xoa
+        btnLogoutConfirm.setOnClickListener(v -> {
+            // Clean up using your manager
+            SharedPrefManager.getInstance(requireContext()).clear();
             dialog.dismiss();
 
-            Intent intent = new Intent(dialog.getContext(), login.class);
+            Intent intent = new Intent(requireContext(), login.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            dialog.getContext().startActivity(intent);
+            startActivity(intent);
+            requireActivity().finish();
+        });
 
-            if (dialog.getContext() instanceof Activity) {
-                ((Activity) dialog.getContext()).finish();
+        btnLogoutCancel.setOnClickListener(v -> dialog.dismiss());
+    }
+    private final ActivityResultLauncher<Intent> editProfileLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Intent data = result.getData();
+
+                    String hoTen = data.getStringExtra("updated_ho_ten");
+                    String soDienThoai = data.getStringExtra("updated_so_dien_thoai");
+                    String diaChi = data.getStringExtra("updated_dia_chi");
+                    String gioiTinh = data.getStringExtra("updated_gioitinh");
+
+                    if (userprofile != null) {
+                        userprofile = new UserProfile(
+                                userprofile.getID(),
+                                userprofile.getEmail(),
+                                userprofile.getUser_name(),
+                                hoTen != null ? hoTen : userprofile.getHo_ten(),
+                                userprofile.getNgay_sinh(),
+                                soDienThoai != null ? soDienThoai : userprofile.getSo_dien_thoai(),
+                                diaChi != null ? diaChi : userprofile.getDia_chi(),
+                                gioiTinh != null ? gioiTinh : userprofile.getGioitinh(),
+                                userprofile.getChuc_vu()
+                        );
+                    }
+
+                    if (hoTen != null) textviewProfile.setText(hoTen);
+                    if (soDienThoai != null) textviewPhone.setText(soDienThoai);
+                    if (diaChi != null) textviewAddress.setText(diaChi);
+                    if (gioiTinh != null) textviewGender.setText(gioiTinh);
+                }
             }
-        });
-        btnLogoutCancel.setOnClickListener(v ->{
-            dialog.dismiss();
-        });
+    );
+
+    private void openEditProfile() {
+        UserProfile latestProfile = SharedPrefManager.getInstance(requireContext()).getProfile();
+        if (latestProfile != null) {
+            userprofile = latestProfile;
+        }
+
+        Intent intent = new Intent(requireContext(), EditProfile.class);
+        intent.putExtra("accessToken", SharedPrefManager.getInstance(requireContext()).getToken());
+        intent.putExtra("Userprofile", userprofile);
+        editProfileLauncher.launch(intent);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        UserProfile latestProfile = SharedPrefManager.getInstance(requireContext()).getProfile();
+        if (latestProfile != null) {
+            userprofile = latestProfile;
+            setViewProfile();
+        }
     }
 }
