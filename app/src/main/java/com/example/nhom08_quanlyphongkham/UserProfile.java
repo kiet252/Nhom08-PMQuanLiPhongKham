@@ -13,6 +13,8 @@ public class UserProfile implements Serializable {
     private String dia_chi;
     private String gioitinh;
     private String chuc_vu;
+
+    private Date created_at;
     private String id;
     public UserProfile() {
     }
@@ -56,4 +58,5 @@ public class UserProfile implements Serializable {
     public String getChuc_vu() {
         return chuc_vu;
     }
+    public Date getCreated_at() {return created_at; }
 }
