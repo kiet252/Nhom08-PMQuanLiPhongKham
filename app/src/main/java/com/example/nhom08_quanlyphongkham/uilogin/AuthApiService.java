@@ -21,9 +21,4 @@ public interface AuthApiService {
             @Body RefreshTokenRequest request
     );
 
-    @POST("auth/v1/token?grant_type=refresh_token")
-    Call<LoginResponse> refreshToken(
-            @Header("apikey") String apiKey,
-            @Body RefreshTokenRequest request
-    );
 }

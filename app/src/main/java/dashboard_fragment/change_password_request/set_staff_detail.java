@@ -48,7 +48,7 @@ public class set_staff_detail extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.set_staff_detail);
 
-        profileRepository = new ProfileRepository(this, getString(R.string.abAIkey));
+        profileRepository = new ProfileRepository(this);
 
         initViews();
         getDataFromIntent();

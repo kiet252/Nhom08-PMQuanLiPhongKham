@@ -88,7 +88,7 @@ public class staff_detail extends AppCompatActivity {
     );
     private void loadData(String id)
     {
-        ProfileRepository profile = new ProfileRepository(this, getString(R.string.abAIkey));
+        ProfileRepository profile = new ProfileRepository(this);
         profile.getProfile(id).enqueue(new Callback<List<UserProfile>>() {
             @Override
             public void onResponse(Call<List<UserProfile>> call, Response<List<UserProfile>> response) {

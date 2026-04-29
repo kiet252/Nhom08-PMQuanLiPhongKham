@@ -28,13 +28,11 @@ public interface ProfileApiService {
 
     @PATCH("rest/v1/profiles")
     Call<ResponseBody> updateProfile(
-            @Header("apikey") String apiKey,
             @Header("Authorization") String token,
             @Header("Prefer") String prefer,
             @Query("id") String filter,
             @Body Map<String, Object> updates
     );
-}
     @GET("rest/v1/profiles")
     Call<List<UserProfile>> getDoctors(
             @Query("chuc_vu") String chucVu,

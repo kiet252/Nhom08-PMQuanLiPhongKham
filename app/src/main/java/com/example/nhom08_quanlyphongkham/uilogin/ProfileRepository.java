@@ -13,8 +13,10 @@ import retrofit2.Call;
 public class ProfileRepository {
 
     private final ProfileApiService profileApiService;
+    private final Context context;
 
     public ProfileRepository(Context context) {
+        this.context = context;
         this.profileApiService = SupabaseClientProvider
                 .getClient(context)
                 .create(ProfileApiService.class);
@@ -39,4 +41,12 @@ public class ProfileRepository {
                 "*"
         );
     }
+    public Call<ResponseBody> updateProfile(String userId, Map<String, Object> updates) {
+        String token = SharedPrefManager.getInstance(context).getToken();
+        return profileApiService.updateProfile(
+                "Bearer " + token,
+                "return=minimal",
+                "eq." + userId,
+                updates);
+        }
 }

@@ -48,7 +48,7 @@ public class admin_manage_staff extends AppCompatActivity {
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     // Khi nhận được RESULT_OK, gọi hàm load data của bạn
-                    loadData(new ProfileRepository(this, getString(R.string.abAIkey)));
+                    loadData(new ProfileRepository(this));
                 }
             }
     );
@@ -75,7 +75,7 @@ public class admin_manage_staff extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         // 3. Khởi tạo Repository
-        ProfileRepository profileRepository = new ProfileRepository(this, getString(R.string.abAIkey));
+        ProfileRepository profileRepository = new ProfileRepository(this);
 
         // 4. Gọi API lấy dữ liệu
         loadData(profileRepository);
