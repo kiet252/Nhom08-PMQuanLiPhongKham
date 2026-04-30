@@ -145,10 +145,72 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+
+
+
             </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-230dp"
+                android:paddingHorizontal="24dp">
+
+                <!-- Cụm nút Chọn và Xóa nằm bên phải -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tv_chon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="48dp"
+                        android:minHeight="48dp"
+                        android:gravity="center"
+                        android:text="Chọn"
+                        android:textColor="#000000"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:padding="8dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true" />
+
+                    <TextView
+                        android:id="@+id/tv_xoa"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="48dp"
+                        android:minHeight="48dp"
+                        android:gravity="center"
+                        android:layout_marginStart="8dp"
+                        android:text="Xóa"
+                        android:textColor="#FF2C2C"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:padding="8dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true" />
+                </LinearLayout>
+            </RelativeLayout>
+
         </LinearLayout>
     </RelativeLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btn_them_thong_bao"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="24dp"
+        android:src="@android:drawable/ic_input_add"
+        app:backgroundTint="#4A81B0"
+        app:tint="#FFFFFF"
+        app:elevation="6dp"
+        android:contentDescription="Thêm thông báo mới" />
 
 </FrameLayout>
