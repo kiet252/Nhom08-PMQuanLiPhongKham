@@ -59,7 +59,7 @@ public class create_staff extends AppCompatActivity {
     }
 
     private void setupRoleDropdown() {
-        String[] roles = new String[]{"Bác sĩ", "Y tá", "Nhân viên", "Tiếp tân"};
+        String[] roles = new String[]{"Bác sĩ", "Nhân viên"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, roles);
         actvRole.setAdapter(adapter);
     }
