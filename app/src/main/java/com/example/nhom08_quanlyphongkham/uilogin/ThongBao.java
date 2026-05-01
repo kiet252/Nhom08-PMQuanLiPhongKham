@@ -4,7 +4,7 @@ import com.example.nhom08_quanlyphongkham.UserProfile;
 
 public class ThongBao
 {
-    private int id;
+    private Integer id;
     private String tieu_de;
     private String noi_dung;
 
