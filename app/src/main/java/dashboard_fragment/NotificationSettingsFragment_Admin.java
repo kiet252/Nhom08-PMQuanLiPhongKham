@@ -47,10 +47,6 @@ public class NotificationSettingsFragment_Admin extends Fragment {
     private AuthRepository authRepository;
     private int soLuong = 0;
 
-    private int idThongBaoDuocChon = -1;
-    private View viewDangDuocChon = null;
-    private TextView tvChon, tvXoa;
-
     public NotificationSettingsFragment_Admin() {
 
     }
@@ -88,9 +84,6 @@ public class NotificationSettingsFragment_Admin extends Fragment {
 
         layoutDanhSach = view.findViewById(R.id.layout_danh_sach_thong_bao_fragment_admin);
         btnThem = view.findViewById(R.id.btn_them_thong_bao_fragment_admin);
-
-        tvChon = view.findViewById(R.id.tv_chon_fragment_admin);
-        tvXoa = view.findViewById(R.id.tv_xoa_fragment_admin);
 
         if (layoutDanhSach == null) {
             Toast.makeText(getContext(), "LỖI: Chưa gắn ID layout_danh_sach_thong_bao vào file XML!", Toast.LENGTH_LONG).show();
@@ -186,29 +179,6 @@ public class NotificationSettingsFragment_Admin extends Fragment {
                 }
             }
         });
-    }
-    private void thucHienXoa(int id) {
-        new AlertDialog.Builder(getContext())
-                .setTitle("Xác nhận xóa")
-                .setMessage("Bạn có chắc chắn muốn xóa thông báo này?")
-                .setPositiveButton("Xóa", (dialog, which) -> {
-                    authRepository.xoaThongBaoAdmin(id).enqueue(new Callback<Void>() {
-                        @Override
-                        public void onResponse(Call<Void> call, Response<Void> response) {
-                            if (response.isSuccessful()) {
-                                Toast.makeText(getContext(), "Xóa thành công!", Toast.LENGTH_SHORT).show();
-                                idThongBaoDuocChon = -1;
-                                taiDuLieu(); // Tải lại danh sách
-                            }
-                        }
-                        @Override
-                        public void onFailure(Call<Void> call, Throwable t) {
-                            Toast.makeText(getContext(), "Lỗi xóa dữ liệu", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
     }
     private int dpToPx(int dp)
     {
