@@ -14,6 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Nhom08QuanLyPhongKham">
         <activity
+            android:name=".NotificationFragment"
+            android:exported="true" />
+        <activity
             android:name=".NotificationSettingsFragment_Admin"
             android:exported="false" />
         <activity
