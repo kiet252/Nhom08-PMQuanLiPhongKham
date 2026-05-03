@@ -31,7 +31,7 @@ public class ProfileRepository {
     public Call<List<UserProfile>> getListProfile(String role) {
         return profileApiService.getListProfiles(
                 role,
-                "id,ho_ten,chuc_vu"
+                "id,ho_ten,chuc_vu,anh_dai_dien"
         );
     }
 

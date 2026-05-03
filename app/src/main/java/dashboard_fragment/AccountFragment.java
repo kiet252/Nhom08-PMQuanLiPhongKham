@@ -14,10 +14,12 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +37,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import coil.Coil;
+import coil.request.ImageRequest;
 import dashboard_fragment.edit_profile.EditProfile;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -53,6 +57,7 @@ public class AccountFragment extends Fragment {
     TextView textviewProfile, textviewEmail, textviewPhone, textviewBirthday, textviewGender, textviewAddress, textviewJobTitle;
     View btnEditProfile;
 
+    ImageView imgProfileanh_dai_dien;
     View btnEditPass;
     View btnLogout;
     private AuthRepository authRepository;
@@ -98,6 +103,7 @@ public class AccountFragment extends Fragment {
         textviewGender = view.findViewById(R.id.txtGender);
         textviewAddress = view.findViewById(R.id.txtAddress);
         textviewJobTitle = view.findViewById(R.id.txtJobTitle);
+        imgProfileanh_dai_dien = view.findViewById(R.id.imgProfileAvatar);
 
         btnEditProfile = view.findViewById(R.id.btnEditProfile);
         btnEditPass = view.findViewById(R.id.btnEditPass);
@@ -105,13 +111,9 @@ public class AccountFragment extends Fragment {
     }
 
     private void setViewProfile() {
-        String GreetingText =  userprofile.getHo_ten();
-
-        textviewProfile.setText(GreetingText);
-
+        textviewProfile.setText(userprofile.getHo_ten());
         textviewEmail.setText(userprofile.getEmail());
         textviewPhone.setText(userprofile.getSo_dien_thoai());
-
         Date NgaySinhUser = userprofile.getNgay_sinh();
 
         if (NgaySinhUser != null) {
@@ -122,6 +124,15 @@ public class AccountFragment extends Fragment {
         textviewGender.setText(userprofile.getGioitinh());
         textviewAddress.setText(userprofile.getDia_chi());
         textviewJobTitle.setText(userprofile.getChuc_vu());
+        ImageRequest request = new ImageRequest.Builder(getContext())
+                .data(userprofile.getAnh_dai_dien())
+                .target(imgProfileanh_dai_dien)
+                .crossfade(true) // Hiệu ứng mờ dần khi hiện ảnh
+                .build();
+
+        Coil.imageLoader(getContext()).enqueue(request);
+        Log.d("AccountFragment", "setViewProfile: " + userprofile.getAnh_dai_dien());
+        Log.d("AccountFragment", "diaCHI: : " + userprofile.getDia_chi());
     }
 
     private void setupListeners() {
@@ -284,6 +295,7 @@ public class AccountFragment extends Fragment {
                     String soDienThoai = data.getStringExtra("updated_so_dien_thoai");
                     String diaChi = data.getStringExtra("updated_dia_chi");
                     String gioiTinh = data.getStringExtra("updated_gioitinh");
+                    String anh_dai_dien = data.getStringExtra("updated_anh_dai_dien");
 
                     if (userprofile != null) {
                         userprofile = new UserProfile(
@@ -295,7 +307,8 @@ public class AccountFragment extends Fragment {
                                 soDienThoai != null ? soDienThoai : userprofile.getSo_dien_thoai(),
                                 diaChi != null ? diaChi : userprofile.getDia_chi(),
                                 gioiTinh != null ? gioiTinh : userprofile.getGioitinh(),
-                                userprofile.getChuc_vu()
+                                userprofile.getChuc_vu(),
+                                anh_dai_dien != null ? anh_dai_dien : userprofile.getAnh_dai_dien()
                         );
                     }
 

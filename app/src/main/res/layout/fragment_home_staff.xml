@@ -43,6 +43,7 @@
                         android:textSize="18sp" />
 
                     <TextView
+                        android:id="@+id/staff_home_name"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Lễ tân"

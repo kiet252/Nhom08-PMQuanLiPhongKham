@@ -9,8 +9,11 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.example.nhom08_quanlyphongkham.R;
+import com.example.nhom08_quanlyphongkham.UserProfile;
+import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.google.android.material.button.MaterialButton;
 import dashboard_fragment.add_update_patient.AddUpdatePatientInfo_staff;
 import dashboard_fragment.create_examination_form.CreateExaminationForm_staff;
@@ -50,7 +53,12 @@ public class HomeFragment_staff extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home_staff, container, false);
         initializeViews(view);
         setupListeners();
-
+        // Trong HomeFragment_staff.java -> onCreateView
+        TextView tvName = view.findViewById(R.id.staff_home_name);
+        UserProfile profile = SharedPrefManager.getInstance(requireContext()).getProfile();
+        if (profile != null && profile.getHo_ten() != null) {
+            tvName.setText(profile.getHo_ten()); // Thay chữ "Lễ tân" bằng "Khoa"
+        }
         return view;
     }
 

@@ -52,6 +52,7 @@ dependencies {
     implementation("io.github.jan-tennert.supabase:realtime-kt:3.0.1")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
+    implementation("io.coil-kt:coil:2.4.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
