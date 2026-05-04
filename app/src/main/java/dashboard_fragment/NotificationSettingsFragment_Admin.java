@@ -2,13 +2,17 @@ package dashboard_fragment;
 
 
 import android.app.AlertDialog;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
+
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -20,6 +24,7 @@ import com.example.nhom08_quanlyphongkham.uilogin.ThongBao;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -47,9 +52,14 @@ public class NotificationSettingsFragment_Admin extends Fragment {
     private AuthRepository authRepository;
     private int soLuong = 0;
 
-    public NotificationSettingsFragment_Admin() {
+    //Chức năng Chọn
+    private TextView tvChon, tvXoa;
+    private boolean isSelectionMode = false;
+    private List<Integer> selectedIds = new ArrayList<>();
+    private List<CheckBox> ListCheckBoxes = new ArrayList<>();
+    //
 
-    }
+    public NotificationSettingsFragment_Admin() {}
 
     /**
      * Use this factory method to create a new instance of
@@ -60,7 +70,8 @@ public class NotificationSettingsFragment_Admin extends Fragment {
      * @return A new instance of fragment ReportsFragment_Admin.
      */
     // TODO: Rename and change types and number of parameters
-    public static ReportsFragment_Admin newInstance(String param1, String param2) {
+    public static ReportsFragment_Admin newInstance(String param1, String param2)
+    {
         ReportsFragment_Admin fragment = new ReportsFragment_Admin();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
@@ -69,7 +80,8 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         return fragment;
     }
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
@@ -84,15 +96,51 @@ public class NotificationSettingsFragment_Admin extends Fragment {
 
         layoutDanhSach = view.findViewById(R.id.layout_danh_sach_thong_bao_fragment_admin);
         btnThem = view.findViewById(R.id.btn_them_thong_bao_fragment_admin);
+        tvChon = view.findViewById(R.id.tv_chon_fragment_admin);
+        tvXoa = view.findViewById(R.id.tv_xoa_fragment_admin);
 
-        if (layoutDanhSach == null) {
-            Toast.makeText(getContext(), "LỖI: Chưa gắn ID layout_danh_sach_thong_bao vào file XML!", Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(getContext(), "Đã túm được khung xám! Đang kéo mây...", Toast.LENGTH_SHORT).show();
+        //Xử lý nút chọn (Bật / Tắt)
+        if (tvChon != null)
+        {
+            tvChon.setOnClickListener(v ->{
+                isSelectionMode = !isSelectionMode;
+                if (isSelectionMode)
+                {
+                    tvChon.setText("Hủy");
+                    tvChon.setTextColor(Color.parseColor("#4A81B0"));
+                    for (CheckBox cb : ListCheckBoxes)
+                    {
+                        cb.setVisibility(View.VISIBLE);
+                    }
+                } else
+                    {
+                        tvChon.setText("Chọn");
+                        tvChon.setTextColor(Color.BLACK);
+                        for (CheckBox cb : ListCheckBoxes)
+                        {
+                            cb.setChecked(false);
+                            cb.setVisibility(View.GONE);
+                        }
+                        selectedIds.clear();
+                    }
+            });
         }
+        // Nút Xóa
+        if (tvXoa != null)
+        {
+            tvXoa.setOnClickListener(v -> thucHienXoaNhieu());
+        }
+        if (layoutDanhSach == null)
+        {
+            Toast.makeText(getContext(), "LỖI: Chưa gắn ID layout_danh_sach_thong_bao vào file XML!", Toast.LENGTH_LONG).show();
+        } else
+            {
+                Toast.makeText(getContext(), "Đã túm được khung xám! Đang kéo mây...", Toast.LENGTH_SHORT).show();
+            }
         taiDuLieu();
 
-        if (btnThem != null) {
+        if (btnThem != null)
+        {
             btnThem.setOnClickListener(v -> hienThiDialogThem());
         }
         return view;
@@ -109,11 +157,22 @@ public class NotificationSettingsFragment_Admin extends Fragment {
                     List<ThongBao> ds = response.body();
                     Toast.makeText(getContext(), "THÀNH CÔNG: Tải được " + ds.size() + " thông báo!", Toast.LENGTH_LONG).show();
                     layoutDanhSach.removeAllViews();
+                    ListCheckBoxes.clear();
+                    selectedIds.clear();
+                    //Reset lại nút Chọn về mặc định
+                    isSelectionMode = false;
+                    if (tvChon != null)
+                    {
+                        tvChon.setText("Chọn");
+                        tvChon.setTextColor(Color.BLACK);
+                    }
+
                     Collections.reverse(ds);
                     soLuong = 0;
 
-                    for (ThongBao tb : response.body()) {
-                        themVaoKhungXam(tb.getTieu_de(), tb.getNoi_dung());
+                    for (ThongBao tb : response.body())
+                    {
+                        themVaoKhungXam(tb.getId(), tb.getTieu_de(), tb.getNoi_dung());
                     }
                 } else {
                     Toast.makeText(getContext(), "LỖI SERVER: Không thể tải dữ liệu", Toast.LENGTH_LONG).show();
@@ -126,7 +185,49 @@ public class NotificationSettingsFragment_Admin extends Fragment {
             }
         });
     }
-    private void hienThiDialogThem() {
+    private void thucHienXoaNhieu()
+    {
+        if (selectedIds.isEmpty())
+        {
+            Toast.makeText(getContext(), "Vui lòng tích chọn ít nhất 1 thông báo để xóa!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        new AlertDialog.Builder(getContext())
+                .setTitle("Xác nhận xóa")
+                .setMessage("Bạn có chắc chắn muốn xóa " + selectedIds.size() + " thông báo đã chọn?")
+                .setPositiveButton("Xóa", (dialog, which) ->
+                {
+                    final int[] count = {0};
+                    final int total = selectedIds.size();
+
+                    for (int id : selectedIds)
+                    {
+                        authRepository.xoaThongBao(id).enqueue(new Callback<Void>()
+                        {
+                           @Override
+                           public void onResponse(Call<Void> call, Response<Void> response)
+                           {
+                               count[0]++;
+                               if (count[0] == total)
+                               {
+                                   Toast.makeText(getContext(), "Đã xóa thành công!", Toast.LENGTH_SHORT).show();
+                                   taiDuLieu();
+                               }
+                           }
+                            @Override
+                            public void onFailure(Call<Void> call, Throwable t)
+                            {
+                                count[0]++;
+                                if (count[0] == total) taiDuLieu();
+                            }
+                        });
+                    }
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+    private void hienThiDialogThem()
+    {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Tạo thông báo Admin");
 
@@ -184,8 +285,26 @@ public class NotificationSettingsFragment_Admin extends Fragment {
     {
         return Math.round((float) dp * getResources().getDisplayMetrics().density);
     }
-    private void themVaoKhungXam(String tieuDe, String noiDung) {
+    private void themVaoKhungXam(Integer id, String tieuDe, String noiDung)
+    {
         if (layoutDanhSach == null) return;
+
+        CheckBox checkBox = new CheckBox(getContext());
+        checkBox.setButtonTintList(ColorStateList.valueOf(Color.parseColor("#4CAF50")));
+        checkBox.setVisibility(isSelectionMode ? View.VISIBLE : View.GONE);
+        ListCheckBoxes.add(checkBox);
+
+        checkBox.setOnCheckedChangeListener((buttonView, isChecked) ->
+        {
+            if (isChecked)
+            {
+                if (!selectedIds.contains(id)) selectedIds.add(id);
+            } else
+                {
+                    selectedIds.remove(Integer.valueOf(id));
+                }
+        });
+
 
         TextView tvTieuDe = new TextView(getContext());
         tvTieuDe.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -210,19 +329,29 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         cardMoi.setRadius(dpToPx(12));
         cardMoi.setCardElevation(0f);
 
+        cardMoi.setOnClickListener(v ->
+        {
+            if (isSelectionMode)
+            {
+                checkBox.setChecked(!checkBox.isChecked());
+            }
+        });
+
         LinearLayout lopNgang = new LinearLayout(getContext());
         lopNgang.setOrientation(LinearLayout.HORIZONTAL);
+        lopNgang.setGravity(Gravity.CENTER_VERTICAL);
         lopNgang.setPadding(dpToPx(16), dpToPx(16), dpToPx(16), dpToPx(16));
 
         LinearLayout lopDoc = new LinearLayout(getContext());
         lopDoc.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams lopDocParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams lopDocParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
         lopDocParams.setMarginStart(dpToPx(12));
         lopDoc.setLayoutParams(lopDocParams);
 
         lopDoc.addView(tvTieuDe);
         lopDoc.addView(tvNoiDung);
+
+        lopNgang.addView(checkBox);
         lopNgang.addView(lopDoc);
         cardMoi.addView(lopNgang);
 
