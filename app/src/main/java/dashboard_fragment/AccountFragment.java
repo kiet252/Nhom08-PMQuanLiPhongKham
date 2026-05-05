@@ -78,7 +78,7 @@ public class AccountFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            userprofile = (UserProfile) getArguments().getSerializable(ARG_PROFILE);
+            userprofile = SharedPrefManager.getInstance(requireContext()).getProfile();
         }
 
         authRepository = new AuthRepository(requireContext());
@@ -132,6 +132,7 @@ public class AccountFragment extends Fragment {
 
         Coil.imageLoader(getContext()).enqueue(request);
     }
+
 
     private void setupListeners() {
         btnEditProfile.setOnClickListener(v -> openEditProfile());

@@ -9,12 +9,18 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.google.android.material.button.MaterialButton;
+
+import java.util.Set;
+
+import coil.Coil;
+import coil.request.ImageRequest;
 import dashboard_fragment.add_update_patient.AddUpdatePatientInfo_staff;
 import dashboard_fragment.create_examination_form.CreateExaminationForm_staff;
 import dashboard_fragment.manage_bill.ManageBill_staff;
@@ -55,6 +61,7 @@ public class HomeFragment_staff extends Fragment {
         setupListeners();
         // Trong HomeFragment_staff.java -> onCreateView
         TextView tvName = view.findViewById(R.id.staff_home_name);
+        SetAvatar(view, SharedPrefManager.getInstance(requireContext()).getProfile());
         UserProfile profile = SharedPrefManager.getInstance(requireContext()).getProfile();
         if (profile != null && profile.getHo_ten() != null) {
             tvName.setText(profile.getHo_ten()); // Thay chữ "Lễ tân" bằng "Khoa"
@@ -75,7 +82,18 @@ public class HomeFragment_staff extends Fragment {
         BtnManageMedReport.setOnClickListener(v -> startManageExaminationFormIntent());
         BtnManageBill.setOnClickListener(v-> startManageBillIntent());
     }
+    public void SetAvatar(View view, UserProfile userprofile)
+    {
+        ImageView avatar;
+        avatar = view.findViewById(R.id.home_avatar_staff);
+        ImageRequest request = new ImageRequest.Builder(getContext())
+                .data(userprofile.getAnh_dai_dien())
+                .target(avatar)
+                .crossfade(true) // Hiệu ứng mờ dần khi hiện ảnh
+                .build();
 
+        Coil.imageLoader(getContext()).enqueue(request);
+    }
     private void startAddUpdatePatientIntent() {
         Intent IntentAddUpdatePatient = new Intent(getContext(), AddUpdatePatientInfo_staff.class);
 

@@ -11,12 +11,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.admin_manage_staff;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
+
+import coil.Coil;
+import coil.request.ImageRequest;
 
 public class HomeFragment_admin extends Fragment {
 
@@ -36,7 +40,17 @@ public class HomeFragment_admin extends Fragment {
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_home_admin, container, false);
     }
+    private void LoadImage(UserProfile userProfile, ImageView avatar, View view)
+    {
+        avatar = view.findViewById(R.id.home_avatar_admin);
+        ImageRequest request = new ImageRequest.Builder(getContext())
+                .data(userProfile.getAnh_dai_dien())
+                .target(avatar)
+                .crossfade(true) // Hiệu ứng mờ dần khi hiện ảnh
+                .build();
 
+        Coil.imageLoader(getContext()).enqueue(request);
+    }
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
