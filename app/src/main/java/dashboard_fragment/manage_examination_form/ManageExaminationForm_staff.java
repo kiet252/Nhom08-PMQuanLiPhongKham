@@ -91,7 +91,14 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
 
     private void setupRecycler() {
         RvExaminationsList.setLayoutManager(new LinearLayoutManager(this));
-        groupAdapter = new ExaminationFormGroupAdapter(this);
+        groupAdapter = new ExaminationFormGroupAdapter(this, new ExaminationFormGroupAdapter.OnExaminationFormActionListener() {
+            @Override
+            public void onFormLongClick(ExaminationFormWithPatientDto form) {
+                showExaminationFormActionMenu(form);
+            }
+        });
+
+
         RvExaminationsList.setAdapter(groupAdapter);
     }
 
@@ -342,5 +349,126 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
     }
     private void backToPreviousActivity() {
         finish();
+    }
+    private void showExaminationFormDetails(ExaminationFormWithPatientDto form) {
+        View dialogView = getLayoutInflater().inflate(
+                R.layout.examination_detail_dialog,
+                null,
+                false
+        );
+
+        android.widget.TextView tvPatientName = dialogView.findViewById(R.id.tvDetailPatientName);
+        android.widget.TextView tvBirthday = dialogView.findViewById(R.id.tvDetailBirthday);
+        android.widget.TextView tvAddress = dialogView.findViewById(R.id.tvDetailAddress);
+        android.widget.TextView tvExamDate = dialogView.findViewById(R.id.tvDetailExamDate);
+        android.widget.TextView tvExamTime = dialogView.findViewById(R.id.tvDetailExamTime);
+        android.widget.TextView tvSequence = dialogView.findViewById(R.id.tvDetailSequence);
+        android.widget.TextView tvStatus = dialogView.findViewById(R.id.tvDetailStatus);
+        android.widget.TextView tvSymptoms = dialogView.findViewById(R.id.tvDetailSymptoms);
+        com.google.android.material.button.MaterialButton btnClose =
+                dialogView.findViewById(R.id.btnCloseDetail);
+
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
+        var patient = form.getPatient();
+
+        tvPatientName.setText("Họ tên: " + (patient != null ? patient.getHo_ten() : "--"));
+        tvBirthday.setText("Ngày sinh: " + (patient != null && patient.getNgay_sinh() != null ? sdf.format(patient.getNgay_sinh()) : "--"));
+        tvAddress.setText("Địa chỉ: " + (patient != null ? patient.getDia_chi() : "--"));
+
+        tvExamDate.setText("Ngày khám: " + (form.getNgay_kham() != null ? sdf.format(form.getNgay_kham()) : "--"));
+        tvExamTime.setText("Giờ dự kiến: " + (form.getGio_du_kien() != null ? form.getGio_du_kien() : "--"));
+        tvSequence.setText("Số tiếp nhận: " + form.getSo_tiep_nhan());
+        tvStatus.setText("Trạng thái: " + (form.getTrang_thai() != null ? form.getTrang_thai() : "--"));
+        tvSymptoms.setText(form.getTrieu_chung_ban_dau() != null ? form.getTrieu_chung_ban_dau() : "--");
+
+        androidx.appcompat.app.AlertDialog dialog =
+                new MaterialAlertDialogBuilder(this)
+                        .setView(dialogView)
+                        .create();
+
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+    }
+    private void showExaminationFormActionMenu(ExaminationFormWithPatientDto form) {
+        View dialogView = getLayoutInflater().inflate(
+                R.layout.examination_form_action_dialog,
+                null,
+                false
+        );
+
+        View layoutActionDetail = dialogView.findViewById(R.id.layoutActionDetail);
+        View layoutActionCancel = dialogView.findViewById(R.id.layoutActionCancel);
+
+        androidx.appcompat.app.AlertDialog dialog =
+                new MaterialAlertDialogBuilder(this)
+                        .setView(dialogView)
+                        .create();
+
+        layoutActionDetail.setOnClickListener(v -> {
+            dialog.dismiss();
+            showExaminationFormDetails(form);
+        });
+
+        layoutActionCancel.setOnClickListener(v -> {
+            dialog.dismiss();
+            confirmCancelExaminationForm(form);
+        });
+
+        dialog.show();
+    }
+    private void confirmCancelExaminationForm(ExaminationFormWithPatientDto form) {
+        if (form == null || form.getId() == null) return;
+
+        if (!"Chờ khám".equalsIgnoreCase(form.getTrang_thai())) {
+            Toast.makeText(this, "Chỉ có thể hủy phiếu ở trạng thái Chờ khám", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                .setTitle("Hủy phiếu khám")
+                .setMessage("Bạn có chắc muốn hủy phiếu khám này không?")
+                .setNegativeButton("Đóng", null)
+                .setPositiveButton("Hủy phiếu", (dialogInterface, which) -> cancelExaminationForm(form))
+                .create();
+
+        dialog.setOnShowListener(d -> {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(android.graphics.Color.parseColor("#D32F2F"));
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(android.graphics.Color.parseColor("#0D3F6E"));
+        });
+
+        dialog.show();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(R.drawable.bg_dialog_confirm_action);
+        }
+
+    }
+    private void cancelExaminationForm(ExaminationFormWithPatientDto form) {
+        repository.cancelForm(form.getId()).enqueue(new retrofit2.Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull retrofit2.Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(ManageExaminationForm_staff.this, "Hủy phiếu thành công", Toast.LENGTH_SHORT).show();
+
+                    AllForms.removeIf(f -> form.getId().equals(f.getId()));
+                    ResultExaminationFormsAndPatients.removeIf(f -> form.getId().equals(f.getId()));
+
+                    refreshExaminationFormsList();
+                } else {
+                    try {
+                        String errorText = response.errorBody() != null ? response.errorBody().string() : "Không có nội dung lỗi";
+                        Toast.makeText(ManageExaminationForm_staff.this, "Không thể hủy phiếu: " + response.code(), Toast.LENGTH_SHORT).show();
+                        android.util.Log.e("CANCEL_EX_FORM", "Code: " + response.code() + " - " + errorText);
+                    } catch (Exception e) {
+                        android.util.Log.e("CANCEL_EX_FORM", "Code: " + response.code());
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                Toast.makeText(ManageExaminationForm_staff.this, "Lỗi kết nối khi hủy phiếu: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

@@ -1,6 +1,7 @@
 package dashboard_fragment.manage_examination_form;
 
 import android.content.Context;
+import android.location.GnssAntennaInfo;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,19 +12,24 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.nhom08_quanlyphongkham.R;
+import com.russhwolf.settings.SharedPreferencesSettings;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import dashboard_fragment.manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import dashboard_fragment.manage_examination_form.get_all_ex_form_logic.PatientBriefDto;
+import okhttp3.internal.http2.Http2Connection;
 
 public class ExaminationFormGroupAdapter extends RecyclerView.Adapter<ExaminationFormGroupAdapter.GroupVH> {
+    private final OnExaminationFormActionListener listener;
+
     private final Context context;
     private List<ExaminationFormDateGroup> groups = new ArrayList<>();
 
-    public ExaminationFormGroupAdapter(Context context) {
+    public ExaminationFormGroupAdapter(Context context, OnExaminationFormActionListener listener) {
         this.context = context;
+        this.listener = listener;
     }
 
     public void submitList(List<ExaminationFormDateGroup> newGroups) {
@@ -63,50 +69,14 @@ public class ExaminationFormGroupAdapter extends RecyclerView.Adapter<Examinatio
             tvSequence.setText(String.valueOf(form.getSo_tiep_nhan()));
             tvName.setText(patient != null ? patient.getHo_ten() : "--");
 
-            row.setOnClickListener(v -> showExaminationFormDetails(form));
+            row.setOnLongClickListener(v -> {
+                if (listener != null) listener.onFormLongClick(form);
+                return true;
+            });
+
 
             holder.layoutPatientsContainer.addView(row);
         }
-    }
-
-    private void showExaminationFormDetails(ExaminationFormWithPatientDto form) {
-        View dialogView = LayoutInflater.from(context).inflate(
-                R.layout.examination_detail_dialog,
-                null,
-                false
-        );
-
-        TextView tvPatientName = dialogView.findViewById(R.id.tvDetailPatientName);
-        TextView tvBirthday = dialogView.findViewById(R.id.tvDetailBirthday);
-        TextView tvAddress = dialogView.findViewById(R.id.tvDetailAddress);
-        TextView tvExamDate = dialogView.findViewById(R.id.tvDetailExamDate);
-        TextView tvExamTime = dialogView.findViewById(R.id.tvDetailExamTime);
-        TextView tvSequence = dialogView.findViewById(R.id.tvDetailSequence);
-        TextView tvStatus = dialogView.findViewById(R.id.tvDetailStatus);
-        TextView tvSymptoms = dialogView.findViewById(R.id.tvDetailSymptoms);
-        com.google.android.material.button.MaterialButton btnClose =
-                dialogView.findViewById(R.id.btnCloseDetail);
-
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
-        PatientBriefDto patient = form.getPatient();
-
-        tvPatientName.setText("Họ tên: " + (patient != null ? patient.getHo_ten() : "--"));
-        tvBirthday.setText("Ngày sinh: " + (patient != null && patient.getNgay_sinh() != null ? sdf.format(patient.getNgay_sinh()) : "--"));
-        tvAddress.setText("Địa chỉ: " + (patient != null ? patient.getDia_chi() : "--"));
-
-        tvExamDate.setText("Ngày khám: " + (form.getNgay_kham() != null ? sdf.format(form.getNgay_kham()) : "--"));
-        tvExamTime.setText("Giờ dự kiến: " + (form.getGio_du_kien() != null ? form.getGio_du_kien() : "--"));
-        tvSequence.setText("Số tiếp nhận: " + form.getSo_tiep_nhan());
-        tvStatus.setText("Trạng thái: " + (form.getTrang_thai() != null ? form.getTrang_thai() : "--"));
-        tvSymptoms.setText(form.getTrieu_chung_ban_dau() != null ? form.getTrieu_chung_ban_dau() : "--");
-
-        androidx.appcompat.app.AlertDialog dialog =
-                new com.google.android.material.dialog.MaterialAlertDialogBuilder(context)
-                        .setView(dialogView)
-                        .create();
-
-        btnClose.setOnClickListener(v -> dialog.dismiss());
-        dialog.show();
     }
 
     @Override
@@ -123,4 +93,9 @@ public class ExaminationFormGroupAdapter extends RecyclerView.Adapter<Examinatio
             layoutPatientsContainer = itemView.findViewById(R.id.layoutPatientsContainer);
         }
     }
+
+    public interface OnExaminationFormActionListener {
+        void onFormLongClick(ExaminationFormWithPatientDto form);
+    }
+
 }

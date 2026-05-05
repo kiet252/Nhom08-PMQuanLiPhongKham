@@ -6,6 +6,8 @@ import java.util.List;
 import dashboard_fragment.create_examination_form.create_ex_form_logic.CreateExFormRequest;
 import dashboard_fragment.create_examination_form.create_ex_form_logic.ExFormApiCreateService;
 import dashboard_fragment.create_examination_form.get_ex_form_logic.ExFormApiGetByDateService;
+import dashboard_fragment.manage_examination_form.cancel_ex_form_logic.CancelExaminationFormRequest;
+import dashboard_fragment.manage_examination_form.cancel_ex_form_logic.ExFormApiUpdateStatusService;
 import dashboard_fragment.manage_examination_form.get_all_ex_form_logic.ExFormApiGetFormsWithPatient;
 import dashboard_fragment.manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import retrofit2.Call;
@@ -15,8 +17,8 @@ public class ExaminationFormRepository {
     private final ExFormApiCreateService createService;
     private final ExFormApiGetByDateService getByDateService;
     private final ExFormApiGetFormsWithPatient getFormByPatientCCCDOrIDService;
+    private final ExFormApiUpdateStatusService updateStatusService;
     private final Context context;
-
     public ExaminationFormRepository(Context context){
         this.context = context;
 
@@ -25,6 +27,8 @@ public class ExaminationFormRepository {
         this.createService = client.create(ExFormApiCreateService.class);
         this.getByDateService = client.create(ExFormApiGetByDateService.class);
         this.getFormByPatientCCCDOrIDService = client.create(ExFormApiGetFormsWithPatient.class);
+        this.updateStatusService = client.create(ExFormApiUpdateStatusService.class);
+
     }
 
     public Call<List<ExaminationForm>> createForm(CreateExFormRequest newForm) {
@@ -46,4 +50,11 @@ public class ExaminationFormRepository {
                 "not.in.(Vắng,Đã hủy,Đã khám)"
         );
     }
+    public Call<Void> cancelForm(String formId) {
+        return updateStatusService.updateExaminationFormStatus(
+                "eq." + formId,
+                new CancelExaminationFormRequest("Đã hủy")
+        );
+    }
+
 }
