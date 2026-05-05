@@ -130,13 +130,6 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         {
             tvXoa.setOnClickListener(v -> thucHienXoaNhieu());
         }
-        if (layoutDanhSach == null)
-        {
-            Toast.makeText(getContext(), "LỖI: Chưa gắn ID layout_danh_sach_thong_bao vào file XML!", Toast.LENGTH_LONG).show();
-        } else
-            {
-                Toast.makeText(getContext(), "Đã túm được khung xám! Đang kéo mây...", Toast.LENGTH_SHORT).show();
-            }
         taiDuLieu();
 
         if (btnThem != null)
@@ -155,7 +148,6 @@ public class NotificationSettingsFragment_Admin extends Fragment {
                 if (response.isSuccessful() && response.body() != null)
                 {
                     List<ThongBao> ds = response.body();
-                    Toast.makeText(getContext(), "THÀNH CÔNG: Tải được " + ds.size() + " thông báo!", Toast.LENGTH_LONG).show();
                     layoutDanhSach.removeAllViews();
                     ListCheckBoxes.clear();
                     selectedIds.clear();
@@ -174,14 +166,13 @@ public class NotificationSettingsFragment_Admin extends Fragment {
                     {
                         themVaoKhungXam(tb.getId(), tb.getTieu_de(), tb.getNoi_dung());
                     }
-                } else {
-                    Toast.makeText(getContext(), "LỖI SERVER: Không thể tải dữ liệu", Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<List<ThongBao>> call, Throwable t) {
-                Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+            public void onFailure(Call<List<ThongBao>> call, Throwable t)
+            {
+
             }
         });
     }
@@ -189,12 +180,9 @@ public class NotificationSettingsFragment_Admin extends Fragment {
     {
         if (selectedIds.isEmpty())
         {
-            Toast.makeText(getContext(), "Vui lòng tích chọn ít nhất 1 thông báo để xóa!", Toast.LENGTH_SHORT).show();
             return;
         }
         new AlertDialog.Builder(getContext())
-                .setTitle("Xác nhận xóa")
-                .setMessage("Bạn có chắc chắn muốn xóa " + selectedIds.size() + " thông báo đã chọn?")
                 .setPositiveButton("Xóa", (dialog, which) ->
                 {
                     final int[] count = {0};
@@ -210,7 +198,6 @@ public class NotificationSettingsFragment_Admin extends Fragment {
                                count[0]++;
                                if (count[0] == total)
                                {
-                                   Toast.makeText(getContext(), "Đã xóa thành công!", Toast.LENGTH_SHORT).show();
                                    taiDuLieu();
                                }
                            }
@@ -244,14 +231,12 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         container.addView(inputNoiDung);
 
         builder.setView(container);
-        builder.setPositiveButton("Đăng bài", (dialog, which) -> {
+        builder.setPositiveButton("Thêm", (dialog, which) -> {
             String t = inputTieuDe.getText().toString().trim();
             String n = inputNoiDung.getText().toString().trim();
             if (!t.isEmpty() && !n.isEmpty())
             {
                 dayDuLieuLenRetrofitAdmin(t, n);
-            } else {
-                Toast.makeText(getContext(), "Vui lòng nhập đủ thông tin", Toast.LENGTH_SHORT).show();
             }
         });
         builder.setNegativeButton("Hủy", null);
@@ -264,20 +249,13 @@ public class NotificationSettingsFragment_Admin extends Fragment {
                 if (response.isSuccessful())
                 {
                     taiDuLieu();
-                    if (getContext() != null)
-                    {
-                        Toast.makeText(getContext(), "Đã đăng thông báo thành công!", Toast.LENGTH_SHORT).show();
-                    }
                 }
             }
 
             @Override
             public void onFailure(Call<List<ThongBao>> call, Throwable t)
             {
-                if (getContext() != null)
-                {
-                    Toast.makeText(getContext(), "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
+
             }
         });
     }
