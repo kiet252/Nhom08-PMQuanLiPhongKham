@@ -131,8 +131,6 @@ public class AccountFragment extends Fragment {
                 .build();
 
         Coil.imageLoader(getContext()).enqueue(request);
-        Log.d("AccountFragment", "setViewProfile: " + userprofile.getAnh_dai_dien());
-        Log.d("AccountFragment", "diaCHI: : " + userprofile.getDia_chi());
     }
 
     private void setupListeners() {

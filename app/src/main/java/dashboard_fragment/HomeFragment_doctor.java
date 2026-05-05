@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,6 +17,9 @@ import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.google.android.material.button.MaterialButton;
+
+import coil.Coil;
+import coil.request.ImageRequest;
 
 public class HomeFragment_doctor extends Fragment {
 
@@ -35,8 +39,20 @@ public class HomeFragment_doctor extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_home_doctor, container, false);
-    }
 
+    }
+    public void ShowAvatar(View view, UserProfile userprofile)
+    {
+        ImageView avatar;
+        avatar = view.findViewById(R.id.home_avatar_admin);
+        ImageRequest request = new ImageRequest.Builder(getContext())
+                .data(userprofile.getAnh_dai_dien())
+                .target(avatar)
+                .crossfade(true) // Hiệu ứng mờ dần khi hiện ảnh
+                .build();
+
+        Coil.imageLoader(getContext()).enqueue(request);
+    }
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
