@@ -93,12 +93,6 @@ public class NotificationFragment extends Fragment
             tvXoa.setOnClickListener(v -> thucHienXoaNhieu());
         }
 
-        if (layoutDanhSachThongBao == null) {
-            Toast.makeText(getContext(), "LỖI: Chưa gắn ID layout_danh_sach_thong_bao vào file XML!", Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(getContext(), "Đã túm được khung xám! Đang kéo mây...", Toast.LENGTH_SHORT).show();
-        }
-
         goiDuLieuRetrofit();
 
         if (btnThemThongBao != null) {
@@ -115,7 +109,6 @@ public class NotificationFragment extends Fragment
                 if (response.isSuccessful() && response.body() != null)
                 {
                     List<ThongBao> ds = response.body();
-                    Toast.makeText(getContext(), "THÀNH CÔNG: Tải được " + ds.size() + " thông báo!", Toast.LENGTH_LONG).show();
                     layoutDanhSachThongBao.removeAllViews();
 
                     listCheckBoxes.clear();
@@ -133,13 +126,11 @@ public class NotificationFragment extends Fragment
                     for (ThongBao tb : ds) {
                         themVaoKhungXam(tb.getId(), tb.getTieu_de(), tb.getNoi_dung());
                     }
-                } else {
-                    Toast.makeText(getContext(), "LỖI SERVER: Không thể tải dữ liệu", Toast.LENGTH_LONG).show();
                 }
             }
             @Override
-            public void onFailure(Call<List<ThongBao>> call, Throwable t) {
-                Toast.makeText(getContext(), "LỖI MẠNG: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            public void onFailure(Call<List<ThongBao>> call, Throwable t)
+            {
             }
         });
     }
@@ -147,12 +138,9 @@ public class NotificationFragment extends Fragment
     {
         if (selectedIds.isEmpty())
         {
-            Toast.makeText(getContext(), "Vui lòng tích chọn ít nhất 1 thông báo để xóa!", Toast.LENGTH_SHORT).show();
             return;
         }
         new AlertDialog.Builder(getContext())
-                .setTitle("Xác nhận xóa")
-                .setMessage("Bạn có chắc chắn muốn xóa " + selectedIds.size() + " thông báo đã chọn?")
                 .setPositiveButton("Xóa", (dialog, which) ->
                 {
                     final int[] count = {0};
@@ -168,7 +156,6 @@ public class NotificationFragment extends Fragment
                                 count[0]++;
                                 if (count[0] == total)
                                 {
-                                    Toast.makeText(getContext(), "Đã xóa thành công!", Toast.LENGTH_SHORT).show();
                                     goiDuLieuRetrofit();
                                 }
                             }
@@ -210,8 +197,6 @@ public class NotificationFragment extends Fragment
             if (!tieuDeStr.isEmpty() && !noiDungStr.isEmpty())
             {
                 dayDuLieuLenRetrofit(tieuDeStr, noiDungStr);
-            } else {
-                Toast.makeText(getContext(), "Vui lòng nhập đủ thông tin!", Toast.LENGTH_SHORT).show();
             }
         });
         builder.setNegativeButton("Hủy", null);
@@ -227,10 +212,6 @@ public class NotificationFragment extends Fragment
                 if (response.isSuccessful())
                 {
                     goiDuLieuRetrofit();
-                    if (getContext() != null)
-                    {
-                        Toast.makeText(getContext(), "Đã lưu thành công!", Toast.LENGTH_SHORT).show();
-                    }
                 }
             }
 
