@@ -424,22 +424,32 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
             return;
         }
 
+        View dialogView = getLayoutInflater().inflate(
+                R.layout.cancel_examination_form_dialog,
+                null,
+                false
+        );
+
+        com.google.android.material.button.MaterialButton btnClose =
+                dialogView.findViewById(R.id.btnCloseCancelDialog);
+        com.google.android.material.button.MaterialButton btnConfirm =
+                dialogView.findViewById(R.id.btnConfirmCancelForm);
+
         AlertDialog dialog = new MaterialAlertDialogBuilder(this)
-                .setTitle("Hủy phiếu khám")
-                .setMessage("Bạn có chắc muốn hủy phiếu khám này không?")
-                .setNegativeButton("Đóng", null)
-                .setPositiveButton("Hủy phiếu", (dialogInterface, which) -> cancelExaminationForm(form))
+                .setView(dialogView)
                 .create();
 
-        dialog.setOnShowListener(d -> {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(android.graphics.Color.parseColor("#D32F2F"));
-            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(android.graphics.Color.parseColor("#0D3F6E"));
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+
+        btnConfirm.setOnClickListener(v -> {
+            dialog.dismiss();
+            cancelExaminationForm(form);
         });
 
         dialog.show();
 
         if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(R.drawable.bg_dialog_confirm_action);
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
 
     }
