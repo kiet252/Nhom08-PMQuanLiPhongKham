@@ -281,7 +281,6 @@ public class NotificationFragment extends Fragment
         tvTieuDe.setTextColor(Color.BLACK);
         tvTieuDe.setTextSize(18);
         tvTieuDe.setTypeface(null, Typeface.BOLD);
-
         TextView tvNoiDung = new TextView(getContext());
         tvNoiDung.setText(noiDung);
         tvNoiDung.setTextColor(Color.parseColor("#555555"));
