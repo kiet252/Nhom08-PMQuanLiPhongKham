@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -24,7 +25,9 @@ import coil.request.ImageRequest;
 public class HomeFragment_doctor extends Fragment {
 
     private TextView tvName;
-    private MaterialButton btnExaminationList, btnReExaminationList;
+
+    private CardView btnExaminationList, btnCreateAppointment, btnViewMedicalRecords;
+
 
     public HomeFragment_doctor() {
         // Required empty public constructor
@@ -39,7 +42,7 @@ public class HomeFragment_doctor extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home_doctor, container, false);
         SetAvatar(view, SharedPrefManager.getInstance(requireContext()).getProfile());
-        return inflater.inflate(R.layout.fragment_home_doctor, container, false);
+        return view;
     }
     public void SetAvatar(View view, UserProfile userprofile)
     {
@@ -63,14 +66,16 @@ public class HomeFragment_doctor extends Fragment {
         // Hiển thị thông tin bác sĩ
         UserProfile profile = SharedPrefManager.getInstance(requireContext()).getProfile();
         if (profile != null && profile.getHo_ten() != null) {
-            tvName.setText("Chào mừng, " + profile.getHo_ten());
+            tvName.setText(profile.getHo_ten());
         }
     }
 
     private void initializeViews(View view) {
         tvName = view.findViewById(R.id.doctor_home_name);
         btnExaminationList = view.findViewById(R.id.btnExaminationList);
-        btnReExaminationList = view.findViewById(R.id.btnReExaminationList);
+        btnCreateAppointment = view.findViewById(R.id.btnCreateAppointment);
+        btnViewMedicalRecords = view.findViewById(R.id.btnViewMedicalRecords);
+
     }
 
     private void setupListeners() {
@@ -81,9 +86,16 @@ public class HomeFragment_doctor extends Fragment {
             });
         }
 
-        if (btnReExaminationList != null) {
-            btnReExaminationList.setOnClickListener(v -> {
+        if (btnCreateAppointment != null) {
+            btnCreateAppointment.setOnClickListener(v -> {
                 // TODO: Chuyển sang màn hình lịch hẹn tái khám
+                Toast.makeText(getContext(), "Mở lịch hẹn tái khám", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (btnViewMedicalRecords != null) {
+            btnViewMedicalRecords.setOnClickListener(v -> {
+                // TODO: Chuyển sang màn hình xem hồ sơ bệnh án
                 Toast.makeText(getContext(), "Mở lịch hẹn tái khám", Toast.LENGTH_SHORT).show();
             });
         }
