@@ -120,9 +120,9 @@
                                 android:paddingVertical="14dp">
 
                                 <ImageView
-                                    android:layout_width="18dp"
-                                    android:layout_height="18dp"
-                                    android:src="@drawable/ic_calendar"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:src="@drawable/ic_calendar_month"
                                     app:tint="#B8F5FF" />
 
                                 <TextView
@@ -163,8 +163,8 @@
                                 android:paddingVertical="14dp">
 
                                 <ImageView
-                                    android:layout_width="18dp"
-                                    android:layout_height="18dp"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
                                     android:src="@drawable/ic_clock"
                                     app:tint="#FFF4B8" />
 
@@ -205,8 +205,8 @@
                                 android:paddingVertical="14dp">
 
                                 <ImageView
-                                    android:layout_width="18dp"
-                                    android:layout_height="18dp"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
                                     android:src="@drawable/ic_clock"
                                     app:tint="#D6E9FF" />
 
@@ -247,8 +247,8 @@
                                 android:paddingVertical="14dp">
 
                                 <ImageView
-                                    android:layout_width="18dp"
-                                    android:layout_height="18dp"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
                                     android:src="@drawable/ic_check_circle"
                                     app:tint="#D4FFE1" />
 
@@ -315,7 +315,8 @@
                                 <LinearLayout
                                     android:layout_width="56dp"
                                     android:layout_height="56dp"
-                                    android:layout_marginStart="10dp"
+                                    android:layout_marginStart="8dp"
+                                    android:layout_marginTop="18dp"
                                     android:background="@drawable/bg_light_gray_rounded"
                                     android:gravity="center">
 
@@ -345,7 +346,7 @@
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:layout_marginTop="4dp"
-                                        android:text="Xem và xử lý các phiếu khám hôm nay"
+                                        android:text="Xem và xử lý các phiếu khám hôm nay hoặc chưa hoàn thành"
                                         android:textColor="#64748B"
                                         android:textSize="14sp" />
 
@@ -358,7 +359,7 @@
                                         <TextView
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
-                                            android:background="@drawable/bg_date_tag"
+                                            android:background="@drawable/bg_status_wait_exam"
                                             android:paddingHorizontal="10dp"
                                             android:paddingVertical="4dp"
                                             android:text="2 chờ khám"
@@ -370,7 +371,7 @@
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
                                             android:layout_marginStart="8dp"
-                                            android:background="@drawable/bg_date_tag"
+                                            android:background="@drawable/bg_status_examining"
                                             android:paddingHorizontal="10dp"
                                             android:paddingVertical="4dp"
                                             android:text="1 đang khám"
@@ -420,7 +421,8 @@
                                 <LinearLayout
                                     android:layout_width="56dp"
                                     android:layout_height="56dp"
-                                    android:layout_marginStart="10dp"
+                                    android:layout_marginStart="8dp"
+                                    android:layout_marginTop="18dp"
                                     android:background="@drawable/bg_light_gray_rounded"
                                     android:gravity="center">
 
@@ -504,14 +506,15 @@
                             <LinearLayout
                                 android:layout_width="56dp"
                                 android:layout_height="56dp"
-                                android:layout_marginStart="10dp"
+                                android:layout_marginStart="8dp"
+                                android:layout_marginTop="18dp"
                                 android:background="@drawable/bg_light_gray_rounded"
                                 android:gravity="center">
 
                                 <ImageView
                                     android:layout_width="28dp"
                                     android:layout_height="28dp"
-                                    android:src="@drawable/ic_calendar"
+                                    android:src="@drawable/ic_calendar_month"
                                     app:tint="#8B5CF6" />
                             </LinearLayout>
 
@@ -534,17 +537,18 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="4dp"
-                                    android:text="Đặt lịch hẹn khám cho bệnh nhân"
+                                    android:minLines="2"
+                                    android:text="Đặt lịch hẹn tái khám cho bệnh \nnhân"
                                     android:textColor="#64748B"
                                     android:textSize="14sp" />
 
                                 <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="8dp"
-                                    android:text="• Nhập mã BN • Chọn ngày • Ghi chú"
-                                    android:textColor="#8B5CF6"
-                                    android:textSize="12sp" />
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:text="• Nhập mã BN • Chọn ngày • Ghi chú"
+                                android:textColor="#8B5CF6"
+                                android:textSize="12sp" />
                             </LinearLayout>
 
                             <ImageView
