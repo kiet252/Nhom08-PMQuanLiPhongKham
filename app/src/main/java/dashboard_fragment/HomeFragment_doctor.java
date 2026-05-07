@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,13 +15,24 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.nhom08_quanlyphongkham.CountResponse;
+import com.example.nhom08_quanlyphongkham.PatientApiService;
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
+import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 import com.google.android.material.button.MaterialButton;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import coil.Coil;
 import coil.request.ImageRequest;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HomeFragment_doctor extends Fragment {
 
@@ -42,8 +54,122 @@ public class HomeFragment_doctor extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home_doctor, container, false);
         SetAvatar(view, SharedPrefManager.getInstance(requireContext()).getProfile());
+        SetNumber(view);
         return view;
     }
+    private void SetNumber(View view)
+    {
+        SetTotalNumber(view);
+        SetWaitNumber(view);
+        SetCheckingNumber(view);
+        SetDoneNumber(view);
+    }
+    private void SetTotalNumber(View view) {
+        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        String filter = "eq." + today;
+
+        // Lấy instance của ApiService từ Provider
+        PatientApiService apiService = SupabaseClientProvider.getClient(requireContext()).create(PatientApiService.class);
+
+        // Gọi API (chỉ cần truyền filter và "count")
+        apiService.getTodayCount(filter, "count")
+                .enqueue(new Callback<List<CountResponse>>() {
+                    @Override
+                    public void onResponse(Call<List<CountResponse>> call, Response<List<CountResponse>> response) {
+                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                            long total = response.body().get(0).getCount();
+                            // Hiển thị total lên TextView của bạn ở đây
+                            TextView patient_total = view.findViewById(R.id.PatientTotal);
+                            patient_total.setText(String.valueOf(total));
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<CountResponse>> call, Throwable t) {
+                    }
+                });
+    }
+    private void SetWaitNumber(View view) {
+        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        String filter = "eq." + today;
+
+        // Lấy instance của ApiService từ Provider
+        PatientApiService apiService = SupabaseClientProvider.getClient(requireContext()).create(PatientApiService.class);
+
+        // Gọi API (chỉ cần truyền filter và "count")
+        apiService.getTodayWaitCount(filter, "Chờ khám","count")
+                .enqueue(new Callback<List<CountResponse>>() {
+                    @Override
+                    public void onResponse(Call<List<CountResponse>> call, Response<List<CountResponse>> response) {
+                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                            long total = response.body().get(0).getCount();
+                            // Hiển thị total lên TextView của bạn ở đây
+                            TextView patient_total = view.findViewById(R.id.PatientTotal);
+                            patient_total.setText(String.valueOf(total));
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<CountResponse>> call, Throwable t) {
+                    }
+                });
+    }
+    private void SetCheckingNumber(View view) {
+        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        String filter = "eq." + today;
+
+        // Lấy instance của ApiService từ Provider
+        PatientApiService apiService = SupabaseClientProvider.getClient(requireContext()).create(PatientApiService.class);
+
+        // Gọi API (chỉ cần truyền filter và "count")
+        apiService.getTodayWaitCount(filter, "Đang khám","count")
+                .enqueue(new Callback<List<CountResponse>>() {
+                    @Override
+                    public void onResponse(Call<List<CountResponse>> call, Response<List<CountResponse>> response) {
+                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                            long total = response.body().get(0).getCount();
+                            // Hiển thị total lên TextView của bạn ở đây
+                            TextView patient_total = view.findViewById(R.id.PatientTotal);
+                            patient_total.setText(String.valueOf(total));
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<CountResponse>> call, Throwable t) {
+                    }
+                });
+    }
+    private void SetDoneNumber(View view) {
+        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        String filter = "eq." + today;
+
+        // Lấy instance của ApiService từ Provider
+        PatientApiService apiService = SupabaseClientProvider.getClient(requireContext()).create(PatientApiService.class);
+
+        // Gọi API (chỉ cần truyền filter và "count")
+        apiService.getTodayWaitCount(filter, "Đã khám","count")
+                .enqueue(new Callback<List<CountResponse>>() {
+                    @Override
+                    public void onResponse(Call<List<CountResponse>> call, Response<List<CountResponse>> response) {
+                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                            long total = response.body().get(0).getCount();
+                            // Hiển thị total lên TextView của bạn ở đây
+                            TextView patient_total = view.findViewById(R.id.PatientTotal);
+                            patient_total.setText(String.valueOf(total));
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<CountResponse>> call, Throwable t) {
+                    }
+                });
+    }
+
+
+
+
+
+
     public void SetAvatar(View view, UserProfile userprofile)
     {
         ImageView avatar;

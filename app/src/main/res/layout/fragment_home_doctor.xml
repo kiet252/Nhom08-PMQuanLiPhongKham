@@ -126,10 +126,11 @@
                                     app:tint="#B8F5FF" />
 
                                 <TextView
+                                    android:id="@+id/PatientTotal"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="6dp"
-                                    android:text="3"
+                                    android:text="0"
                                     android:textColor="@android:color/white"
                                     android:textSize="22sp"
                                     android:textStyle="bold" />
@@ -172,7 +173,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="6dp"
-                                    android:text="2"
+                                    android:text="0"
                                     android:textColor="@android:color/white"
                                     android:textSize="22sp"
                                     android:textStyle="bold" />
@@ -214,7 +215,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="6dp"
-                                    android:text="1"
+                                    android:text="0"
                                     android:textColor="@android:color/white"
                                     android:textSize="22sp"
                                     android:textStyle="bold" />
@@ -362,7 +363,7 @@
                                             android:background="@drawable/bg_status_wait_exam"
                                             android:paddingHorizontal="10dp"
                                             android:paddingVertical="4dp"
-                                            android:text="2 chờ khám"
+                                            android:text=" chờ khám"
                                             android:textColor="#E67E22"
                                             android:textSize="12sp"
                                             android:textStyle="bold" />
@@ -374,7 +375,7 @@
                                             android:background="@drawable/bg_status_examining"
                                             android:paddingHorizontal="10dp"
                                             android:paddingVertical="4dp"
-                                            android:text="1 đang khám"
+                                            android:text=" đang khám"
                                             android:textColor="#2563EB"
                                             android:textSize="12sp"
                                             android:textStyle="bold" />
@@ -608,7 +609,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="David Trần"
+                        android:text="Name"
                         android:textColor="#1E293B"
                         android:textSize="22sp"
                         android:textStyle="bold" />
@@ -617,7 +618,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="09:00 • Ngứa mũi"
+                        android:text="00:00 • Triệu chứng"
                         android:textColor="#64748B"
                         android:textSize="14sp" />
                 </LinearLayout>
