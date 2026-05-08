@@ -209,10 +209,7 @@ public class HomeFragment_doctor extends Fragment {
 
     private void setupListeners() {
         if (btnExaminationList != null) {
-            btnExaminationList.setOnClickListener(v -> {
-                // TODO: Chuyển sang màn hình danh sách khám
-                Toast.makeText(getContext(), "Mở danh sách khám", Toast.LENGTH_SHORT).show();
-            });
+            btnExaminationList.setOnClickListener(v -> openExFormsLists());
         }
 
         if (btnCreateAppointment != null) {
