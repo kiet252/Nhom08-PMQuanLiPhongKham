@@ -15,16 +15,13 @@ import android.widget.TextView;
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
-import com.google.android.material.button.MaterialButton;
-
-import java.util.Set;
 
 import coil.Coil;
 import coil.request.ImageRequest;
-import dashboard_fragment.add_update_patient.AddUpdatePatientInfo_staff;
-import dashboard_fragment.create_examination_form.CreateExaminationForm_staff;
-import dashboard_fragment.manage_bill.ManageBill_staff;
-import dashboard_fragment.manage_examination_form.ManageExaminationForm_staff;
+import dashboard_fragment.staff_add_update_patient.AddUpdatePatientInfo_staff;
+import dashboard_fragment.staff_create_examination_form.CreateExaminationForm_staff;
+import dashboard_fragment.staff_manage_bill.ManageBill_staff;
+import dashboard_fragment.staff_manage_examination_form.ManageExaminationForm_staff;
 
 public class HomeFragment_staff extends Fragment {
 

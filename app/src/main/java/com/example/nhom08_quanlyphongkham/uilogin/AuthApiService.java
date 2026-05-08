@@ -1,10 +1,9 @@
 package com.example.nhom08_quanlyphongkham.uilogin;
 
-import dashboard_fragment.change_password_request.UpdatePasswordRequest;
+import dashboard_fragment.account_change_password_request.UpdatePasswordRequest;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.Header;
-import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 

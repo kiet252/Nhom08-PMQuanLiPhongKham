@@ -2,9 +2,7 @@ package dashboard_fragment;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -14,7 +12,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +26,6 @@ import com.example.nhom08_quanlyphongkham.login;
 import com.example.nhom08_quanlyphongkham.uilogin.AuthRepository;
 import com.example.nhom08_quanlyphongkham.uilogin.LoginResponse;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
-import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -39,7 +35,7 @@ import java.util.Locale;
 
 import coil.Coil;
 import coil.request.ImageRequest;
-import dashboard_fragment.edit_profile.EditProfile;
+import dashboard_fragment.account_edit_profile.EditProfile;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

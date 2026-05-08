@@ -20,6 +20,7 @@ import com.example.nhom08_quanlyphongkham.CountResponse;
 import com.example.nhom08_quanlyphongkham.PatientApiService;
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
+import com.example.nhom08_quanlyphongkham.admin_manage_staff;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 import com.google.android.material.button.MaterialButton;
@@ -31,7 +32,8 @@ import java.util.Locale;
 
 import coil.Coil;
 import coil.request.ImageRequest;
-import dashboard_fragment.examination_list.ExaminationList_doctor;
+
+import dashboard_fragment.doctor_examination_list.ExaminationList_doctor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -212,11 +214,8 @@ public class HomeFragment_doctor extends Fragment {
 
     private void setupListeners() {
         if (btnExaminationList != null) {
-            btnExaminationList.setOnClickListener(v -> {
-                // TODO: Chuyển sang màn hình danh sách khám
-                Intent intent = new Intent(getContext(), ExaminationList_doctor.class);
-                startActivity(intent);
-            });
+            btnExaminationList.setOnClickListener(v -> openExFormsLists());
+
         }
 
         if (btnCreateAppointment != null) {
@@ -232,5 +231,10 @@ public class HomeFragment_doctor extends Fragment {
                 Toast.makeText(getContext(), "Mở lịch hẹn tái khám", Toast.LENGTH_SHORT).show();
             });
         }
+    }
+
+    private void openExFormsLists() {
+        Intent intent = new Intent(getActivity(), ExaminationList_doctor.class);
+        startActivity(intent);
     }
 }
