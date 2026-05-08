@@ -1,5 +1,6 @@
 package dashboard_fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -30,6 +31,7 @@ import java.util.Locale;
 
 import coil.Coil;
 import coil.request.ImageRequest;
+import dashboard_fragment.examination_list.ExaminationList_doctor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -97,15 +99,17 @@ public class HomeFragment_doctor extends Fragment {
         PatientApiService apiService = SupabaseClientProvider.getClient(requireContext()).create(PatientApiService.class);
 
         // Gọi API (chỉ cần truyền filter và "count")
-        apiService.getTodayWaitCount(filter, "Chờ khám","count")
+        apiService.getTodayWaitCount(filter, "eq.Chờ khám","count")
                 .enqueue(new Callback<List<CountResponse>>() {
                     @Override
                     public void onResponse(Call<List<CountResponse>> call, Response<List<CountResponse>> response) {
                         if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                             long total = response.body().get(0).getCount();
                             // Hiển thị total lên TextView của bạn ở đây
-                            TextView patient_total = view.findViewById(R.id.PatientTotal);
+                            TextView patient_total = view.findViewById(R.id.PatientWaiting);
+                            TextView patient_waiting = view.findViewById(R.id.num_cho_kham);
                             patient_total.setText(String.valueOf(total));
+                            patient_waiting.setText(String.valueOf(total) + " chờ khám");
                         }
                     }
 
@@ -122,15 +126,17 @@ public class HomeFragment_doctor extends Fragment {
         PatientApiService apiService = SupabaseClientProvider.getClient(requireContext()).create(PatientApiService.class);
 
         // Gọi API (chỉ cần truyền filter và "count")
-        apiService.getTodayWaitCount(filter, "Đang khám","count")
+        apiService.getTodayWaitCount(filter, "eq.Đang khám","count")
                 .enqueue(new Callback<List<CountResponse>>() {
                     @Override
                     public void onResponse(Call<List<CountResponse>> call, Response<List<CountResponse>> response) {
                         if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                             long total = response.body().get(0).getCount();
                             // Hiển thị total lên TextView của bạn ở đây
-                            TextView patient_total = view.findViewById(R.id.PatientTotal);
+                            TextView patient_total = view.findViewById(R.id.PatientChecking);
+                            TextView patient_checking = view.findViewById(R.id.num_dang_kham);
                             patient_total.setText(String.valueOf(total));
+                            patient_checking.setText(String.valueOf(total) + " đang khám");
                         }
                     }
 
@@ -147,14 +153,14 @@ public class HomeFragment_doctor extends Fragment {
         PatientApiService apiService = SupabaseClientProvider.getClient(requireContext()).create(PatientApiService.class);
 
         // Gọi API (chỉ cần truyền filter và "count")
-        apiService.getTodayWaitCount(filter, "Đã khám","count")
+        apiService.getTodayWaitCount(filter, "eq.Đã khám","count")
                 .enqueue(new Callback<List<CountResponse>>() {
                     @Override
                     public void onResponse(Call<List<CountResponse>> call, Response<List<CountResponse>> response) {
                         if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                             long total = response.body().get(0).getCount();
                             // Hiển thị total lên TextView của bạn ở đây
-                            TextView patient_total = view.findViewById(R.id.PatientTotal);
+                            TextView patient_total = view.findViewById(R.id.PatientDone);
                             patient_total.setText(String.valueOf(total));
                         }
                     }
@@ -208,7 +214,8 @@ public class HomeFragment_doctor extends Fragment {
         if (btnExaminationList != null) {
             btnExaminationList.setOnClickListener(v -> {
                 // TODO: Chuyển sang màn hình danh sách khám
-                Toast.makeText(getContext(), "Mở danh sách khám", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getContext(), ExaminationList_doctor.class);
+                startActivity(intent);
             });
         }
 

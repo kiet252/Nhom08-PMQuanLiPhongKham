@@ -170,6 +170,7 @@
                                     app:tint="#FFF4B8" />
 
                                 <TextView
+                                    android:id="@+id/PatientWaiting"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="6dp"
@@ -212,6 +213,7 @@
                                     app:tint="#D6E9FF" />
 
                                 <TextView
+                                    android:id="@+id/PatientChecking"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="6dp"
@@ -254,6 +256,7 @@
                                     app:tint="#D4FFE1" />
 
                                 <TextView
+                                    android:id="@+id/PatientDone"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="6dp"
@@ -358,24 +361,26 @@
                                         android:orientation="horizontal">
 
                                         <TextView
+                                            android:id="@+id/num_cho_kham"
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
                                             android:background="@drawable/bg_status_wait_exam"
                                             android:paddingHorizontal="10dp"
                                             android:paddingVertical="4dp"
-                                            android:text=" chờ khám"
+                                            android:text="0 chờ khám"
                                             android:textColor="#E67E22"
                                             android:textSize="12sp"
                                             android:textStyle="bold" />
 
                                         <TextView
+                                            android:id="@+id/num_dang_kham"
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
                                             android:layout_marginStart="8dp"
                                             android:background="@drawable/bg_status_examining"
                                             android:paddingHorizontal="10dp"
                                             android:paddingVertical="4dp"
-                                            android:text=" đang khám"
+                                            android:text="0 đang khám"
                                             android:textColor="#2563EB"
                                             android:textSize="12sp"
                                             android:textStyle="bold" />
