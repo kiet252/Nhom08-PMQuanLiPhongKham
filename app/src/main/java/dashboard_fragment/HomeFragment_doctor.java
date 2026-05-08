@@ -121,14 +121,12 @@ public class HomeFragment_doctor extends Fragment {
                 });
     }
     private void SetCheckingNumber(View view) {
-        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-        String filter = "eq." + today;
 
         // Lấy instance của ApiService từ Provider
         PatientApiService apiService = SupabaseClientProvider.getClient(requireContext()).create(PatientApiService.class);
 
         // Gọi API (chỉ cần truyền filter và "count")
-        apiService.getTodayWaitCount(filter, "eq.Đang khám","count")
+        apiService.getCheckingCount("eq.Đang khám","count")
                 .enqueue(new Callback<List<CountResponse>>() {
                     @Override
                     public void onResponse(Call<List<CountResponse>> call, Response<List<CountResponse>> response) {

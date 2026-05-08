@@ -18,6 +18,10 @@ public interface PatientApiService {
             @Query("trang_thai") String trangThai,
             @Query("select") String select         // Truyền vào "count"
     );
-
+    @GET("rest/v1/examination_form")
+    Call<List<CountResponse>> getCheckingCount(
+            @Query("trang_thai") String trangThai,
+            @Query("select") String select         // Truyền vào "count"
+    );
 
     }

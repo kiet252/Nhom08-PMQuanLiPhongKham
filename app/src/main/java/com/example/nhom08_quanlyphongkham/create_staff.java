@@ -36,7 +36,7 @@ public class create_staff extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.create_staff);
+        setContentView(R.layout.admin_create_staff);
 
         initViews();
         setupRoleDropdown();
