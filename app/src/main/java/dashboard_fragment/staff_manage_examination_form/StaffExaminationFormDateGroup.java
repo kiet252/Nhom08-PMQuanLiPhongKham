@@ -4,11 +4,11 @@ import java.util.List;
 
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 
-public class ExaminationFormDateGroup {
+public class StaffExaminationFormDateGroup {
     private final String date;
     private final List<ExaminationFormWithPatientDto> forms;
 
-    public ExaminationFormDateGroup(String date, List<ExaminationFormWithPatientDto> forms) {
+    public StaffExaminationFormDateGroup(String date, List<ExaminationFormWithPatientDto> forms) {
         this.date = date;
         this.forms = forms;
     }

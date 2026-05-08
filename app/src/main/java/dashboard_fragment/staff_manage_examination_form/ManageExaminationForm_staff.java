@@ -41,7 +41,7 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
     ImageButton BtnBack;
     EditText EdtSearch;
     RecyclerView RvExaminationsList;
-    ExaminationFormGroupAdapter groupAdapter;
+    StaffExaminationFormGroupAdapter groupAdapter;
     ExaminationFormRepository repository;
     Boolean isAscending;
     private List<ExaminationFormWithPatientDto> AllForms = new ArrayList<>();
@@ -90,7 +90,7 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
 
     private void setupRecycler() {
         RvExaminationsList.setLayoutManager(new LinearLayoutManager(this));
-        groupAdapter = new ExaminationFormGroupAdapter(this, new ExaminationFormGroupAdapter.OnExaminationFormActionListener() {
+        groupAdapter = new StaffExaminationFormGroupAdapter(this, new StaffExaminationFormGroupAdapter.OnExaminationFormActionListener() {
             @Override
             public void onFormLongClick(ExaminationFormWithPatientDto form) {
                 showExaminationFormActionMenu(form);
@@ -206,9 +206,9 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
         formsByDate.clear();
         listExaminationFormsByDates();
 
-        List<ExaminationFormDateGroup> groups = new ArrayList<>();
+        List<StaffExaminationFormDateGroup> groups = new ArrayList<>();
         for (Map.Entry<String, List<ExaminationFormWithPatientDto>> entry : formsByDate.entrySet()) {
-            groups.add(new ExaminationFormDateGroup(entry.getKey(), entry.getValue()));
+            groups.add(new StaffExaminationFormDateGroup(entry.getKey(), entry.getValue()));
         }
 
         groupAdapter.submitList(groups);

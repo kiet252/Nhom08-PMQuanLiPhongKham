@@ -18,18 +18,18 @@ import java.util.List;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.PatientBriefDto;
 
-public class ExaminationFormGroupAdapter extends RecyclerView.Adapter<ExaminationFormGroupAdapter.GroupVH> {
+public class StaffExaminationFormGroupAdapter extends RecyclerView.Adapter<StaffExaminationFormGroupAdapter.GroupVH> {
     private final OnExaminationFormActionListener listener;
 
     private final Context context;
-    private List<ExaminationFormDateGroup> groups = new ArrayList<>();
+    private List<StaffExaminationFormDateGroup> groups = new ArrayList<>();
 
-    public ExaminationFormGroupAdapter(Context context, OnExaminationFormActionListener listener) {
+    public StaffExaminationFormGroupAdapter(Context context, OnExaminationFormActionListener listener) {
         this.context = context;
         this.listener = listener;
     }
 
-    public void submitList(List<ExaminationFormDateGroup> newGroups) {
+    public void submitList(List<StaffExaminationFormDateGroup> newGroups) {
         groups = newGroups;
         notifyDataSetChanged();
     }
@@ -44,7 +44,7 @@ public class ExaminationFormGroupAdapter extends RecyclerView.Adapter<Examinatio
 
     @Override
     public void onBindViewHolder(@NonNull GroupVH holder, int position) {
-        ExaminationFormDateGroup group = groups.get(position);
+        StaffExaminationFormDateGroup group = groups.get(position);
         holder.tvDateGroup.setText(group.getDate());
 
         holder.layoutPatientsContainer.removeAllViews();
