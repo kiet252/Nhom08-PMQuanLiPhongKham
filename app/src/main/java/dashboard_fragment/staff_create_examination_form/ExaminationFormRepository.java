@@ -1,8 +1,12 @@
 package dashboard_fragment.staff_create_examination_form;
 
 import android.content.Context;
+
 import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
+
 import java.util.List;
+
+import dashboard_fragment.doctor_examination_list.ExFormApiGetAllExFormToday;
 import dashboard_fragment.staff_create_examination_form.create_ex_form_logic.CreateExFormRequest;
 import dashboard_fragment.staff_create_examination_form.create_ex_form_logic.ExFormApiCreateService;
 import dashboard_fragment.staff_create_examination_form.get_ex_form_logic.ExFormApiGetByDateService;
@@ -18,17 +22,16 @@ public class ExaminationFormRepository {
     private final ExFormApiGetByDateService getByDateService;
     private final ExFormApiGetFormsWithPatient getFormByPatientCCCDOrIDService;
     private final ExFormApiUpdateStatusService updateStatusService;
-    private final Context context;
-    public ExaminationFormRepository(Context context){
-        this.context = context;
+    private final ExFormApiGetAllExFormToday getAllExFormToday;
 
+    public ExaminationFormRepository(Context context) {
         Retrofit client = SupabaseClientProvider.getClient(context);
 
         this.createService = client.create(ExFormApiCreateService.class);
         this.getByDateService = client.create(ExFormApiGetByDateService.class);
         this.getFormByPatientCCCDOrIDService = client.create(ExFormApiGetFormsWithPatient.class);
         this.updateStatusService = client.create(ExFormApiUpdateStatusService.class);
-
+        this.getAllExFormToday = client.create(ExFormApiGetAllExFormToday.class);
     }
 
     public Call<List<ExaminationForm>> createForm(CreateExFormRequest newForm) {
@@ -50,6 +53,7 @@ public class ExaminationFormRepository {
                 "not.in.(Vắng,Đã hủy,Đã khám)"
         );
     }
+
     public Call<Void> cancelForm(String formId) {
         return updateStatusService.updateExaminationFormStatus(
                 "eq." + formId,
@@ -57,4 +61,12 @@ public class ExaminationFormRepository {
         );
     }
 
+    public Call<List<ExaminationFormWithPatientDto>> getAllFormsToday() {
+        return getAllExFormToday.getFormsByDate(
+                null,
+                "*,patient:patient!examination_form_patient_id_fkey(id,cccd,ho_ten,ngay_sinh,dia_chi),doctor:profiles!examination_form_doctor_id_fkey(id,ho_ten,chuc_vu)",
+                "ngay_kham.desc,gio_du_kien.asc",
+                "not.in.(Vắng,Đã hủy)"
+        );
+    }
 }
