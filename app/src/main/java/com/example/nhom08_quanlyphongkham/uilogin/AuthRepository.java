@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.example.nhom08_quanlyphongkham.R;
 
-import dashboard_fragment.change_password_request.UpdatePasswordRequest;
+import dashboard_fragment.account_change_password_request.UpdatePasswordRequest;
 import retrofit2.Call;
 
 public class AuthRepository {

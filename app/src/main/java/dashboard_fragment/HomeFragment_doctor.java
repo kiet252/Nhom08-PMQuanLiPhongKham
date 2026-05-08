@@ -1,5 +1,6 @@
 package dashboard_fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -19,6 +20,7 @@ import com.example.nhom08_quanlyphongkham.CountResponse;
 import com.example.nhom08_quanlyphongkham.PatientApiService;
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
+import com.example.nhom08_quanlyphongkham.admin_manage_staff;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 import com.google.android.material.button.MaterialButton;
@@ -30,6 +32,7 @@ import java.util.Locale;
 
 import coil.Coil;
 import coil.request.ImageRequest;
+import dashboard_fragment.doctor_examination_list.ExaminationList_doctor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -225,5 +228,10 @@ public class HomeFragment_doctor extends Fragment {
                 Toast.makeText(getContext(), "Mở lịch hẹn tái khám", Toast.LENGTH_SHORT).show();
             });
         }
+    }
+
+    private void openExFormsLists() {
+        Intent intent = new Intent(getActivity(), ExaminationList_doctor.class);
+        startActivity(intent);
     }
 }
