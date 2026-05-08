@@ -1,6 +1,8 @@
 package dashboard_fragment;
 
 import android.app.AlertDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -60,6 +62,29 @@ public class NotificationFragment extends Fragment
 
         tvChon = view.findViewById(R.id.tv_chon);
         tvXoa = view.findViewById(R.id.tv_xoa);
+
+        SharedPreferences prefs = getActivity().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+        String roleSaved = prefs.getString("ROLE", UserRole.NHAN_VIEN.name());
+
+        UserRole userRole;
+        try {
+            userRole =UserRole.valueOf(roleSaved);
+        } catch (Exception e){
+            userRole = UserRole.NHAN_VIEN;
+        }
+
+        if (userRole == UserRole.ADMIN)
+        {
+            btnThemThongBao.setVisibility(View.VISIBLE);
+            tvChon.setVisibility(View.VISIBLE);
+            tvXoa.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            btnThemThongBao.setVisibility(View.GONE);
+            tvChon.setVisibility(View.GONE);
+            tvXoa.setVisibility(View.GONE);
+        }
 
         //Xử lý nút chọn (Bật / Tắt)
         if (tvChon != null)
