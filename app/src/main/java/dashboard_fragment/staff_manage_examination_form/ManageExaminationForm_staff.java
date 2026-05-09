@@ -278,7 +278,7 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
             return;
         }
 
-        View dialogView = getLayoutInflater().inflate(R.layout.filter_doctor_dialog, null, false);
+        View dialogView = getLayoutInflater().inflate(R.layout.staff_filter_doctor_dialog, null, false);
         AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                 .setView(dialogView)
                 .create();
@@ -351,7 +351,7 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
     }
     private void showExaminationFormDetails(ExaminationFormWithPatientDto form) {
         View dialogView = getLayoutInflater().inflate(
-                R.layout.examination_detail_dialog,
+                R.layout.staff_examination_detail_dialog,
                 null,
                 false
         );
@@ -390,7 +390,7 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
     }
     private void showExaminationFormActionMenu(ExaminationFormWithPatientDto form) {
         View dialogView = getLayoutInflater().inflate(
-                R.layout.examination_form_action_dialog,
+                R.layout.staff_examination_form_action_dialog,
                 null,
                 false
         );
@@ -424,7 +424,7 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
         }
 
         View dialogView = getLayoutInflater().inflate(
-                R.layout.cancel_examination_form_dialog,
+                R.layout.user_cancel_examination_form_dialog,
                 null,
                 false
         );

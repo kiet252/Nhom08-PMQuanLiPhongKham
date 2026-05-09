@@ -277,7 +277,7 @@
                         android:orientation="vertical">
 
                         <include
-                            layout="@layout/item_service_medicine_bill_row"
+                            layout="@layout/staff_item_service_medicine_bill_row"
                             tools:visibility="visible" />
                     </LinearLayout>
                 </TableLayout>
@@ -387,7 +387,7 @@
                         android:orientation="vertical">
 
                         <include
-                            layout="@layout/item_service_medicine_bill_row"
+                            layout="@layout/staff_item_service_medicine_bill_row"
                             tools:visibility="visible" />
                     </LinearLayout>
                 </TableLayout>

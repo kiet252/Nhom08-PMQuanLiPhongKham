@@ -214,6 +214,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingHorizontal="16dp"
-        tools:listitem="@layout/item_invoice" />
+        tools:listitem="@layout/staff_item_invoice" />
 
 </LinearLayout>

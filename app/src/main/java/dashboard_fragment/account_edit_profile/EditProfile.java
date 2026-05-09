@@ -45,7 +45,7 @@ public class EditProfile extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.admin_edit_profile);
+        setContentView(R.layout.user_edit_profile);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_edit_profile), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());

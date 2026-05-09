@@ -37,7 +37,7 @@ public class DoctorExaminationGroupAdapter extends RecyclerView.Adapter<DoctorEx
     @Override
     public GroupViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_doctor_examination_group, parent, false);
+                .inflate(R.layout.doctor_item_doctor_examination_group, parent, false);
         return new GroupViewHolder(view);
     }
 

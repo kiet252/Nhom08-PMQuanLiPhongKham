@@ -38,7 +38,7 @@ public class StaffExaminationFormGroupAdapter extends RecyclerView.Adapter<Staff
     @Override
     public GroupVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_examination_group, parent, false);
+                .inflate(R.layout.staff_item_examination_group, parent, false);
         return new GroupVH(v);
     }
 
@@ -51,7 +51,7 @@ public class StaffExaminationFormGroupAdapter extends RecyclerView.Adapter<Staff
 
         for (ExaminationFormWithPatientDto form : group.getForms()) {
             View row = LayoutInflater.from(context).inflate(
-                    R.layout.item_examination_patient_row,
+                    R.layout.staff_item_examination_patient_row,
                     holder.layoutPatientsContainer,
                     false
             );

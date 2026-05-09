@@ -62,11 +62,11 @@ public class DoctorExaminationFormAdapter extends RecyclerView.Adapter<DoctorExa
     private static View inflateRow(Context context, ViewGroup parent, ViewType viewType) {
         int layoutResId;
         if (viewType == ViewType.DONE) {
-            layoutResId = R.layout.item_examined_doctor_examination_form;
+            layoutResId = R.layout.doctor_item_examined_doctor_examination_form;
         } else if (viewType == ViewType.IN_PROGRESS) {
-            layoutResId = R.layout.item_examining_doctor_examination_form;
+            layoutResId = R.layout.doctor_item_examining_doctor_examination_form;
         } else {
-            layoutResId = R.layout.item_wait_exam_doctor_examination_form;
+            layoutResId = R.layout.doctor_item_wait_exam_doctor_examination_form;
         }
         return LayoutInflater.from(context).inflate(layoutResId, parent, false);
     }

@@ -138,7 +138,7 @@ public class AccountFragment extends Fragment {
 
     private void showChangePasswordDialog() {
         View dialogView = LayoutInflater.from(requireContext())
-                .inflate(R.layout.change_password_dialog, null);
+                .inflate(R.layout.user_change_password_dialog, null);
 
         AlertDialog dialog = new AlertDialog.Builder(requireContext())
                 .setView(dialogView)
@@ -249,7 +249,7 @@ public class AccountFragment extends Fragment {
     }
     private void showLogoutDialog() {
         View dialogView = LayoutInflater.from(requireContext())
-                .inflate(R.layout.log_out_dialog, null);
+                .inflate(R.layout.user_log_out_dialog, null);
 
         AlertDialog dialog = new AlertDialog.Builder(requireContext())
                 .setView(dialogView)

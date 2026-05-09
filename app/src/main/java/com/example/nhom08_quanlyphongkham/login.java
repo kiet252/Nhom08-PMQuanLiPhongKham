@@ -53,7 +53,7 @@ public class login extends AppCompatActivity {
             finish();
             return; // Dừng hàm onCreate tại đây, không chạy code bên dưới nữa
         }
-        setContentView(R.layout.login);
+        setContentView(R.layout.user_login);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.login), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());

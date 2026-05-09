@@ -83,15 +83,15 @@
                         android:padding="16dp">
 
                         <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_mngStaff"
                             style="@style/Widget.MaterialComponents.Button.TextButton"
                             android:layout_width="match_parent"
                             android:layout_height="80dp"
                             android:gravity="center_vertical|start"
-                            android:text="QUẢN LÝ THÔNG TIN BÁC SĨ"
+                            android:text="QUẢN LÝ THÔNG TIN NHÂN VIÊN"
                             android:textColor="@color/app_primary_text_color"
                             app:icon="@drawable/dashboard_icon_doctor"
                             app:iconPadding="16dp"
-                            android:id="@+id/btn_mngStaff"
                             app:iconTint="@color/app_primary_color" />
 
                         <View

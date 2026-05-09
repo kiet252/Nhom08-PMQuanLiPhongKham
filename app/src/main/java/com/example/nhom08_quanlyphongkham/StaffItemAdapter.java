@@ -29,7 +29,7 @@ public class StaffItemAdapter extends RecyclerView.Adapter<StaffItemAdapter.Staf
     public StaffViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         // Nạp layout Card của bạn vào
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_staff, parent, false);
+                .inflate(R.layout.admin_item_staff, parent, false);
         return new StaffViewHolder(view);
     }
 

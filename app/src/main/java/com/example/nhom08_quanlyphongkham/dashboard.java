@@ -31,7 +31,7 @@ public class dashboard extends AppCompatActivity {
             return;
         }
 
-        setContentView(R.layout.dashboard);
+        setContentView(R.layout.user_dashboard);
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
 
         Fragment homeFragment = getHomeFragmentByRole(profile.getChuc_vu());

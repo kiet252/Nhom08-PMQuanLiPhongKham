@@ -38,7 +38,7 @@ public class staff_detail extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.staff_detail);
+        setContentView(R.layout.admin_profile_detail);
 
         id = getIntent().getStringExtra("id");
         name = findViewById(R.id.tvDetailName);
@@ -130,7 +130,7 @@ public class staff_detail extends AppCompatActivity {
     private void showDeleteConfirmationDialog() {
         // 1. Khởi tạo Dialog
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
-        android.view.View view = getLayoutInflater().inflate(R.layout.delete_staff_dialog, null);
+        android.view.View view = getLayoutInflater().inflate(R.layout.admin_delete_staff_dialog, null);
         builder.setView(view);
 
         android.app.AlertDialog dialog = builder.create();
