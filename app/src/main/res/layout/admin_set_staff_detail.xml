@@ -3,36 +3,38 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F2F4F7">
+    android:background="#F0F7FF">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent">
+        android:background="@android:color/transparent"
+        app:elevation="0dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/gradient_blue_bg"
+            android:background="@drawable/bg_gradient_dark_blue_header"
             android:paddingHorizontal="16dp"
             android:paddingTop="48dp"
             android:paddingBottom="30dp">
 
             <ImageButton
                 android:id="@+id/btnBackEdit"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@android:drawable/ic_menu_revert"
-                app:tint="@color/white" />
+                android:src="@drawable/ic_arrow_back"
+                app:tint="@android:color/white" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:text="CHỈNH SỬA HỒ SƠ"
-                android:textColor="@color/white"
-                android:textSize="18sp"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
                 android:textStyle="bold" />
         </RelativeLayout>
     </com.google.android.material.appbar.AppBarLayout>
@@ -52,8 +54,9 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:cardBackgroundColor="@android:color/white"
                 app:cardCornerRadius="24dp"
-                app:cardElevation="4dp"
+                app:cardElevation="2dp"
                 app:strokeWidth="0dp">
 
                 <LinearLayout
@@ -66,6 +69,7 @@
                     <FrameLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content">
+
                         <com.google.android.material.imageview.ShapeableImageView
                             android:id="@+id/ivEditAvatar"
                             android:layout_width="110dp"
@@ -73,16 +77,17 @@
                             android:scaleType="centerCrop"
                             android:src="@android:drawable/ic_menu_gallery"
                             app:shapeAppearanceOverlay="@style/CircleImage"
-                            app:strokeColor="#2563EB"
+                            app:strokeColor="#0D3F6E"
                             app:strokeWidth="3dp" />
+
                         <com.google.android.material.floatingactionbutton.FloatingActionButton
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="bottom|end"
-                            app:fabCustomSize="32dp"
                             android:src="@android:drawable/ic_menu_camera"
-                            app:tint="@color/white"
-                            android:backgroundTint="#2563EB" />
+                            app:backgroundTint="#0D3F6E"
+                            app:fabCustomSize="32dp"
+                            app:tint="@android:color/white" />
                     </FrameLayout>
 
                     <TextView
@@ -91,12 +96,12 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:background="@drawable/bg_role_tag"
-                        android:alpha="0.7"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="4dp"
+                        android:paddingHorizontal="14dp"
+                        android:paddingVertical="6dp"
                         android:text="Quyền hạn: Cố định"
-                        android:textColor="#6B7280"
-                        android:textSize="13sp" />
+                        android:textColor="#0D3F6E"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -105,16 +110,18 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="12dp"
+                android:layout_marginStart="4dp"
+                android:letterSpacing="0.05"
                 android:text="THÔNG TIN CÁ NHÂN"
-                android:textColor="#6B7280"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.1" />
+                android:textColor="#64748B"
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="20dp"
+                app:cardBackgroundColor="@android:color/white"
+                app:cardCornerRadius="18dp"
                 app:cardElevation="2dp"
                 app:strokeWidth="0dp">
 
@@ -128,104 +135,125 @@
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Họ và Tên"
+                        android:hint="       Họ và Tên"
+                        app:boxCornerRadiusBottomEnd="14dp"
+                        app:boxCornerRadiusBottomStart="14dp"
+                        app:boxCornerRadiusTopEnd="14dp"
+                        app:boxCornerRadiusTopStart="14dp"
+                        app:hintEnabled="true"
                         app:startIconDrawable="@android:drawable/ic_menu_edit"
-                        app:startIconTint="#2563EB"
-                        app:hintEnabled="true">
+                        app:startIconTint="#0D3F6E">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etEditName"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textPersonName"
-                            android:paddingStart="48dp"
-                            android:paddingEnd="16dp" />
+                            android:textColor="#1E293B" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:hint="Email (Không thể sửa)"
+                        android:layout_marginTop="14dp"
                         android:enabled="false"
+                        android:hint="       Email (Không thể sửa)"
+                        app:boxCornerRadiusBottomEnd="14dp"
+                        app:boxCornerRadiusBottomStart="14dp"
+                        app:boxCornerRadiusTopEnd="14dp"
+                        app:boxCornerRadiusTopStart="14dp"
                         app:startIconDrawable="@android:drawable/ic_dialog_email">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etEditEmail"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:paddingStart="48dp"
-                            android:textColor="#9CA3AF" />
+                            android:textColor="#94A3B8" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:hint="Số điện thoại"
+                        android:layout_marginTop="14dp"
+                        android:hint="       Số điện thoại"
+                        app:boxCornerRadiusBottomEnd="14dp"
+                        app:boxCornerRadiusBottomStart="14dp"
+                        app:boxCornerRadiusTopEnd="14dp"
+                        app:boxCornerRadiusTopStart="14dp"
                         app:startIconDrawable="@android:drawable/ic_menu_call"
-                        app:startIconTint="#2563EB">
+                        app:startIconTint="#0D3F6E">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etEditPhone"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="phone"
-                            android:paddingStart="48dp" />
+                            android:textColor="#1E293B" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:hint="Ngày sinh"
+                        android:layout_marginTop="14dp"
+                        android:hint="       Ngày sinh"
+                        app:boxCornerRadiusBottomEnd="14dp"
+                        app:boxCornerRadiusBottomStart="14dp"
+                        app:boxCornerRadiusTopEnd="14dp"
+                        app:boxCornerRadiusTopStart="14dp"
                         app:startIconDrawable="@android:drawable/ic_menu_today"
-                        app:startIconTint="#2563EB">
+                        app:startIconTint="#0D3F6E">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etEditBirthday"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:focusable="false"
                             android:clickable="true"
+                            android:focusable="false"
                             android:inputType="none"
-                            android:paddingStart="48dp" />
+                            android:textColor="#1E293B" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:hint="Địa chỉ"
+                        android:layout_marginTop="14dp"
+                        android:hint="       Địa chỉ"
+                        app:boxCornerRadiusBottomEnd="14dp"
+                        app:boxCornerRadiusBottomStart="14dp"
+                        app:boxCornerRadiusTopEnd="14dp"
+                        app:boxCornerRadiusTopStart="14dp"
                         app:startIconDrawable="@android:drawable/ic_menu_directions"
-                        app:startIconTint="#2563EB">
+                        app:startIconTint="#0D3F6E">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etEditAddress"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:paddingStart="48dp" />
+                            android:textColor="#1E293B" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:hint="Ngày tham gia (Không thể sửa)"
+                        android:layout_marginTop="14dp"
                         android:enabled="false"
+                        android:hint="       Ngày tham gia (Không thể sửa)"
+                        app:boxCornerRadiusBottomEnd="14dp"
+                        app:boxCornerRadiusBottomStart="14dp"
+                        app:boxCornerRadiusTopEnd="14dp"
+                        app:boxCornerRadiusTopStart="14dp"
                         app:startIconDrawable="@android:drawable/ic_menu_info_details">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etEditCreatedAt"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:paddingStart="48dp"
-                            android:textColor="#9CA3AF" />
+                            android:textColor="#94A3B8" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                 </LinearLayout>
@@ -237,10 +265,11 @@
         android:layout_width="match_parent"
         android:layout_height="88dp"
         android:layout_gravity="bottom"
-        android:background="#FFFFFF"
-        android:elevation="12dp"
+        android:background="@android:color/white"
+        android:elevation="16dp"
         android:gravity="center"
-        android:padding="16dp">
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSaveEdit"
@@ -250,8 +279,8 @@
             android:textColor="#FFFFFF"
             android:textSize="15sp"
             android:textStyle="bold"
-            app:backgroundTint="#2563EB"
-            app:cornerRadius="12dp" />
+            app:backgroundTint="#0D3F6E"
+            app:cornerRadius="14dp" />
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
