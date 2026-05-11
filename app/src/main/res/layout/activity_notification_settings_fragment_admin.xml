@@ -41,7 +41,6 @@
                         android:textColor="#FFFFFF"
                         android:textSize="22sp"
                         android:textStyle="bold" />
-                        android:orientation="vertical"/>
                 </RelativeLayout>
 
                 <com.google.android.material.card.MaterialCardView
@@ -52,7 +51,7 @@
                     app:cardElevation="0dp">
 
                     <LinearLayout
-                        android:id="@+id/layout_danh_sach_thong_bao"
+                        android:id="@+id/layout_danh_sach_thong_bao_fragment_admin"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:background="#FFFFFF"
@@ -164,7 +163,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/tv_chon"
+                android:id="@+id/tv_chon_fragment_admin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="?attr/selectableItemBackground"
@@ -179,7 +178,7 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/tv_xoa"
+                android:id="@+id/tv_xoa_fragment_admin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -197,7 +196,7 @@
     </RelativeLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/btn_them_thong_bao"
+        android:id="@+id/btn_them_thong_bao_fragment_admin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"

@@ -21,6 +21,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.util.List;
 import java.util.Objects;
 
+import dashboard_fragment.UserRole;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -143,6 +144,28 @@ public class login extends AppCompatActivity {
                 }
 
                 UserProfile profile = response.body().get(0);
+
+                //Phần thêm
+                try{
+                    String roleStr = profile.getChuc_vu();
+                    UserRole finalRole = UserRole.NHAN_VIEN;
+
+                    if (roleStr != null)
+                    {
+                        if (roleStr.equalsIgnoreCase("Quản trị viên"))
+                        {
+                            finalRole = UserRole.ADMIN;
+                        } else if (roleStr.equalsIgnoreCase("Bác sĩ")) {
+                            finalRole = UserRole.BAC_SI;
+                        } else if (roleStr.equalsIgnoreCase("Nhân viên")) {
+                            finalRole = UserRole.NHAN_VIEN;
+                        }
+                    }
+                    android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+                    prefs.edit().putString("ROLE", finalRole.name()).apply();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 SharedPrefManager.getInstance(login.this).saveProfile(profile);
                 Intent logined = new Intent(login.this, dashboard.class);
 

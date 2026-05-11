@@ -29,6 +29,27 @@ public class AuthRepository {
         );
     }
 
+    public Call<java.util.List<ThongBao>> layDanhSachThongBao() {
+        return authApiService.layDanhSachThongBao(apiKey, "Bearer " + apiKey);
+    }
+
+    public Call<java.util.List<ThongBao>> themThongBao(String tieuDe, String noiDung) {
+        ThongBao tb = new ThongBao(tieuDe, noiDung);
+        return authApiService.themThongBao(apiKey, "Bearer " + apiKey, tb);
+    }
+    public Call<java.util.List<ThongBao>> layDanhSachThongBaoAdmin() {
+        return authApiService.layDanhSachThongBaoAdmin(apiKey, "Bearer " + apiKey);
+    }
+
+    public Call<java.util.List<ThongBao>> themThongBaoAdmin(String tieuDe, String noiDung) {
+        ThongBao tb = new ThongBao(tieuDe, noiDung);
+        return authApiService.themThongBaoAdmin(apiKey, "Bearer " + apiKey, tb);
+    }
+    public Call<Void> xoaThongBaoAdmin(int id) {
+        return authApiService.xoaThongBaoAdmin(apiKey, "Bearer " + apiKey, "eq." + id);
+    }
+    public Call<Void> xoaThongBao(int id) {
+        return authApiService.xoaThongBao(apiKey, "Bearer " + apiKey, "eq." + id);
     public Call<LoginResponse> updatePassword(String newPassword) {
         return authApiService.updatePassword(new UpdatePasswordRequest(newPassword));
     }

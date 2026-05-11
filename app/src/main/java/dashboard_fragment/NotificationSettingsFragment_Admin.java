@@ -1,8 +1,7 @@
 package dashboard_fragment;
 
+
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -26,65 +25,79 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import java.util.Collections;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class NotificationFragment extends Fragment
-{
+/**
+ * A simple {@link Fragment} subclass.
+ * Use the {@link NotificationSettingsFragment_Admin#newInstance} factory method to.
+ * create an instance of this fragment.
+ */
+public class NotificationSettingsFragment_Admin extends Fragment {
+    // TODO: Rename parameter arguments, choose names that match
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    private static final String ARG_PARAM1= "param1";
+    private static final String ARG_PARAM2= "param2";
 
-    private LinearLayout layoutDanhSachThongBao;
-    private FloatingActionButton btnThemThongBao;
+    private String mParam1;
+    private String mParam2;
+
+
+    private LinearLayout layoutDanhSach;
+    private FloatingActionButton btnThem;
     private AuthRepository authRepository;
-    private int soLuongThongBao = 0;
+    private int soLuong = 0;
+
+    //Chức năng Chọn
     private TextView tvChon, tvXoa;
     private boolean isSelectionMode = false;
     private List<Integer> selectedIds = new ArrayList<>();
-    private List<CheckBox> listCheckBoxes = new ArrayList<>();
+    private List<CheckBox> ListCheckBoxes = new ArrayList<>();
+    //
 
-    public NotificationFragment() {}
+    public NotificationSettingsFragment_Admin() {}
 
+    /**
+     * Use this factory method to create a new instance of
+     * this fragment using the provied parameters
+     *
+     * @param param1 Parameter 1.
+     * @param param2 Parameter 2.
+     * @return A new instance of fragment ReportsFragment_Admin.
+     */
+    // TODO: Rename and change types and number of parameters
+    public static ReportsFragment_Admin newInstance(String param1, String param2)
+    {
+        ReportsFragment_Admin fragment = new ReportsFragment_Admin();
+        Bundle args = new Bundle();
+        args.putString(ARG_PARAM1, param1);
+        args.putString(ARG_PARAM2, param2);
+        fragment.setArguments(args);
+        return fragment;
+    }
     @Override
-    public void onCreate(Bundle savedInstanceState){
+    public void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+            mParam2 = getArguments().getString(ARG_PARAM2);
+        }
         authRepository = new AuthRepository(getString(R.string.abAIkey));
     }
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-    {
-        View view = inflater.inflate(R.layout.fragment_notification, container, false);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.activity_notification_settings_fragment_admin, container, false);
 
-        btnThemThongBao = view.findViewById(R.id.btn_them_thong_bao);
-        layoutDanhSachThongBao = view.findViewById(R.id.layout_danh_sach_thong_bao);
-
-        tvChon = view.findViewById(R.id.tv_chon);
-        tvXoa = view.findViewById(R.id.tv_xoa);
-
-        SharedPreferences prefs = getActivity().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-        String roleSaved = prefs.getString("ROLE", UserRole.NHAN_VIEN.name());
-
-        UserRole userRole;
-        try {
-            userRole =UserRole.valueOf(roleSaved);
-        } catch (Exception e){
-            userRole = UserRole.NHAN_VIEN;
-        }
-
-        if (userRole == UserRole.ADMIN)
-        {
-            btnThemThongBao.setVisibility(View.VISIBLE);
-            tvChon.setVisibility(View.VISIBLE);
-            tvXoa.setVisibility(View.VISIBLE);
-        }
-        else
-        {
-            btnThemThongBao.setVisibility(View.GONE);
-            tvChon.setVisibility(View.GONE);
-            tvXoa.setVisibility(View.GONE);
-        }
+        layoutDanhSach = view.findViewById(R.id.layout_danh_sach_thong_bao_fragment_admin);
+        btnThem = view.findViewById(R.id.btn_them_thong_bao_fragment_admin);
+        tvChon = view.findViewById(R.id.tv_chon_fragment_admin);
+        tvXoa = view.findViewById(R.id.tv_xoa_fragment_admin);
 
         //Xử lý nút chọn (Bật / Tắt)
         if (tvChon != null)
@@ -95,21 +108,21 @@ public class NotificationFragment extends Fragment
                 {
                     tvChon.setText("Hủy");
                     tvChon.setTextColor(Color.parseColor("#4A81B0"));
-                    for (CheckBox cb : listCheckBoxes)
+                    for (CheckBox cb : ListCheckBoxes)
                     {
                         cb.setVisibility(View.VISIBLE);
                     }
                 } else
-                {
-                    tvChon.setText("Chọn");
-                    tvChon.setTextColor(Color.BLACK);
-                    for (CheckBox cb : listCheckBoxes)
                     {
-                        cb.setChecked(false);
-                        cb.setVisibility(View.GONE);
+                        tvChon.setText("Chọn");
+                        tvChon.setTextColor(Color.BLACK);
+                        for (CheckBox cb : ListCheckBoxes)
+                        {
+                            cb.setChecked(false);
+                            cb.setVisibility(View.GONE);
+                        }
+                        selectedIds.clear();
                     }
-                    selectedIds.clear();
-                }
             });
         }
         // Nút Xóa
@@ -117,26 +130,26 @@ public class NotificationFragment extends Fragment
         {
             tvXoa.setOnClickListener(v -> thucHienXoaNhieu());
         }
+        taiDuLieu();
 
-        goiDuLieuRetrofit();
-
-        if (btnThemThongBao != null) {
-            btnThemThongBao.setOnClickListener(v -> hienThiHopThoaiThem());
+        if (btnThem != null)
+        {
+            btnThem.setOnClickListener(v -> hienThiDialogThem());
         }
         return view;
     }
-    private void goiDuLieuRetrofit()
+    private void taiDuLieu()
     {
-        authRepository.layDanhSachThongBao().enqueue(new Callback<List<ThongBao>>() {
+        authRepository.layDanhSachThongBaoAdmin().enqueue(new Callback<List<ThongBao>>()
+        {
             @Override
             public void onResponse(Call<List<ThongBao>> call, Response<List<ThongBao>> response)
             {
                 if (response.isSuccessful() && response.body() != null)
                 {
                     List<ThongBao> ds = response.body();
-                    layoutDanhSachThongBao.removeAllViews();
-
-                    listCheckBoxes.clear();
+                    layoutDanhSach.removeAllViews();
+                    ListCheckBoxes.clear();
                     selectedIds.clear();
                     //Reset lại nút Chọn về mặc định
                     isSelectionMode = false;
@@ -147,15 +160,19 @@ public class NotificationFragment extends Fragment
                     }
 
                     Collections.reverse(ds);
-                    soLuongThongBao = 0;
-                    for (ThongBao tb : ds) {
+                    soLuong = 0;
+
+                    for (ThongBao tb : response.body())
+                    {
                         themVaoKhungXam(tb.getId(), tb.getTieu_de(), tb.getNoi_dung());
                     }
                 }
             }
+
             @Override
             public void onFailure(Call<List<ThongBao>> call, Throwable t)
             {
+
             }
         });
     }
@@ -173,22 +190,22 @@ public class NotificationFragment extends Fragment
 
                     for (int id : selectedIds)
                     {
-                        authRepository.xoaThongBaoAdmin(id).enqueue(new Callback<Void>()
+                        authRepository.xoaThongBao(id).enqueue(new Callback<Void>()
                         {
-                            @Override
-                            public void onResponse(Call<Void> call, Response<Void> response)
-                            {
-                                count[0]++;
-                                if (count[0] == total)
-                                {
-                                    goiDuLieuRetrofit();
-                                }
-                            }
+                           @Override
+                           public void onResponse(Call<Void> call, Response<Void> response)
+                           {
+                               count[0]++;
+                               if (count[0] == total)
+                               {
+                                   taiDuLieu();
+                               }
+                           }
                             @Override
                             public void onFailure(Call<Void> call, Throwable t)
                             {
                                 count[0]++;
-                                if (count[0] == total) goiDuLieuRetrofit();
+                                if (count[0] == total) taiDuLieu();
                             }
                         });
                     }
@@ -196,71 +213,64 @@ public class NotificationFragment extends Fragment
                 .setNegativeButton("Hủy", null)
                 .show();
     }
-
-    private void hienThiHopThoaiThem()
+    private void hienThiDialogThem()
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Thêm thông báo mới");
+        builder.setTitle("Tạo thông báo Admin");
 
-        LinearLayout layout = new LinearLayout(getContext());
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(dpToPx(20), dpToPx(16), dpToPx(20), dpToPx(8));
+        LinearLayout container = new LinearLayout(getContext());
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.setPadding(dpToPx(20), dpToPx(10), dpToPx(20), dpToPx(10));
 
-        final EditText etTieuDe = new EditText(getContext());
-        etTieuDe.setHint("Nhập tiêu đề...");
-        layout.addView(etTieuDe);
+        final EditText inputTieuDe = new EditText(getContext());
+        inputTieuDe.setHint("Tiêu đề thông báo");
+        container.addView(inputTieuDe);
 
-        final EditText etNoiDung = new EditText(getContext());
-        etNoiDung.setHint("Nhập nội dung chi tiết...");
-        layout.addView(etNoiDung);
+        final EditText inputNoiDung = new EditText(getContext());
+        inputNoiDung.setHint("Nội dung chi tiết");
+        container.addView(inputNoiDung);
 
-        builder.setView(layout);
+        builder.setView(container);
         builder.setPositiveButton("Thêm", (dialog, which) -> {
-            String tieuDeStr = etTieuDe.getText().toString().trim();
-            String noiDungStr = etNoiDung.getText().toString().trim();
-
-            if (!tieuDeStr.isEmpty() && !noiDungStr.isEmpty())
+            String t = inputTieuDe.getText().toString().trim();
+            String n = inputNoiDung.getText().toString().trim();
+            if (!t.isEmpty() && !n.isEmpty())
             {
-                dayDuLieuLenRetrofit(tieuDeStr, noiDungStr);
+                dayDuLieuLenRetrofitAdmin(t, n);
             }
         });
         builder.setNegativeButton("Hủy", null);
         builder.show();
     }
-
-    private void dayDuLieuLenRetrofit(String tieuDe, String noiDung)
-    {
-        authRepository.themThongBao(tieuDe, noiDung).enqueue(new Callback<List<ThongBao>>() {
+    private void dayDuLieuLenRetrofitAdmin(String tieuDe, String noiDung) {
+        authRepository.themThongBaoAdmin(tieuDe, noiDung).enqueue(new Callback<List<ThongBao>>() {
             @Override
-            public void onResponse(Call<List<ThongBao>> call, Response<List<ThongBao>> response)
-            {
+            public void onResponse(Call<List<ThongBao>> call, Response<List<ThongBao>> response) {
                 if (response.isSuccessful())
                 {
-                    goiDuLieuRetrofit();
+                    taiDuLieu();
                 }
             }
 
             @Override
             public void onFailure(Call<List<ThongBao>> call, Throwable t)
             {
-                Toast.makeText(getContext(), "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+
             }
         });
     }
-
     private int dpToPx(int dp)
     {
         return Math.round((float) dp * getResources().getDisplayMetrics().density);
     }
-
     private void themVaoKhungXam(Integer id, String tieuDe, String noiDung)
     {
-        if (layoutDanhSachThongBao == null) return;
+        if (layoutDanhSach == null) return;
 
         CheckBox checkBox = new CheckBox(getContext());
         checkBox.setButtonTintList(ColorStateList.valueOf(Color.parseColor("#4CAF50")));
         checkBox.setVisibility(isSelectionMode ? View.VISIBLE : View.GONE);
-        listCheckBoxes.add(checkBox);
+        ListCheckBoxes.add(checkBox);
 
         checkBox.setOnCheckedChangeListener((buttonView, isChecked) ->
         {
@@ -268,10 +278,25 @@ public class NotificationFragment extends Fragment
             {
                 if (!selectedIds.contains(id)) selectedIds.add(id);
             } else
-            {
-                selectedIds.remove(Integer.valueOf(id));
-            }
+                {
+                    selectedIds.remove(Integer.valueOf(id));
+                }
         });
+
+
+        TextView tvTieuDe = new TextView(getContext());
+        tvTieuDe.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        tvTieuDe.setText(tieuDe);
+        tvTieuDe.setTextColor(Color.BLACK);
+        tvTieuDe.setTextSize(18);
+        tvTieuDe.setTypeface(null, Typeface.BOLD);
+
+        TextView tvNoiDung = new TextView(getContext());
+        tvNoiDung.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        tvNoiDung.setText(noiDung);
+        tvNoiDung.setTextColor(Color.parseColor("#555555"));
+        tvNoiDung.setTextSize(14);
+        tvNoiDung.setPadding(0, dpToPx(8), 0, 0);
 
         MaterialCardView cardMoi = new MaterialCardView(getContext());
         LinearLayout.LayoutParams paramsCard = new LinearLayout.LayoutParams(
@@ -301,24 +326,14 @@ public class NotificationFragment extends Fragment
         lopDocParams.setMarginStart(dpToPx(12));
         lopDoc.setLayoutParams(lopDocParams);
 
-        TextView tvTieuDe = new TextView(getContext());
-        tvTieuDe.setText(tieuDe);
-        tvTieuDe.setTextColor(Color.BLACK);
-        tvTieuDe.setTextSize(18);
-        tvTieuDe.setTypeface(null, Typeface.BOLD);
-        TextView tvNoiDung = new TextView(getContext());
-        tvNoiDung.setText(noiDung);
-        tvNoiDung.setTextColor(Color.parseColor("#555555"));
-        tvNoiDung.setTextSize(14);
-        tvNoiDung.setPadding(0, dpToPx(8), 0, 0);
-
         lopDoc.addView(tvTieuDe);
         lopDoc.addView(tvNoiDung);
+
         lopNgang.addView(checkBox);
         lopNgang.addView(lopDoc);
         cardMoi.addView(lopNgang);
 
-        layoutDanhSachThongBao.addView(cardMoi);
-        soLuongThongBao++;
+        layoutDanhSach.addView(cardMoi);
+        soLuong++;
     }
 }
