@@ -2,13 +2,13 @@ package dashboard_fragment;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,6 +25,7 @@ import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.login;
 import com.example.nhom08_quanlyphongkham.uilogin.AuthRepository;
 import com.example.nhom08_quanlyphongkham.uilogin.LoginResponse;
+import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -31,6 +33,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import coil.Coil;
+import coil.request.ImageRequest;
+import dashboard_fragment.account_edit_profile.EditProfile;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -43,22 +48,23 @@ import retrofit2.Response;
 public class AccountFragment extends Fragment {
 
     private static final String ARG_PROFILE = "arg_profile";
-    private static final String ARG_TOKEN = "token";
     private UserProfile userprofile;
-    private String currentToken;
+
     TextView textviewProfile, textviewEmail, textviewPhone, textviewBirthday, textviewGender, textviewAddress, textviewJobTitle;
-    Button btnEditPass;
-    Button btnLogout;
+    View btnEditProfile;
+
+    ImageView imgProfileanh_dai_dien;
+    View btnEditPass;
+    View btnLogout;
     private AuthRepository authRepository;
 
     public AccountFragment() {
     }
 
-    public static AccountFragment newInstance(UserProfile profile, String token) {
+    public static AccountFragment newInstance(UserProfile profile) {
         AccountFragment fragment = new AccountFragment();
         Bundle args = new Bundle();
         args.putSerializable(ARG_PROFILE, profile);
-        args.putString(ARG_TOKEN, token);
         fragment.setArguments(args);
         return fragment;
     }
@@ -68,11 +74,10 @@ public class AccountFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            userprofile = (UserProfile) getArguments().getSerializable(ARG_PROFILE);
-            currentToken = getArguments().getString(ARG_TOKEN);
+            userprofile = SharedPrefManager.getInstance(requireContext()).getProfile();
         }
 
-        authRepository = new AuthRepository(getString(R.string.abAIkey));
+        authRepository = new AuthRepository(requireContext());
     }
 
     @Override
@@ -94,19 +99,17 @@ public class AccountFragment extends Fragment {
         textviewGender = view.findViewById(R.id.txtGender);
         textviewAddress = view.findViewById(R.id.txtAddress);
         textviewJobTitle = view.findViewById(R.id.txtJobTitle);
+        imgProfileanh_dai_dien = view.findViewById(R.id.imgProfileAvatar);
 
+        btnEditProfile = view.findViewById(R.id.btnEditProfile);
         btnEditPass = view.findViewById(R.id.btnEditPass);
         btnLogout = view.findViewById(R.id.btnLogout);
     }
 
     private void setViewProfile() {
-        String GreetingText = "Xin chào, " + userprofile.getHo_ten();
-
-        textviewProfile.setText(GreetingText);
-
+        textviewProfile.setText(userprofile.getHo_ten());
         textviewEmail.setText(userprofile.getEmail());
         textviewPhone.setText(userprofile.getSo_dien_thoai());
-
         Date NgaySinhUser = userprofile.getNgay_sinh();
 
         if (NgaySinhUser != null) {
@@ -117,16 +120,25 @@ public class AccountFragment extends Fragment {
         textviewGender.setText(userprofile.getGioitinh());
         textviewAddress.setText(userprofile.getDia_chi());
         textviewJobTitle.setText(userprofile.getChuc_vu());
+        ImageRequest request = new ImageRequest.Builder(getContext())
+                .data(userprofile.getAnh_dai_dien())
+                .target(imgProfileanh_dai_dien)
+                .crossfade(true) // Hiệu ứng mờ dần khi hiện ảnh
+                .build();
+
+        Coil.imageLoader(getContext()).enqueue(request);
     }
 
+
     private void setupListeners() {
+        btnEditProfile.setOnClickListener(v -> openEditProfile());
         btnEditPass.setOnClickListener(v -> showChangePasswordDialog());
         btnLogout.setOnClickListener(v->showLogoutDialog());
     }
 
     private void showChangePasswordDialog() {
         View dialogView = LayoutInflater.from(requireContext())
-                .inflate(R.layout.change_password_dialog, null);
+                .inflate(R.layout.user_change_password_dialog, null);
 
         AlertDialog dialog = new AlertDialog.Builder(requireContext())
                 .setView(dialogView)
@@ -143,7 +155,7 @@ public class AccountFragment extends Fragment {
 
     private void Change_Password_Dialog_Show_UI(AlertDialog dialog, View dialogView) {
         Button btnConfirm = dialog.findViewById(R.id.btnUpdatePassword);
-        Button btnChangePassExit = dialog.findViewById(R.id.btnChangePassExit);
+        Button btnCancel = dialog.findViewById(R.id.btnChangePassExit);
 
         TextInputEditText edtCurrentPassword = dialogView.findViewById(R.id.edtCurrentPassword);
         TextInputEditText edtNewPassword = dialogView.findViewById(R.id.edtNewPassword);
@@ -190,7 +202,7 @@ public class AccountFragment extends Fragment {
             verifyCurrentPassword(currentPassword, newPassword, layoutCurrentPassword, dialog);
         });
 
-        btnChangePassExit.setOnClickListener(v ->{
+        btnCancel.setOnClickListener(v ->{
             dialog.dismiss();
         });
     }
@@ -210,13 +222,11 @@ public class AccountFragment extends Fragment {
             public void onFailure(@NonNull Call<LoginResponse> call, @NonNull Throwable t) {
                 Toast.makeText(requireContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
-
-
         });
     }
 
     private void changePassword(String newPassword, AlertDialog dialog) {
-        authRepository.updatePassword(currentToken, newPassword).enqueue(new Callback<LoginResponse>() {
+        authRepository.updatePassword(newPassword).enqueue(new Callback<LoginResponse>() {
             @Override
             public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
                 if (!response.isSuccessful() || response.body() == null) {
@@ -239,7 +249,7 @@ public class AccountFragment extends Fragment {
     }
     private void showLogoutDialog() {
         View dialogView = LayoutInflater.from(requireContext())
-                .inflate(R.layout.log_out_dialog, null);
+                .inflate(R.layout.user_log_out_dialog, null);
 
         AlertDialog dialog = new AlertDialog.Builder(requireContext())
                 .setView(dialogView)
@@ -254,27 +264,77 @@ public class AccountFragment extends Fragment {
         dialog.show();
     }
     private void Logout_Dialog_Show_UI(AlertDialog dialog, View dialogView) {
-        Button btnLogoutConfirm = dialog.findViewById(R.id.btnLogoutConfirm);
-        Button btnLogoutCancel = dialog.findViewById(R.id.btnLogoutCancel);
+        Button btnLogoutConfirm = dialogView.findViewById(R.id.btnLogoutConfirm);
+        Button btnLogoutCancel = dialogView.findViewById(R.id.btnLogoutCancel);
 
-        btnLogoutConfirm.setOnClickListener(v->{
-            SharedPreferences sharedPreferences = dialog.getContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.clear();//Xoa token
-            editor.apply();
-
+        btnLogoutConfirm.setOnClickListener(v -> {
+            // Clean up using your manager
+            SharedPrefManager.getInstance(requireContext()).clear();
             dialog.dismiss();
 
-            Intent intent = new Intent(dialog.getContext(), login.class);
+            Intent intent = new Intent(requireContext(), login.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            dialog.getContext().startActivity(intent);
+            startActivity(intent);
+            requireActivity().finish();
+        });
 
-            if (dialog.getContext() instanceof Activity) {
-                ((Activity) dialog.getContext()).finish();
+        btnLogoutCancel.setOnClickListener(v -> dialog.dismiss());
+    }
+    private final ActivityResultLauncher<Intent> editProfileLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Intent data = result.getData();
+
+                    String hoTen = data.getStringExtra("updated_ho_ten");
+                    String soDienThoai = data.getStringExtra("updated_so_dien_thoai");
+                    String diaChi = data.getStringExtra("updated_dia_chi");
+                    String gioiTinh = data.getStringExtra("updated_gioitinh");
+                    String anh_dai_dien = data.getStringExtra("updated_anh_dai_dien");
+
+                    if (userprofile != null) {
+                        userprofile = new UserProfile(
+                                userprofile.getID(),
+                                userprofile.getEmail(),
+                                userprofile.getUser_name(),
+                                hoTen != null ? hoTen : userprofile.getHo_ten(),
+                                userprofile.getNgay_sinh(),
+                                soDienThoai != null ? soDienThoai : userprofile.getSo_dien_thoai(),
+                                diaChi != null ? diaChi : userprofile.getDia_chi(),
+                                gioiTinh != null ? gioiTinh : userprofile.getGioitinh(),
+                                userprofile.getChuc_vu(),
+                                anh_dai_dien != null ? anh_dai_dien : userprofile.getAnh_dai_dien()
+                        );
+                    }
+
+                    if (hoTen != null) textviewProfile.setText(hoTen);
+                    if (soDienThoai != null) textviewPhone.setText(soDienThoai);
+                    if (diaChi != null) textviewAddress.setText(diaChi);
+                    if (gioiTinh != null) textviewGender.setText(gioiTinh);
+                }
             }
-        });
-        btnLogoutCancel.setOnClickListener(v ->{
-            dialog.dismiss();
-        });
+    );
+
+    private void openEditProfile() {
+        UserProfile latestProfile = SharedPrefManager.getInstance(requireContext()).getProfile();
+        if (latestProfile != null) {
+            userprofile = latestProfile;
+        }
+
+        Intent intent = new Intent(requireContext(), EditProfile.class);
+        intent.putExtra("accessToken", SharedPrefManager.getInstance(requireContext()).getToken());
+        intent.putExtra("Userprofile", userprofile);
+        editProfileLauncher.launch(intent);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        UserProfile latestProfile = SharedPrefManager.getInstance(requireContext()).getProfile();
+        if (latestProfile != null) {
+            userprofile = latestProfile;
+            setViewProfile();
+        }
     }
 }

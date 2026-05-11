@@ -39,10 +39,20 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
 
-    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+// Thư viện Supabase chính (nếu chưa có)
+    // 1. Module xử lý Database (Select/Update)
+    implementation("io.github.jan-tennert.supabase:postgrest-kt:3.5.0")
+// 2. Module xử lý Realtime (Bắt buộc phải có cái này mới hết lỗi jan_tennert)
+    implementation("io.github.jan-tennert.supabase:realtime-kt:3.5.0")
+// 3. Module core để các module trên chạy được
+    implementation("io.github.jan-tennert.supabase:supabase-kt:3.5.0")
+    implementation("io.github.jan-tennert.supabase:realtime-kt:3.0.1")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
+    implementation("io.coil-kt:coil:2.4.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

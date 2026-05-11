@@ -44,6 +44,7 @@
                             android:textStyle="bold" />
 
                         <TextView
+                            android:id="@+id/admin_home_name"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Chào mừng, "
@@ -59,6 +60,7 @@
                         app:cardElevation="4dp">
 
                         <ImageView
+                            android:id="@+id/home_avatar_admin"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:padding="8dp"
@@ -80,17 +82,13 @@
                         android:orientation="vertical"
                         android:padding="16dp">
 
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:background="@color/app_secondary_text_color" />
-
                         <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_mngStaff"
                             style="@style/Widget.MaterialComponents.Button.TextButton"
                             android:layout_width="match_parent"
                             android:layout_height="80dp"
                             android:gravity="center_vertical|start"
-                            android:text="QUẢN LÝ THÔNG TIN BÁC SĨ"
+                            android:text="QUẢN LÝ THÔNG TIN NHÂN VIÊN"
                             android:textColor="@color/app_primary_text_color"
                             app:icon="@drawable/dashboard_icon_doctor"
                             app:iconPadding="16dp"

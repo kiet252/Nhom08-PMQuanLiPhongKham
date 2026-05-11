@@ -5,26 +5,35 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
+        android:fullBackupContent="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Nhom08QuanLyPhongKham">
         <activity
-            android:name=".NotificationFragment"
-            android:exported="true" />
-        <activity
-            android:name=".NotificationSettingsFragment_Admin"
+            android:name="dashboard_fragment.doctor_examination_list.ExaminationList_doctor"
             android:exported="false" />
         <activity
-            android:name=".ReportsFragment_Admin"
+            android:name="dashboard_fragment.account_edit_profile.EditProfile"
             android:exported="false" />
         <activity
-            android:name=".UserProfileActivity"
-            android:exported="true" />
+            android:name="dashboard_fragment.staff_manage_bill.BillDetail_staff"
+            android:exported="false" />
+        <activity
+            android:name="dashboard_fragment.staff_manage_bill.ManageBill_staff"
+            android:exported="false" />
+        <activity
+            android:name="dashboard_fragment.staff_manage_examination_form.ManageExaminationForm_staff"
+            android:exported="false" />
+        <activity
+            android:name="dashboard_fragment.staff_add_update_patient.AddUpdatePatientInfo_staff"
+            android:exported="false" />
+        <activity
+            android:name="dashboard_fragment.staff_create_examination_form.CreateExaminationForm_staff"
+            android:exported="false" />
         <activity
             android:name=".login"
             android:exported="true">
@@ -34,9 +43,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".admin_manage_staff" />
         <activity
             android:name=".dashboard"
-            android:exported="true" />
+            android:exported="true"></activity>
+        <activity
+            android:name=".staff_detail"
+            android:exported="false" />
+        <activity
+            android:name="dashboard_fragment.account_change_password_request.set_staff_detail"
+            android:exported="false" />
+        <activity
+            android:name=".create_staff"
+            android:exported="false" />
+
     </application>
 
 </manifest>
