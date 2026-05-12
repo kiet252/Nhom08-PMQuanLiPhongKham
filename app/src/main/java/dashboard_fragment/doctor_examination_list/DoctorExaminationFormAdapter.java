@@ -21,7 +21,16 @@ import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.Pa
 public class DoctorExaminationFormAdapter extends RecyclerView.Adapter<DoctorExaminationFormAdapter.DoctorExaminationFormViewHolder> {
     private enum ViewType { WAITING, IN_PROGRESS, DONE }
 
+    public interface OnFormClickListener {
+        void onFormClick(ExaminationFormWithPatientDto form);
+    }
+
     private final List<ExaminationFormWithPatientDto> forms = new ArrayList<>();
+    private final OnFormClickListener onFormClickListener;
+
+    public DoctorExaminationFormAdapter(OnFormClickListener onFormClickListener) {
+        this.onFormClickListener = onFormClickListener;
+    }
 
     public void submitList(List<ExaminationFormWithPatientDto> newForms) {
         forms.clear();
@@ -40,7 +49,7 @@ public class DoctorExaminationFormAdapter extends RecyclerView.Adapter<DoctorExa
     @Override
     public DoctorExaminationFormViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = inflateRow(parent.getContext(), parent, ViewType.values()[viewType]);
-        return new DoctorExaminationFormViewHolder(view);
+        return new DoctorExaminationFormViewHolder(view, onFormClickListener);
     }
 
     @Override
@@ -53,9 +62,10 @@ public class DoctorExaminationFormAdapter extends RecyclerView.Adapter<DoctorExa
         return forms.size();
     }
 
-    public static View createBoundRow(Context context, ViewGroup parent, ExaminationFormWithPatientDto form) {
+    public static View createBoundRow(Context context, ViewGroup parent, ExaminationFormWithPatientDto form,
+                                      OnFormClickListener onFormClickListener) {
         View view = inflateRow(context, parent, resolveViewType(form));
-        new DoctorExaminationFormViewHolder(view).bind(form);
+        new DoctorExaminationFormViewHolder(view, onFormClickListener).bind(form);
         return view;
     }
 
@@ -83,15 +93,13 @@ public class DoctorExaminationFormAdapter extends RecyclerView.Adapter<DoctorExa
     }
 
     static class DoctorExaminationFormViewHolder extends RecyclerView.ViewHolder {
-        private final TextView tvDoctorExaminationTime;
-        private final TextView tvDoctorExaminationPatientName;
-        private final TextView tvDoctorExaminationStatus;
-        private final TextView tvDoctorExaminationPatientCode;
-        private final TextView tvDoctorExaminationSymptoms;
+        private final OnFormClickListener onFormClickListener;
+        private final TextView tvDoctorExaminationTime, tvDoctorExaminationPatientName, tvDoctorExaminationStatus, tvDoctorExaminationPatientCode, tvDoctorExaminationSymptoms;
         private final ImageView ivDoctorExaminationMore;
 
-        DoctorExaminationFormViewHolder(@NonNull View itemView) {
+        DoctorExaminationFormViewHolder(@NonNull View itemView, OnFormClickListener onFormClickListener) {
             super(itemView);
+            this.onFormClickListener = onFormClickListener;
             tvDoctorExaminationTime = itemView.findViewById(R.id.tvDoctorExaminationTime);
             tvDoctorExaminationPatientName = itemView.findViewById(R.id.tvDoctorExaminationPatientName);
             tvDoctorExaminationStatus = itemView.findViewById(R.id.tvDoctorExaminationStatus);
@@ -117,6 +125,12 @@ public class DoctorExaminationFormAdapter extends RecyclerView.Adapter<DoctorExa
             if (ivDoctorExaminationMore != null) {
                 ivDoctorExaminationMore.setVisibility(View.VISIBLE);
             }
+
+            itemView.setOnClickListener(v -> {
+                if (onFormClickListener != null) {
+                    onFormClickListener.onFormClick(form);
+                }
+            });
         }
 
         private String buildPatientCode(ExaminationFormWithPatientDto form, PatientBriefDto patient) {
