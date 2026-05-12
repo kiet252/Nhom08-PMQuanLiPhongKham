@@ -61,4 +61,6 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     // Đảm bảo có thêm dòng này cho các component giao diện Material
     implementation("com.google.android.material:material:1.11.0")
+    // ViewPager2 cho tab Fragment
+    implementation("androidx.viewpager2:viewpager2:1.1.0")
 }
