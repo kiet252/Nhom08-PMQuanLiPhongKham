@@ -34,6 +34,7 @@ import coil.Coil;
 import coil.request.ImageRequest;
 
 import dashboard_fragment.doctor_examination_list.ExaminationList_doctor;
+import doctor_patient_list.doctor_patient_list;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -224,15 +225,16 @@ public class HomeFragment_doctor extends Fragment {
         }
 
         if (btnViewMedicalRecords != null) {
-            btnViewMedicalRecords.setOnClickListener(v -> {
-                // TODO: Chuyển sang màn hình xem hồ sơ bệnh án
-                Toast.makeText(getContext(), "Mở lịch hẹn tái khám", Toast.LENGTH_SHORT).show();
-            });
+            btnViewMedicalRecords.setOnClickListener(v -> openPatientList());
         }
     }
 
     private void openExFormsLists() {
         Intent intent = new Intent(getActivity(), ExaminationList_doctor.class);
+        startActivity(intent);
+    }
+    private void openPatientList() {
+        Intent intent = new Intent(getActivity(), doctor_patient_list.class);
         startActivity(intent);
     }
 }
