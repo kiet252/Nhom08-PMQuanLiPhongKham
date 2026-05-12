@@ -46,7 +46,7 @@
         <activity android:name=".admin_manage_staff" />
         <activity
             android:name=".dashboard"
-            android:exported="true"></activity>
+            android:exported="true" />
         <activity
             android:name=".staff_detail"
             android:exported="false" />
@@ -56,6 +56,7 @@
         <activity
             android:name=".create_staff"
             android:exported="false" />
+        <activity android:name="doctor_patient_list.doctor_patient_list"/>
 
     </application>
 

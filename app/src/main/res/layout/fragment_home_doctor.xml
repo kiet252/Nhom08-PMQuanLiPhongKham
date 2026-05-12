@@ -404,6 +404,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
                         app:cardBackgroundColor="#FFFFFF"
+                        android:foreground="?android:attr/selectableItemBackground"
                         app:cardCornerRadius="18dp"
                         app:cardElevation="2dp">
 
