@@ -3,14 +3,22 @@ package dashboard_fragment.doctor_examination_list.doctor_examination_form_detai
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.nhom08_quanlyphongkham.R;
 
@@ -27,6 +35,16 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
     public static final String EXTRA_PATIENT_ID = "extra_patient_id";
     public static final String EXTRA_SEQUENCE_NUMBER = "extra_sequence_number";
     public static final String EXTRA_SYMPTOMS = "extra_symptoms";
+    private static final int TAB_PATIENT_INFO = 0;
+    private static final int TAB_CLINICAL = 1;
+    private static final int TAB_DIAGNOSIS = 2;
+    private static final int TAB_PRESCRIPTION = 3;
+
+    private LinearLayout tabExformPatient;
+    private LinearLayout tabCanLamSang;
+    private LinearLayout tabDiagnosis;
+    private LinearLayout tabPrescription;
+    private ViewPager2 viewPagerDoctorExDetail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +59,9 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
 
         bindHeaderData();
         setupBackButton();
+        initializeViews();
+        setupViewPager();
+        setupTabClicks();
     }
 
     public static Intent createIntent(Context context, ExaminationFormWithPatientDto form) {
@@ -75,6 +96,58 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
         btnBack.setOnClickListener(v -> finish());
     }
 
+    private void initializeViews() {
+        tabExformPatient = findViewById(R.id.tabExformPatient);
+        tabCanLamSang = findViewById(R.id.tabCanLamSang);
+        tabDiagnosis = findViewById(R.id.tabDiagnosis);
+        tabPrescription = findViewById(R.id.tabPrescription);
+        viewPagerDoctorExDetail = findViewById(R.id.viewPagerDoctorExDetail);
+    }
+
+    private void setupViewPager() {
+        viewPagerDoctorExDetail.setAdapter(new DoctorExDetailPagerAdapter(this));
+        viewPagerDoctorExDetail.setCurrentItem(TAB_PATIENT_INFO, false);
+        updateSelectedTab(TAB_PATIENT_INFO);
+        viewPagerDoctorExDetail.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                updateSelectedTab(position);
+            }
+        });
+    }
+
+    private void setupTabClicks() {
+        tabExformPatient.setOnClickListener(v -> viewPagerDoctorExDetail.setCurrentItem(TAB_PATIENT_INFO, true));
+        tabCanLamSang.setOnClickListener(v -> viewPagerDoctorExDetail.setCurrentItem(TAB_CLINICAL, true));
+        tabDiagnosis.setOnClickListener(v -> viewPagerDoctorExDetail.setCurrentItem(TAB_DIAGNOSIS, true));
+        tabPrescription.setOnClickListener(v -> viewPagerDoctorExDetail.setCurrentItem(TAB_PRESCRIPTION, true));
+    }
+
+    private void updateSelectedTab(int selectedTab) {
+        applyTabState(tabExformPatient, selectedTab == TAB_PATIENT_INFO);
+        applyTabState(tabCanLamSang, selectedTab == TAB_CLINICAL);
+        applyTabState(tabDiagnosis, selectedTab == TAB_DIAGNOSIS);
+        applyTabState(tabPrescription, selectedTab == TAB_PRESCRIPTION);
+    }
+
+    private void applyTabState(LinearLayout tabView, boolean isSelected) {
+        tabView.setBackgroundResource(isSelected
+                ? R.drawable.bg_doctor_detail_tab_selected
+                : R.drawable.bg_doctor_detail_tab_unselected);
+
+        int textColor = ContextCompat.getColor(this, isSelected ? android.R.color.white : R.color.filter_tab_unselected_text);
+        int iconColor = ContextCompat.getColor(this, isSelected ? android.R.color.white : R.color.filter_tab_unselected_text);
+
+        for (int index = 0; index < tabView.getChildCount(); index++) {
+            View child = tabView.getChildAt(index);
+            if (child instanceof TextView) {
+                ((TextView) child).setTextColor(textColor);
+            } else if (child instanceof ImageView) {
+                ((ImageView) child).setColorFilter(iconColor);
+            }
+        }
+    }
+
     private String readExtra(String key, String fallback) {
         String value = getIntent().getStringExtra(key);
         return safeText(value, fallback);
@@ -100,5 +173,31 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
 
     private static String safeText(String value, String fallback) {
         return value == null || value.trim().isEmpty() ? fallback : value;
+    }
+
+    private static class DoctorExDetailPagerAdapter extends FragmentStateAdapter {
+        DoctorExDetailPagerAdapter(AppCompatActivity activity) {
+            super(activity);
+        }
+
+        @Override
+        public int getItemCount() {
+            return 4;
+        }
+
+        @Override
+        public Fragment createFragment(int position) {
+            switch (position) {
+                case TAB_CLINICAL:
+                    return new TabClinicalFragment();
+                case TAB_DIAGNOSIS:
+                    return new TabDiagnosisFragment();
+                case TAB_PRESCRIPTION:
+                    return new TabPrescriptionFragment();
+                case TAB_PATIENT_INFO:
+                default:
+                    return new TabPatientInfoFragment();
+            }
+        }
     }
 }
