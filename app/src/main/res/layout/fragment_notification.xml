@@ -40,8 +40,9 @@
                         android:text="Thông báo"
                         android:textColor="#FFFFFF"
                         android:textSize="22sp"
-                        android:textStyle="bold" />
-                        android:orientation="vertical"/>
+                        android:textStyle="bold"
+                        android:orientation="vertical" />
+
                 </RelativeLayout>
 
                 <com.google.android.material.card.MaterialCardView
