@@ -19,6 +19,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.List;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import com.example.nhom08_quanlyphongkham.R;
 
@@ -29,6 +31,9 @@ import java.util.ArrayList;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+
+import java.text.NumberFormat;
+import java.util.Locale;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -89,6 +94,11 @@ public class ReportsFragment_Admin extends Fragment {
         Button btnTimKiem = view.findViewById(R.id.btn_tim_kiem);
         TextView tvEmptyState = view.findViewById(R.id.tv_empty_state);
         RecyclerView rvDanhSach = view.findViewById(R.id.rv_danh_sach_doanh_thu);
+        TextView tvTongSoHoaDon = view.findViewById(R.id.tv_tong_so_hoa_don);
+        TextView tvTongDoanhThu = view.findViewById(R.id.tv_tong_doanh_thu);
+
+
+        capNhatTongKet(new ArrayList<>(), tvTongSoHoaDon, tvTongDoanhThu);
         //3. Thêm sự kiện click bật lịch
         tvNgayBD.setOnClickListener(new View.OnClickListener()
         {
@@ -175,25 +185,35 @@ public class ReportsFragment_Admin extends Fragment {
                     boolean found = false;
                     // TODO: Thêm code vòng lặp tìm kiếm
                     // THUẬT TOÁN TÌM KIẾM.
+                    List<DonKham> danhSachTatCa = layDanhSachDonKham();
                     List<DonKham> danhSachKetQua = new ArrayList<>();
                     // 1. Ánh xạ thành chữ thường để dễ so sánh
                     String tukhoaMaDK = etMaDonKham.getText().toString().trim().toLowerCase();
                     String tukhoaTenBN = etTenBN.getText().toString().trim().toLowerCase();
 
-                    for (DonKham dk : danhSachKetQua)
+                    for (DonKham dk : danhSachTatCa)
                     {
                         String maDonKhamGoc = dk.getMaDonKham().toLowerCase();
                         String maTenBNGoc = dk.getTenBN().toLowerCase();
+                        Date ngayKhamGoc = null;
+                        try {
+                            ngayKhamGoc = sdf.parse(dk.getNgayKham());
+                        } catch (Exception ignored) {
+                        }
 
+                        boolean dungMa = tukhoaMaDK.isEmpty() || maDonKhamGoc.contains(tukhoaMaDK);
+                        boolean dungTen = tukhoaTenBN.isEmpty() || maTenBNGoc.contains(tukhoaTenBN);
+                        boolean dungNgayBatDau = dateNgayBD == null || (ngayKhamGoc != null && !ngayKhamGoc.before(dateNgayBD));
+                        boolean dungNgayKetThuc = dateNgayKT == null || (ngayKhamGoc != null && !ngayKhamGoc.after(dateNgayKT));
 
-                        if ((!tukhoaMaDK.isEmpty() && maDonKhamGoc.contains(tukhoaMaDK)) ||
-                            (!tukhoaTenBN.isEmpty() && maTenBNGoc.contains(tukhoaTenBN)))
+                        if (dungMa && dungTen && dungNgayBatDau && dungNgayKetThuc)
                         {
                             danhSachKetQua.add(dk);
                             found = true;
                         }
                     }
 
+                    capNhatTongKet(danhSachKetQua, tvTongSoHoaDon, tvTongDoanhThu);
                     //Xử lí hiển thị sau khi tim kiếm
                     if (!found)
                     {
@@ -217,12 +237,14 @@ public class ReportsFragment_Admin extends Fragment {
         private String MaDonKham;
         private String TenBN;
         private String NgayKham;
+        private long TongTien;
 
-        public DonKham (String maHoaDon, String tenBenhNhan, String ngayKham)
+        public DonKham (String maHoaDon, String tenBenhNhan, String ngayKham, long tongTien)
         {
             this.MaDonKham = maHoaDon;
             this.TenBN = tenBenhNhan;
             this.NgayKham = ngayKham;
+            this.TongTien = tongTien;
         }
 
         public String getMaDonKham()
@@ -235,6 +257,44 @@ public class ReportsFragment_Admin extends Fragment {
             return TenBN;
         }
         public String getNgayKham() {return NgayKham;}
+        public long getTongTien() { return TongTien; }
+    }
+
+    private void capNhatTongKet(List<DonKham> danhSach, TextView tvTongSoHoaDon, TextView tvTongDoanhThu)
+    {
+        int soHoaDon = danhSach == null ? 0 : danhSach.size();
+        long tongDoanhThu = 0;
+
+        if (danhSach != null)
+        {
+            for (DonKham donKham : danhSach)
+            {
+                tongDoanhThu += donKham.getTongTien();
+            }
+        }
+
+        if (tvTongSoHoaDon != null)
+        {
+            tvTongSoHoaDon.setText(String.valueOf(soHoaDon));
+        }
+
+        if (tvTongDoanhThu != null)
+        {
+            NumberFormat formatter = NumberFormat.getInstance(new Locale("vi", "VN"));
+            tvTongDoanhThu.setText(formatter.format(tongDoanhThu) + " đ");
+        }
+    }
+
+    private List<DonKham> layDanhSachDonKham()
+    {
+        List<DonKham> danhSach = new ArrayList<>();
+
+        // TODO: Thay danh sách mẫu này bằng dữ liệu lấy từ API/database khi có nguồn dữ liệu thật.
+        danhSach.add(new DonKham("DK001", "Nguyen Van A", "10/05/2026", 250000));
+        danhSach.add(new DonKham("DK002", "Tran Thi B", "11/05/2026", 320000));
+        danhSach.add(new DonKham("DK003", "Le Van C", "11/05/2026", 180000));
+
+        return danhSach;
     }
     private void hienThiLich(TextView tv)
     {

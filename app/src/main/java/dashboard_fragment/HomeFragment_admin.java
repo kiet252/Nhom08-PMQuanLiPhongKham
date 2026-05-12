@@ -71,15 +71,11 @@ public class HomeFragment_admin extends Fragment {
                         .commit();
             }
         });
-        UserProfile profile = SharedPrefManager.getInstance(requireContext()).getProfile();
-        if (profile != null) {
-            LoadImage(profile, view);
-        }
         return view;
     }
-    private void LoadImage(UserProfile userProfile, View view)
+    private void LoadImage(UserProfile userProfile, ImageView avatar, View view)
     {
-        ImageView avatar = view.findViewById(R.id.home_avatar_admin);
+        avatar = view.findViewById(R.id.home_avatar_admin);
         ImageRequest request = new ImageRequest.Builder(getContext())
                 .data(userProfile.getAnh_dai_dien())
                 .target(avatar)
@@ -100,9 +96,9 @@ public class HomeFragment_admin extends Fragment {
         UserProfile profile = prefManager.getProfile();
         
         if (profile != null && profile.getHo_ten() != null) {
-            txtName.setText(profile.getHo_ten());
+            txtName.setText("Chào mừng, " + profile.getHo_ten());
         } else {
-            txtName.setText("Quản trị viên");
+            txtName.setText("Chào mừng, Quản trị viên");
         }
 
         mngStaff.setOnClickListener(v -> {

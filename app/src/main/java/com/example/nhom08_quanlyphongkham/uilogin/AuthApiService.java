@@ -17,6 +17,8 @@ public interface AuthApiService {
             @Header("apikey") String apiKey,
             @Body LoginRequest request
     );
+    @POST("auth/v1/token?grant_type=password")
+    Call<LoginResponse> login(@Body LoginRequest request);
 
     @PUT("auth/v1/user")
     Call<LoginResponse> updatePassword(@Body UpdatePasswordRequest request);
@@ -31,12 +33,11 @@ public interface AuthApiService {
             @Header("apikey") String apiKey,
             @Header("Authorization") String authorization
     );
-
+    @POST("rest/v1/thong_bao")
     @Headers({
             "Content-Type: application/json",
             "Prefer: return=representation"
     })
-    @POST("rest/v1/thong_bao")
     Call<java.util.List<ThongBao>> themThongBao(
             @Header("apikey") String apiKey,
             @Header("Authorization") String authorization,
