@@ -1,7 +1,12 @@
 package dashboard_fragment;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -11,11 +16,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Gravity;
+import android.view.ContextThemeWrapper;
 
 //Thêm chức năng Tìm Kiếm
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.List;
@@ -298,21 +306,169 @@ public class ReportsFragment_Admin extends Fragment {
     }
     private void hienThiLich(TextView tv)
     {
+        Context context = getContext();
+        if (context == null) return;
+
         Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        sdf.setLenient(false);
+
+        String ngayDangChon = tv.getText().toString().trim();
+        try
+        {
+            if (!ngayDangChon.isEmpty())
+            {
+                Date date = sdf.parse(ngayDangChon);
+                if (date != null)
+                {
+                    calendar.setTime(date);
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
         int nam = calendar.get(Calendar.YEAR);
         int thang = calendar.get(Calendar.MONTH);
         int ngay = calendar.get(Calendar.DAY_OF_MONTH);
 
-        DatePickerDialog dialog = new DatePickerDialog(getContext(),
-                new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(DatePicker view, int year, int month, int dom)
-                    {
-                        String ngaydachon = String.format("%02d/%02d/%04d", dom, month + 1, year);
-                        tv.setText(ngaydachon);
-                        tv.setTextColor(Color.BLACK);
-                    }
-                }, nam, thang, ngay);
+        AlertDialog dialog = new AlertDialog.Builder(context).create();
+
+        LinearLayout layout = new LinearLayout(context);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(dp(context, 24), dp(context, 22), dp(context, 24), dp(context, 18));
+        layout.setBackground(taoNenBoGoc(context, "#FFFFFF", 24, "#FFFFFF", 0));
+
+        TextView tvTieuDe = new TextView(context);
+        tvTieuDe.setText("Chọn ngày");
+        tvTieuDe.setTextColor(Color.parseColor("#0D3F6E"));
+        tvTieuDe.setTextSize(20);
+        tvTieuDe.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        layout.addView(tvTieuDe);
+
+        TextView tvMoTa = new TextView(context);
+        tvMoTa.setText("Chọn ngày theo định dạng dd/MM/yyyy.");
+        tvMoTa.setTextColor(Color.parseColor("#64748B"));
+        tvMoTa.setTextSize(14);
+        LinearLayout.LayoutParams moTaParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        moTaParams.setMargins(0, dp(context, 6), 0, dp(context, 18));
+        tvMoTa.setLayoutParams(moTaParams);
+        layout.addView(tvMoTa);
+
+        TextView tvNgayXemTruoc = new TextView(context);
+        tvNgayXemTruoc.setText(String.format(Locale.getDefault(), "%02d/%02d/%04d", ngay, thang + 1, nam));
+        tvNgayXemTruoc.setTextColor(Color.parseColor("#1E293B"));
+        tvNgayXemTruoc.setTextSize(15);
+        tvNgayXemTruoc.setGravity(Gravity.CENTER_VERTICAL);
+        tvNgayXemTruoc.setPadding(dp(context, 14), 0, dp(context, 14), 0);
+        tvNgayXemTruoc.setBackground(taoNenBoGoc(context, "#F8FAFC", 12, "#D6E4F0", 1));
+        LinearLayout.LayoutParams previewParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(context, 52)
+        );
+        previewParams.setMargins(0, 0, 0, dp(context, 12));
+        tvNgayXemTruoc.setLayoutParams(previewParams);
+        layout.addView(tvNgayXemTruoc);
+
+        DatePicker datePicker = new DatePicker(new ContextThemeWrapper(context, R.style.ReportDatePickerTheme));
+        datePicker.setBackground(taoNenBoGoc(context, "#F8FAFC", 12, "#D6E4F0", 1));
+        datePicker.init(nam, thang, ngay, new DatePicker.OnDateChangedListener()
+        {
+            @Override
+            public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth)
+            {
+                tvNgayXemTruoc.setText(String.format(Locale.getDefault(), "%02d/%02d/%04d", dayOfMonth, monthOfYear + 1, year));
+            }
+        });
+        layout.addView(datePicker);
+
+        LinearLayout actionLayout = new LinearLayout(context);
+        actionLayout.setGravity(Gravity.END);
+        actionLayout.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams actionParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        actionParams.setMargins(0, dp(context, 12), 0, 0);
+        actionLayout.setLayoutParams(actionParams);
+
+        TextView btnHuy = taoNutLich(context, "Hủy", "#EAF6FF", "#0D5FA8");
+        btnHuy.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                dialog.dismiss();
+            }
+        });
+
+        TextView btnApDung = taoNutLich(context, "Áp dụng", "#0D3F6E", "#FFFFFF");
+        btnApDung.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                String ngayDaChon = String.format(Locale.getDefault(), "%02d/%02d/%04d",
+                        datePicker.getDayOfMonth(),
+                        datePicker.getMonth() + 1,
+                        datePicker.getYear());
+                tv.setText(ngayDaChon);
+                tv.setTextColor(Color.parseColor("#1E293B"));
+                dialog.dismiss();
+            }
+        });
+
+        actionLayout.addView(btnHuy);
+        LinearLayout.LayoutParams applyParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                dp(context, 48)
+        );
+        applyParams.setMargins(dp(context, 8), 0, 0, 0);
+        actionLayout.addView(btnApDung, applyParams);
+        layout.addView(actionLayout);
+
+        dialog.setView(layout);
         dialog.show();
+
+        if (dialog.getWindow() != null)
+        {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+    }
+    private int dp(Context context, int value)
+    {
+        return Math.round(value * context.getResources().getDisplayMetrics().density);
+    }
+
+    private TextView taoNutLich(Context context, String text, String backgroundColor, String textColor)
+    {
+        TextView button = new TextView(context);
+        button.setText(text);
+        button.setTextColor(Color.parseColor(textColor));
+        button.setTextSize(14);
+        button.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        button.setGravity(Gravity.CENTER);
+        button.setMinWidth(dp(context, 96));
+        button.setMinHeight(dp(context, 48));
+        button.setPadding(dp(context, 16), 0, dp(context, 16), 0);
+        button.setClickable(true);
+        button.setFocusable(true);
+        button.setBackground(taoNenBoGoc(context, backgroundColor, 12, backgroundColor, 0));
+        return button;
+    }
+
+    private GradientDrawable taoNenBoGoc(Context context, String solidColor, int radiusDp, String strokeColor, int strokeDp)
+    {
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setShape(GradientDrawable.RECTANGLE);
+        drawable.setColor(Color.parseColor(solidColor));
+        drawable.setCornerRadius(dp(context, radiusDp));
+        if (strokeDp > 0)
+        {
+            drawable.setStroke(dp(context, strokeDp), Color.parseColor(strokeColor));
+        }
+        return drawable;
     }
 }

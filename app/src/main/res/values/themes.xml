@@ -6,6 +6,11 @@
     </style>
 
     <style name="Theme.Nhom08QuanLyPhongKham" parent="Base.Theme.Nhom08QuanLyPhongKham" />
+    <style name="ReportDatePickerTheme" parent="Theme.Nhom08QuanLyPhongKham">
+        <item name="android:colorAccent">#0D3F6E</item>
+        <item name="colorAccent">#0D3F6E</item>
+        <item name="colorControlActivated">#0D3F6E</item>
+    </style>
     <style name="CircleImage">
         <item name="cornerSize">50%</item>
     </style>
