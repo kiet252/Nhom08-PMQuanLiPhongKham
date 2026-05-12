@@ -1,339 +1,415 @@
 package dashboard_fragment;
 
-
-import android.app.AlertDialog;
-import android.content.res.ColorStateList;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+
 import com.example.nhom08_quanlyphongkham.R;
-import com.example.nhom08_quanlyphongkham.uilogin.AuthRepository;
-import com.example.nhom08_quanlyphongkham.uilogin.ThongBao;
-import com.google.android.material.card.MaterialCardView;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
+import dashboard_fragment.staff_create_examination_form.ExaminationFormRepository;
+import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
+import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.PatientBriefDto;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link NotificationSettingsFragment_Admin#newInstance} factory method to.
- * create an instance of this fragment.
- */
 public class NotificationSettingsFragment_Admin extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1= "param1";
-    private static final String ARG_PARAM2= "param2";
-
-    private String mParam1;
-    private String mParam2;
-
+    private static final long AUTO_REFRESH_DELAY_MS = 8000L;
+    private static final String STATUS_WAITING = "Chờ khám";
+    private static final String STATUS_IN_PROGRESS = "Đang khám";
+    private static final String STATUS_DONE = "Đã khám";
 
     private LinearLayout layoutDanhSach;
-    private FloatingActionButton btnThem;
-    private AuthRepository authRepository;
-    private int soLuong = 0;
+    private TextView tvEmptyState;
+    private TextView tvLoadingState;
+    private TextView tvTotal;
 
-    //Chức năng Chọn
-    private TextView tvChon, tvXoa;
-    private boolean isSelectionMode = false;
-    private List<Integer> selectedIds = new ArrayList<>();
-    private List<CheckBox> ListCheckBoxes = new ArrayList<>();
-    //
+    private ExaminationFormRepository repository;
+    private final Handler refreshHandler = new Handler(Looper.getMainLooper());
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", new Locale("vi", "VN"));
+    private final Runnable autoRefreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            taiDuLieu(false);
+            refreshHandler.postDelayed(this, AUTO_REFRESH_DELAY_MS);
+        }
+    };
 
-    public NotificationSettingsFragment_Admin() {}
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provied parameters
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ReportsFragment_Admin.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ReportsFragment_Admin newInstance(String param1, String param2)
-    {
-        ReportsFragment_Admin fragment = new ReportsFragment_Admin();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
+    public NotificationSettingsFragment_Admin() {
     }
+
+    public static NotificationSettingsFragment_Admin newInstance() {
+        return new NotificationSettingsFragment_Admin();
+    }
+
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-        authRepository = new AuthRepository(requireContext());
+        repository = new ExaminationFormRepository(requireContext());
     }
+
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_notification_settings_fragment_admin, container, false);
-
         layoutDanhSach = view.findViewById(R.id.layout_danh_sach_thong_bao_fragment_admin);
-        btnThem = view.findViewById(R.id.btn_them_thong_bao_fragment_admin);
-        tvChon = view.findViewById(R.id.tv_chon_fragment_admin);
-        tvXoa = view.findViewById(R.id.tv_xoa_fragment_admin);
+        tvEmptyState = view.findViewById(R.id.tv_admin_notification_empty);
+        tvLoadingState = view.findViewById(R.id.tv_admin_notification_loading);
+        tvTotal = view.findViewById(R.id.tv_admin_notification_total);
 
-        //Xử lý nút chọn (Bật / Tắt)
-        if (tvChon != null)
-        {
-            tvChon.setOnClickListener(v ->{
-                isSelectionMode = !isSelectionMode;
-                if (isSelectionMode)
-                {
-                    tvChon.setText("Hủy");
-                    tvChon.setTextColor(Color.parseColor("#4A81B0"));
-                    for (CheckBox cb : ListCheckBoxes)
-                    {
-                        cb.setVisibility(View.VISIBLE);
-                    }
-                } else
-                    {
-                        tvChon.setText("Chọn");
-                        tvChon.setTextColor(Color.BLACK);
-                        for (CheckBox cb : ListCheckBoxes)
-                        {
-                            cb.setChecked(false);
-                            cb.setVisibility(View.GONE);
-                        }
-                        selectedIds.clear();
-                    }
-            });
-        }
-        // Nút Xóa
-        if (tvXoa != null)
-        {
-            tvXoa.setOnClickListener(v -> thucHienXoaNhieu());
-        }
-        taiDuLieu();
-
-        if (btnThem != null)
-        {
-            btnThem.setOnClickListener(v -> hienThiDialogThem());
-        }
+        taiDuLieu(true);
         return view;
     }
-    private void taiDuLieu()
-    {
-        authRepository.layDanhSachThongBaoAdmin().enqueue(new Callback<List<ThongBao>>()
-        {
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshHandler.removeCallbacks(autoRefreshRunnable);
+        refreshHandler.postDelayed(autoRefreshRunnable, AUTO_REFRESH_DELAY_MS);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        refreshHandler.removeCallbacks(autoRefreshRunnable);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        refreshHandler.removeCallbacks(autoRefreshRunnable);
+        layoutDanhSach = null;
+        tvEmptyState = null;
+        tvLoadingState = null;
+        tvTotal = null;
+    }
+
+    private void taiDuLieu(boolean showLoading) {
+        if (showLoading) {
+            hienThiDangTai();
+        }
+
+        repository.getAllFormsToday().enqueue(new Callback<List<ExaminationFormWithPatientDto>>() {
             @Override
-            public void onResponse(Call<List<ThongBao>> call, Response<List<ThongBao>> response)
-            {
-                if (response.isSuccessful() && response.body() != null)
-                {
-                    List<ThongBao> ds = response.body();
-                    layoutDanhSach.removeAllViews();
-                    ListCheckBoxes.clear();
-                    selectedIds.clear();
-                    //Reset lại nút Chọn về mặc định
-                    isSelectionMode = false;
-                    if (tvChon != null)
-                    {
-                        tvChon.setText("Chọn");
-                        tvChon.setTextColor(Color.BLACK);
-                    }
-
-                    Collections.reverse(ds);
-                    soLuong = 0;
-
-                    for (ThongBao tb : response.body())
-                    {
-                        themVaoKhungXam(tb.getId(), tb.getTieu_de(), tb.getNoi_dung());
-                    }
+            public void onResponse(@NonNull Call<List<ExaminationFormWithPatientDto>> call,
+                                   @NonNull Response<List<ExaminationFormWithPatientDto>> response) {
+                if (!isAdded() || layoutDanhSach == null) {
+                    return;
                 }
+
+                if (response.isSuccessful() && response.body() != null) {
+                    hienThiDanhSach(response.body());
+                    return;
+                }
+
+                String message = "Không tải được thông báo phiếu khám.";
+                try {
+                    if (response.errorBody() != null) {
+                        message += " Mã lỗi: " + response.code() + " - " + response.errorBody().string();
+                    }
+                } catch (IOException ignored) {
+                    message += " Mã lỗi: " + response.code();
+                }
+                hienThiLoi(message);
             }
 
             @Override
-            public void onFailure(Call<List<ThongBao>> call, Throwable t)
-            {
-
+            public void onFailure(@NonNull Call<List<ExaminationFormWithPatientDto>> call,
+                                  @NonNull Throwable t) {
+                if (!isAdded() || layoutDanhSach == null) {
+                    return;
+                }
+                hienThiLoi("Lỗi kết nối khi tải thông báo: " + t.getMessage());
             }
         });
     }
-    private void thucHienXoaNhieu()
-    {
-        if (selectedIds.isEmpty())
-        {
+
+    private void hienThiDangTai() {
+        if (tvLoadingState != null) {
+            tvLoadingState.setVisibility(View.VISIBLE);
+        }
+        if (tvEmptyState != null) {
+            tvEmptyState.setVisibility(View.GONE);
+        }
+        if (layoutDanhSach != null) {
+            layoutDanhSach.removeAllViews();
+        }
+    }
+
+    private void hienThiDanhSach(List<ExaminationFormWithPatientDto> forms) {
+        if (tvLoadingState != null) {
+            tvLoadingState.setVisibility(View.GONE);
+        }
+        layoutDanhSach.removeAllViews();
+
+        List<ExaminationFormWithPatientDto> displayForms = sapXepTheoNgayVaGio(forms);
+        if (tvTotal != null) {
+            tvTotal.setText(String.valueOf(displayForms.size()));
+        }
+
+        if (displayForms.isEmpty()) {
+            if (tvEmptyState != null) {
+                tvEmptyState.setText("Chưa có thông báo phiếu khám.");
+                tvEmptyState.setVisibility(View.VISIBLE);
+            }
             return;
         }
-        new AlertDialog.Builder(getContext())
-                .setPositiveButton("Xóa", (dialog, which) ->
-                {
-                    final int[] count = {0};
-                    final int total = selectedIds.size();
 
-                    for (int id : selectedIds)
-                    {
-                        authRepository.xoaThongBao(id).enqueue(new Callback<Void>()
-                        {
-                           @Override
-                           public void onResponse(Call<Void> call, Response<Void> response)
-                           {
-                               count[0]++;
-                               if (count[0] == total)
-                               {
-                                   taiDuLieu();
-                               }
-                           }
-                            @Override
-                            public void onFailure(Call<Void> call, Throwable t)
-                            {
-                                count[0]++;
-                                if (count[0] == total) taiDuLieu();
-                            }
-                        });
-                    }
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
+        if (tvEmptyState != null) {
+            tvEmptyState.setVisibility(View.GONE);
+        }
+
+        Map<String, List<ExaminationFormWithPatientDto>> formsByDate = nhomTheoNgay(displayForms);
+        for (Map.Entry<String, List<ExaminationFormWithPatientDto>> entry : formsByDate.entrySet()) {
+            themNhomNgay(entry.getKey(), entry.getValue());
+        }
     }
-    private void hienThiDialogThem()
-    {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Tạo thông báo Admin");
 
-        LinearLayout container = new LinearLayout(getContext());
-        container.setOrientation(LinearLayout.VERTICAL);
-        container.setPadding(dpToPx(20), dpToPx(10), dpToPx(20), dpToPx(10));
-
-        final EditText inputTieuDe = new EditText(getContext());
-        inputTieuDe.setHint("Tiêu đề thông báo");
-        container.addView(inputTieuDe);
-
-        final EditText inputNoiDung = new EditText(getContext());
-        inputNoiDung.setHint("Nội dung chi tiết");
-        container.addView(inputNoiDung);
-
-        builder.setView(container);
-        builder.setPositiveButton("Thêm", (dialog, which) -> {
-            String t = inputTieuDe.getText().toString().trim();
-            String n = inputNoiDung.getText().toString().trim();
-            if (!t.isEmpty() && !n.isEmpty())
-            {
-                dayDuLieuLenRetrofitAdmin(t, n);
-            }
-        });
-        builder.setNegativeButton("Hủy", null);
-        builder.show();
-    }
-    private void dayDuLieuLenRetrofitAdmin(String tieuDe, String noiDung) {
-        authRepository.themThongBaoAdmin(tieuDe, noiDung).enqueue(new Callback<List<ThongBao>>() {
-            @Override
-            public void onResponse(Call<List<ThongBao>> call, Response<List<ThongBao>> response) {
-                if (response.isSuccessful())
-                {
-                    taiDuLieu();
+    private List<ExaminationFormWithPatientDto> sapXepTheoNgayVaGio(List<ExaminationFormWithPatientDto> forms) {
+        List<ExaminationFormWithPatientDto> result = new ArrayList<>();
+        if (forms != null) {
+            Date today = new Date();
+            for (ExaminationFormWithPatientDto form : forms) {
+                if (nenHienThiPhieu(form, today)) {
+                    result.add(form);
                 }
             }
+        }
 
+        Collections.sort(result, new Comparator<ExaminationFormWithPatientDto>() {
             @Override
-            public void onFailure(Call<List<ThongBao>> call, Throwable t)
-            {
-
-            }
-        });
-    }
-    private int dpToPx(int dp)
-    {
-        return Math.round((float) dp * getResources().getDisplayMetrics().density);
-    }
-    private void themVaoKhungXam(Integer id, String tieuDe, String noiDung)
-    {
-        if (layoutDanhSach == null) return;
-
-        CheckBox checkBox = new CheckBox(getContext());
-        checkBox.setButtonTintList(ColorStateList.valueOf(Color.parseColor("#4CAF50")));
-        checkBox.setVisibility(isSelectionMode ? View.VISIBLE : View.GONE);
-        ListCheckBoxes.add(checkBox);
-
-        checkBox.setOnCheckedChangeListener((buttonView, isChecked) ->
-        {
-            if (isChecked)
-            {
-                if (!selectedIds.contains(id)) selectedIds.add(id);
-            } else
-                {
-                    selectedIds.remove(Integer.valueOf(id));
+            public int compare(ExaminationFormWithPatientDto first, ExaminationFormWithPatientDto second) {
+                int dateCompare = second.getNgay_kham().compareTo(first.getNgay_kham());
+                if (dateCompare != 0) {
+                    return dateCompare;
                 }
-        });
-
-
-        TextView tvTieuDe = new TextView(getContext());
-        tvTieuDe.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        tvTieuDe.setText(tieuDe);
-        tvTieuDe.setTextColor(Color.BLACK);
-        tvTieuDe.setTextSize(18);
-        tvTieuDe.setTypeface(null, Typeface.BOLD);
-
-        TextView tvNoiDung = new TextView(getContext());
-        tvNoiDung.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        tvNoiDung.setText(noiDung);
-        tvNoiDung.setTextColor(Color.parseColor("#555555"));
-        tvNoiDung.setTextSize(14);
-        tvNoiDung.setPadding(0, dpToPx(8), 0, 0);
-
-        MaterialCardView cardMoi = new MaterialCardView(getContext());
-        LinearLayout.LayoutParams paramsCard = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        paramsCard.setMargins(0, 0, 0, dpToPx(16));
-        cardMoi.setLayoutParams(paramsCard);
-        cardMoi.setCardBackgroundColor(Color.parseColor("#F4F6FB"));
-        cardMoi.setRadius(dpToPx(12));
-        cardMoi.setCardElevation(0f);
-
-        cardMoi.setOnClickListener(v ->
-        {
-            if (isSelectionMode)
-            {
-                checkBox.setChecked(!checkBox.isChecked());
+                return layChuoi(first.getGio_du_kien(), "").compareTo(layChuoi(second.getGio_du_kien(), ""));
             }
         });
+        return result;
+    }
 
-        LinearLayout lopNgang = new LinearLayout(getContext());
-        lopNgang.setOrientation(LinearLayout.HORIZONTAL);
-        lopNgang.setGravity(Gravity.CENTER_VERTICAL);
-        lopNgang.setPadding(dpToPx(16), dpToPx(16), dpToPx(16), dpToPx(16));
+    private boolean nenHienThiPhieu(ExaminationFormWithPatientDto form, Date today) {
+        if (form == null || form.getNgay_kham() == null) {
+            return false;
+        }
 
-        LinearLayout lopDoc = new LinearLayout(getContext());
-        lopDoc.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams lopDocParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
-        lopDocParams.setMarginStart(dpToPx(12));
-        lopDoc.setLayoutParams(lopDocParams);
+        if (laCungNgay(form.getNgay_kham(), today)) {
+            return true;
+        }
 
-        lopDoc.addView(tvTieuDe);
-        lopDoc.addView(tvNoiDung);
+        return laNgayQuaKhu(form.getNgay_kham(), today)
+                && STATUS_IN_PROGRESS.equalsIgnoreCase(layChuoi(form.getTrang_thai(), ""));
+    }
 
-        lopNgang.addView(checkBox);
-        lopNgang.addView(lopDoc);
-        cardMoi.addView(lopNgang);
+    private boolean laCungNgay(Date first, Date second) {
+        Calendar firstCalendar = Calendar.getInstance();
+        firstCalendar.setTime(first);
 
-        layoutDanhSach.addView(cardMoi);
-        soLuong++;
+        Calendar secondCalendar = Calendar.getInstance();
+        secondCalendar.setTime(second);
+
+        return firstCalendar.get(Calendar.YEAR) == secondCalendar.get(Calendar.YEAR)
+                && firstCalendar.get(Calendar.DAY_OF_YEAR) == secondCalendar.get(Calendar.DAY_OF_YEAR);
+    }
+
+    private boolean laNgayQuaKhu(Date date, Date today) {
+        Calendar dateCalendar = Calendar.getInstance();
+        dateCalendar.setTime(date);
+        xoaGio(dateCalendar);
+
+        Calendar todayCalendar = Calendar.getInstance();
+        todayCalendar.setTime(today);
+        xoaGio(todayCalendar);
+
+        return dateCalendar.before(todayCalendar);
+    }
+
+    private void xoaGio(Calendar calendar) {
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+    }
+
+    private Map<String, List<ExaminationFormWithPatientDto>> nhomTheoNgay(List<ExaminationFormWithPatientDto> forms) {
+        Map<String, List<ExaminationFormWithPatientDto>> groups = new LinkedHashMap<>();
+        for (ExaminationFormWithPatientDto form : forms) {
+            String dateKey = dateFormat.format(form.getNgay_kham());
+            if (!groups.containsKey(dateKey)) {
+                groups.put(dateKey, new ArrayList<>());
+            }
+            groups.get(dateKey).add(form);
+        }
+        return groups;
+    }
+
+    private void themNhomNgay(String ngay, List<ExaminationFormWithPatientDto> forms) {
+        Context context = requireContext();
+
+        TextView tvNgay = new TextView(context);
+        tvNgay.setText(ngay);
+        tvNgay.setTextColor(Color.parseColor("#1E90FF"));
+        tvNgay.setTextSize(15);
+        tvNgay.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        tvNgay.setGravity(Gravity.CENTER_VERTICAL);
+        tvNgay.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_date_exam_wrapper, 0, 0, 0);
+        tvNgay.setCompoundDrawablePadding(dp(8));
+        tvNgay.setPadding(dp(16), 0, dp(16), 0);
+        tvNgay.setBackground(taoNen("#EAF4FF", 26, "#1E90FF", 1));
+
+        LinearLayout.LayoutParams dateParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                dp(54)
+        );
+        dateParams.setMargins(0, dp(8), 0, dp(18));
+        layoutDanhSach.addView(tvNgay, dateParams);
+
+        for (ExaminationFormWithPatientDto form : forms) {
+            layoutDanhSach.addView(taoCardThongBao(form));
+        }
+    }
+
+    private View taoCardThongBao(ExaminationFormWithPatientDto form) {
+        Context context = requireContext();
+        View card = LayoutInflater.from(context).inflate(
+                R.layout.admin_item_examination_notification,
+                layoutDanhSach,
+                false
+        );
+
+        View accent = card.findViewById(R.id.viewAdminNotificationAccent);
+        TextView tvTime = card.findViewById(R.id.tvAdminNotificationTime);
+        TextView tvPatientName = card.findViewById(R.id.tvAdminNotificationPatientName);
+        TextView tvStatus = card.findViewById(R.id.tvAdminNotificationStatus);
+        TextView tvPatientCode = card.findViewById(R.id.tvAdminNotificationPatientCode);
+        TextView tvSymptoms = card.findViewById(R.id.tvAdminNotificationSymptoms);
+        ImageView ivMore = card.findViewById(R.id.ivAdminNotificationMore);
+        StatusColor statusColor = layMauTrangThai(form.getTrang_thai());
+
+        accent.setBackgroundColor(statusColor.accentColor);
+        tvTime.setText(dinhDangGio(form.getGio_du_kien()));
+        tvPatientName.setText(layTenBenhNhan(form));
+        tvStatus.setText("• " + layChuoi(form.getTrang_thai(), STATUS_WAITING));
+        tvStatus.setTextColor(statusColor.textColor);
+        tvStatus.setBackgroundResource(layNenTrangThai(form.getTrang_thai()));
+        tvPatientCode.setText("Mã BN: " + layMaBenhNhan(form) + " - Số tiếp nhận: " + form.getSo_tiep_nhan());
+        tvSymptoms.setText(layChuoi(form.getTrieu_chung_ban_dau(), "Không có triệu chứng ban đầu"));
+        ivMore.setColorFilter(statusColor.textColor);
+
+        return card;
+    }
+
+    private String layTenBenhNhan(ExaminationFormWithPatientDto form) {
+        PatientBriefDto patient = form.getPatient();
+        if (patient != null) {
+            return layChuoi(patient.getHo_ten(), "Không rõ bệnh nhân");
+        }
+        return "Không rõ bệnh nhân";
+    }
+
+    private String layMaBenhNhan(ExaminationFormWithPatientDto form) {
+        PatientBriefDto patient = form.getPatient();
+        if (patient != null) {
+            return layChuoi(patient.getId(), layChuoi(form.getPatient_id(), "--"));
+        }
+        return layChuoi(form.getPatient_id(), "--");
+    }
+
+    private String dinhDangGio(String rawTime) {
+        String displayTime = layChuoi(rawTime, "--");
+        String[] parts = displayTime.split(":");
+        if (parts.length >= 2) {
+            return parts[0] + ":" + parts[1];
+        }
+        return displayTime;
+    }
+
+    private String layChuoi(String value, String fallback) {
+        return value == null || value.trim().isEmpty() ? fallback : value.trim();
+    }
+
+    private StatusColor layMauTrangThai(String status) {
+        if (STATUS_DONE.equalsIgnoreCase(status)) {
+            return new StatusColor(Color.parseColor("#16A34A"), Color.parseColor("#16A34A"), "#E8F7EF");
+        }
+        if (STATUS_IN_PROGRESS.equalsIgnoreCase(status)) {
+            return new StatusColor(Color.parseColor("#2563EB"), Color.parseColor("#2563EB"), "#EAF4FF");
+        }
+        return new StatusColor(Color.parseColor("#F59E0B"), Color.parseColor("#E67E22"), "#FFF4DF");
+    }
+
+    private int layNenTrangThai(String status) {
+        if (STATUS_DONE.equalsIgnoreCase(status)) {
+            return R.drawable.bg_status_examined;
+        }
+        if (STATUS_IN_PROGRESS.equalsIgnoreCase(status)) {
+            return R.drawable.bg_status_examining;
+        }
+        return R.drawable.bg_status_wait_exam;
+    }
+
+    private void hienThiLoi(String message) {
+        if (tvLoadingState != null) {
+            tvLoadingState.setVisibility(View.GONE);
+        }
+        if (tvEmptyState != null) {
+            tvEmptyState.setText(message);
+            tvEmptyState.setVisibility(View.VISIBLE);
+        }
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
+    private GradientDrawable taoNen(String solidColor, int radiusDp, String strokeColor, int strokeDp) {
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setShape(GradientDrawable.RECTANGLE);
+        drawable.setColor(Color.parseColor(solidColor));
+        drawable.setCornerRadius(dp(radiusDp));
+        if (strokeDp > 0) {
+            drawable.setStroke(dp(strokeDp), Color.parseColor(strokeColor));
+        }
+        return drawable;
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
+    private static class StatusColor {
+        final int accentColor;
+        final int textColor;
+        final String backgroundHex;
+
+        StatusColor(int accentColor, int textColor, String backgroundHex) {
+            this.accentColor = accentColor;
+            this.textColor = textColor;
+            this.backgroundHex = backgroundHex;
+        }
     }
 }
