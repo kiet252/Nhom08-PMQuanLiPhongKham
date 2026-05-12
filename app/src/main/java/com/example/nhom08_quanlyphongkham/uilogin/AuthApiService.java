@@ -3,7 +3,6 @@ package com.example.nhom08_quanlyphongkham.uilogin;
 import dashboard_fragment.account_change_password_request.UpdatePasswordRequest;
 import retrofit2.Call;
 import retrofit2.http.Body;
-import retrofit2.http.Headers;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
@@ -17,7 +16,6 @@ public interface AuthApiService {
             @Header("apikey") String apiKey,
             @Body LoginRequest request
     );
-    @POST("auth/v1/token?grant_type=password")
     Call<LoginResponse> login(@Body LoginRequest request);
 
     @PUT("auth/v1/user")
