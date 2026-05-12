@@ -22,7 +22,8 @@ import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import coil.Coil;
 import coil.request.ImageRequest;
 
-public class HomeFragment_admin extends Fragment {
+public class HomeFragment_admin extends Fragment
+{
 
     private Button mngStaff;
     private TextView txtName;
@@ -74,8 +75,6 @@ public class HomeFragment_admin extends Fragment {
         return view;
     }
 
-        return inflater.inflate(R.layout.fragment_home_admin, container, false);
-    }
     private void LoadImage(UserProfile userProfile, ImageView avatar, View view)
     {
         avatar = view.findViewById(R.id.home_avatar_admin);
@@ -90,14 +89,14 @@ public class HomeFragment_admin extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
+
         txtName = view.findViewById(R.id.admin_home_name);
         mngStaff = view.findViewById(R.id.btn_mngStaff);
 
         // Lấy tên người dùng từ SharedPrefManager
         SharedPrefManager prefManager = SharedPrefManager.getInstance(requireContext());
         UserProfile profile = prefManager.getProfile();
-        
+
         if (profile != null && profile.getHo_ten() != null) {
             txtName.setText("Chào mừng, " + profile.getHo_ten());
         } else {
