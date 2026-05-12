@@ -14,6 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Nhom08QuanLyPhongKham">
         <activity
+            android:name="dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.ExaminationFormDetail_doctor"
+            android:exported="false" />
+        <activity
             android:name="dashboard_fragment.doctor_examination_list.ExaminationList_doctor"
             android:exported="false" />
         <activity
@@ -46,7 +49,7 @@
         <activity android:name=".admin_manage_staff" />
         <activity
             android:name=".dashboard"
-            android:exported="true"></activity>
+            android:exported="true" />
         <activity
             android:name=".staff_detail"
             android:exported="false" />

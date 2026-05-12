@@ -1,0 +1,24 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Hình dáng bình tam giác -->
+    <path
+        android:pathData="M16,3H8v4l-4,10c-0.5,1.5 0.5,3 2,3h12c1.5,0 2.5,-1.5 2,-3L16,7V3z"
+        android:strokeColor="#607D8B"
+        android:strokeWidth="1.5"
+        android:strokeLineJoin="round"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"/>
+    <path
+        android:pathData="M9,3h6"
+        android:strokeColor="#607D8B"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"/>
+    <path
+        android:pathData="M7,14h10"
+        android:strokeColor="#607D8B"
+        android:strokeWidth="1"
+        android:strokeLineCap="round"/>
+</vector>
