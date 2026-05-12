@@ -50,7 +50,7 @@ public class NotificationFragment extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        authRepository = new AuthRepository(getString(R.string.abAIkey));
+        authRepository = new AuthRepository(requireContext());
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)

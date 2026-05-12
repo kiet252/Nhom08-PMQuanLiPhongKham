@@ -87,7 +87,7 @@ public class NotificationSettingsFragment_Admin extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-        authRepository = new AuthRepository(getString(R.string.abAIkey));
+        authRepository = new AuthRepository(requireContext());
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
