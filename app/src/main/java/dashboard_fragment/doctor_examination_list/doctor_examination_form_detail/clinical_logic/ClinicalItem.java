@@ -1,4 +1,4 @@
-package dashboard_fragment.doctor_examination_list.doctor_examination_form_detail;
+package dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.clinical_logic;
 
 public class ClinicalItem {
     private int id;

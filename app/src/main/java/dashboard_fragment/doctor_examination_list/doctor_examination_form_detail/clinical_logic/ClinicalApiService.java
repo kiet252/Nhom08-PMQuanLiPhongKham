@@ -2,7 +2,6 @@ package dashboard_fragment.doctor_examination_list.doctor_examination_form_detai
 
 import java.util.List;
 
-import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.ClinicalItem;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
