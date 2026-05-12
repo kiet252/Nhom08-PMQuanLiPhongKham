@@ -73,9 +73,6 @@ public class HomeFragment_admin extends Fragment {
         });
         return view;
     }
-
-        return inflater.inflate(R.layout.fragment_home_admin, container, false);
-    }
     private void LoadImage(UserProfile userProfile, ImageView avatar, View view)
     {
         avatar = view.findViewById(R.id.home_avatar_admin);

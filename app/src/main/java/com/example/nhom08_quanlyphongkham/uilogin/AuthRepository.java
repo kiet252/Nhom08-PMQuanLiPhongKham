@@ -10,9 +10,11 @@ import retrofit2.Call;
 public class AuthRepository {
     private final AuthApiService authApiService;
     private final Context context;
+    private final String apiKey;
 
     public AuthRepository(Context context) {
         this.context = context;
+        this.apiKey = context.getString(R.string.abAIkey);
         this.authApiService = SupabaseClientProvider
                 .getClient(context)
                 .create(AuthApiService.class);
@@ -50,6 +52,7 @@ public class AuthRepository {
     }
     public Call<Void> xoaThongBao(int id) {
         return authApiService.xoaThongBao(apiKey, "Bearer " + apiKey, "eq." + id);
+    }
     public Call<LoginResponse> updatePassword(String newPassword) {
         return authApiService.updatePassword(new UpdatePasswordRequest(newPassword));
     }
