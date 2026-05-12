@@ -28,6 +28,32 @@ import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.Ex
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.PatientBriefDto;
 
 public class ExaminationFormDetail_doctor extends AppCompatActivity {
+    private enum DetailTab {
+        PATIENT_INFO(0),
+        CLINICAL(1),
+        DIAGNOSIS(2),
+        PRESCRIPTION(3);
+
+        private final int position;
+
+        DetailTab(int position) {
+            this.position = position;
+        }
+
+        int getPosition() {
+            return position;
+        }
+
+        static DetailTab fromPosition(int position) {
+            for (DetailTab tab : values()) {
+                if (tab.position == position) {
+                    return tab;
+                }
+            }
+            return PATIENT_INFO;
+        }
+    }
+
     public static final String EXTRA_FORM_ID = "extra_form_id";
     public static final String EXTRA_PATIENT_NAME = "extra_patient_name";
     public static final String EXTRA_STATUS = "extra_status";
@@ -35,10 +61,6 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
     public static final String EXTRA_PATIENT_ID = "extra_patient_id";
     public static final String EXTRA_SEQUENCE_NUMBER = "extra_sequence_number";
     public static final String EXTRA_SYMPTOMS = "extra_symptoms";
-    private static final int TAB_PATIENT_INFO = 0;
-    private static final int TAB_CLINICAL = 1;
-    private static final int TAB_DIAGNOSIS = 2;
-    private static final int TAB_PRESCRIPTION = 3;
 
     private LinearLayout tabExformPatient;
     private LinearLayout tabCanLamSang;
@@ -106,28 +128,32 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
 
     private void setupViewPager() {
         viewPagerDoctorExDetail.setAdapter(new DoctorExDetailPagerAdapter(this));
-        viewPagerDoctorExDetail.setCurrentItem(TAB_PATIENT_INFO, false);
-        updateSelectedTab(TAB_PATIENT_INFO);
+        viewPagerDoctorExDetail.setCurrentItem(DetailTab.PATIENT_INFO.getPosition(), false);
+        updateSelectedTab(DetailTab.PATIENT_INFO);
         viewPagerDoctorExDetail.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
-                updateSelectedTab(position);
+                updateSelectedTab(DetailTab.fromPosition(position));
             }
         });
     }
 
     private void setupTabClicks() {
-        tabExformPatient.setOnClickListener(v -> viewPagerDoctorExDetail.setCurrentItem(TAB_PATIENT_INFO, true));
-        tabCanLamSang.setOnClickListener(v -> viewPagerDoctorExDetail.setCurrentItem(TAB_CLINICAL, true));
-        tabDiagnosis.setOnClickListener(v -> viewPagerDoctorExDetail.setCurrentItem(TAB_DIAGNOSIS, true));
-        tabPrescription.setOnClickListener(v -> viewPagerDoctorExDetail.setCurrentItem(TAB_PRESCRIPTION, true));
+        tabExformPatient.setOnClickListener(v -> selectTab(DetailTab.PATIENT_INFO));
+        tabCanLamSang.setOnClickListener(v -> selectTab(DetailTab.CLINICAL));
+        tabDiagnosis.setOnClickListener(v -> selectTab(DetailTab.DIAGNOSIS));
+        tabPrescription.setOnClickListener(v -> selectTab(DetailTab.PRESCRIPTION));
     }
 
-    private void updateSelectedTab(int selectedTab) {
-        applyTabState(tabExformPatient, selectedTab == TAB_PATIENT_INFO);
-        applyTabState(tabCanLamSang, selectedTab == TAB_CLINICAL);
-        applyTabState(tabDiagnosis, selectedTab == TAB_DIAGNOSIS);
-        applyTabState(tabPrescription, selectedTab == TAB_PRESCRIPTION);
+    private void selectTab(DetailTab tab) {
+        viewPagerDoctorExDetail.setCurrentItem(tab.getPosition(), true);
+    }
+
+    private void updateSelectedTab(DetailTab selectedTab) {
+        applyTabState(tabExformPatient, selectedTab == DetailTab.PATIENT_INFO);
+        applyTabState(tabCanLamSang, selectedTab == DetailTab.CLINICAL);
+        applyTabState(tabDiagnosis, selectedTab == DetailTab.DIAGNOSIS);
+        applyTabState(tabPrescription, selectedTab == DetailTab.PRESCRIPTION);
     }
 
     private void applyTabState(LinearLayout tabView, boolean isSelected) {
@@ -187,14 +213,14 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
 
         @Override
         public Fragment createFragment(int position) {
-            switch (position) {
-                case TAB_CLINICAL:
+            switch (DetailTab.fromPosition(position)) {
+                case CLINICAL:
                     return new TabClinicalFragment();
-                case TAB_DIAGNOSIS:
+                case DIAGNOSIS:
                     return new TabDiagnosisFragment();
-                case TAB_PRESCRIPTION:
+                case PRESCRIPTION:
                     return new TabPrescriptionFragment();
-                case TAB_PATIENT_INFO:
+                case PATIENT_INFO:
                 default:
                     return new TabPatientInfoFragment();
             }
