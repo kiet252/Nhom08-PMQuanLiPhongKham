@@ -613,6 +613,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/nameNextPatient"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Name"
@@ -621,6 +622,7 @@
                         android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/timeNextPatient"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
@@ -636,6 +638,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/txtChoKham"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="8dp"
@@ -648,6 +651,7 @@
                         android:textStyle="bold" />
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnKhamNgay"
                         android:layout_width="wrap_content"
                         android:layout_height="48dp"
                         android:text="Khám ngay"
