@@ -11,7 +11,7 @@
     </item>
 
     <item
-        android:drawable="@drawable/ic_check"
+        android:drawable="@drawable/ic_check_white"
         android:gravity="center"
         android:width="12dp"
         android:height="12dp" />

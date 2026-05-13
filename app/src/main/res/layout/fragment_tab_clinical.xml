@@ -293,7 +293,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginBottom="8dp"
             android:backgroundTint="#0D3F6E"
-            android:text="Tiếp tục - Nhập chẩn đoán"
+            android:text="Tiếp tục — Nhập chẩn đoán"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:textSize="16sp"
