@@ -15,10 +15,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import com.example.nhom08_quanlyphongkham.R;
@@ -39,6 +44,8 @@ public class NotificationFragment extends Fragment {
 
     private LinearLayout layoutDanhSachThongBao;
     private FloatingActionButton btnThemThongBao;
+    private FrameLayout rootContainer;
+    private View listView;
     private AuthRepository authRepository;
     private int soLuongThongBao = 0;
     private TextView tvChon, tvXoa;
@@ -57,8 +64,14 @@ public class NotificationFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_notification, container, false);
+        rootContainer = new FrameLayout(requireContext());
+        listView = inflater.inflate(R.layout.fragment_notification, rootContainer, false);
+        rootContainer.addView(listView);
+        cauHinhManHinhDanhSach(listView);
+        return rootContainer;
+    }
 
+    private void cauHinhManHinhDanhSach(View view) {
         btnThemThongBao = view.findViewById(R.id.btn_them_thong_bao);
         layoutDanhSachThongBao = view.findViewById(R.id.layout_danh_sach_thong_bao);
         tvChon = view.findViewById(R.id.tv_chon);
@@ -114,8 +127,6 @@ public class NotificationFragment extends Fragment {
         if (btnThemThongBao != null) {
             btnThemThongBao.setOnClickListener(v -> hienThiHopThoaiThem());
         }
-
-        return view;
     }
 
     private void goiDuLieuRetrofit() {
@@ -369,6 +380,8 @@ public class NotificationFragment extends Fragment {
         cardMoi.setOnClickListener(v -> {
             if (isSelectionMode) {
                 checkBox.setChecked(!checkBox.isChecked());
+            } else {
+                hienThiChiTietThongBao(tieuDe, noiDung);
             }
         });
 
@@ -403,5 +416,146 @@ public class NotificationFragment extends Fragment {
 
         layoutDanhSachThongBao.addView(cardMoi);
         soLuongThongBao++;
+    }
+
+    private void hienThiChiTietThongBao(String tieuDe, String noiDung) {
+        if (rootContainer == null) return;
+
+        rootContainer.removeAllViews();
+        rootContainer.addView(taoManHinhChiTietThongBao(tieuDe, noiDung));
+        if (btnThemThongBao != null) {
+            btnThemThongBao.setVisibility(View.GONE);
+        }
+    }
+
+    private View taoManHinhChiTietThongBao(String tieuDe, String noiDung) {
+        FrameLayout root = new FrameLayout(requireContext());
+        root.setBackgroundColor(Color.parseColor("#F0F7FF"));
+
+        LinearLayout page = new LinearLayout(requireContext());
+        page.setOrientation(LinearLayout.VERTICAL);
+        root.addView(page, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
+
+        FrameLayout header = new FrameLayout(requireContext());
+        header.setBackgroundResource(R.drawable.bg_gradient_dark_blue);
+        page.addView(header, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dpToPx(170)
+        ));
+
+        ImageButton btnBack = new ImageButton(requireContext());
+        btnBack.setImageResource(R.drawable.ic_back_white);
+        btnBack.setBackgroundColor(Color.TRANSPARENT);
+        btnBack.setContentDescription("Quay lại");
+        FrameLayout.LayoutParams backParams = new FrameLayout.LayoutParams(dpToPx(48), dpToPx(48));
+        backParams.gravity = Gravity.START | Gravity.CENTER_VERTICAL;
+        backParams.setMargins(dpToPx(20), 0, 0, 0);
+        header.addView(btnBack, backParams);
+
+        TextView tvHeaderTitle = new TextView(requireContext());
+        tvHeaderTitle.setText("Chi tiết thông báo");
+        tvHeaderTitle.setTextColor(Color.WHITE);
+        tvHeaderTitle.setTextSize(26);
+        tvHeaderTitle.setTypeface(null, Typeface.BOLD);
+        tvHeaderTitle.setGravity(Gravity.CENTER);
+        header.addView(tvHeaderTitle, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
+
+        CardView contentCard = new CardView(requireContext());
+        contentCard.setCardBackgroundColor(Color.WHITE);
+        contentCard.setRadius(dpToPx(28));
+        contentCard.setCardElevation(0);
+        LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0,
+                1f
+        );
+        cardParams.setMargins(0, -dpToPx(28), 0, 0);
+        page.addView(contentCard, cardParams);
+
+        ScrollView scrollView = new ScrollView(requireContext());
+        scrollView.setFillViewport(true);
+        contentCard.addView(scrollView, new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
+
+        LinearLayout content = new LinearLayout(requireContext());
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setPadding(dpToPx(28), dpToPx(36), dpToPx(28), dpToPx(36));
+        scrollView.addView(content, new ScrollView.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        ));
+
+        LinearLayout titleRow = new LinearLayout(requireContext());
+        titleRow.setOrientation(LinearLayout.HORIZONTAL);
+        titleRow.setGravity(Gravity.TOP);
+        content.addView(titleRow);
+
+        ImageView icon = new ImageView(requireContext());
+        icon.setImageResource(R.drawable.ic_notification);
+        icon.setColorFilter(Color.parseColor("#4F5BEA"));
+        LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(dpToPx(34), dpToPx(34));
+        iconParams.setMargins(0, dpToPx(2), dpToPx(16), 0);
+        titleRow.addView(icon, iconParams);
+
+        LinearLayout titleColumn = new LinearLayout(requireContext());
+        titleColumn.setOrientation(LinearLayout.VERTICAL);
+        titleRow.addView(titleColumn, new LinearLayout.LayoutParams(
+                0,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                1f
+        ));
+
+        TextView tvTitle = new TextView(requireContext());
+        tvTitle.setText(tieuDe);
+        tvTitle.setTextColor(Color.parseColor("#4F5BEA"));
+        tvTitle.setTextSize(21);
+        tvTitle.setTypeface(null, Typeface.BOLD);
+        titleColumn.addView(tvTitle);
+
+        TextView tvSource = new TextView(requireContext());
+        tvSource.setTextColor(Color.parseColor("#1E293B"));
+        tvSource.setTextSize(15);
+        LinearLayout.LayoutParams sourceParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        sourceParams.setMargins(0, dpToPx(4), 0, 0);
+        titleColumn.addView(tvSource, sourceParams);
+
+        TextView tvContent = new TextView(requireContext());
+        tvContent.setText(noiDung);
+        tvContent.setTextColor(Color.parseColor("#1E293B"));
+        tvContent.setTextSize(17);
+        tvContent.setLineSpacing(dpToPx(5), 1f);
+        LinearLayout.LayoutParams contentParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        contentParams.setMargins(0, dpToPx(24), 0, 0);
+        content.addView(tvContent, contentParams);
+
+        btnBack.setOnClickListener(v -> quayLaiDanhSachThongBao());
+        return root;
+    }
+
+    private void quayLaiDanhSachThongBao()
+    {
+        if (rootContainer == null || listView == null) return;
+
+        rootContainer.removeAllViews();
+        rootContainer.addView(listView);
+        if (btnThemThongBao != null) {
+            SharedPreferences prefs = requireActivity().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+            String roleSaved = prefs.getString("ROLE", UserRole.NHAN_VIEN.name());
+            btnThemThongBao.setVisibility(UserRole.ADMIN.name().equals(roleSaved) ? View.VISIBLE : View.GONE);
+        }
     }
 }
