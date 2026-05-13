@@ -8,7 +8,6 @@ import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,17 +15,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.nhom08_quanlyphongkham.CountResponse;
-import com.example.nhom08_quanlyphongkham.PatientApiService;
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
-import com.example.nhom08_quanlyphongkham.admin_manage_staff;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
-import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
-import com.google.android.material.button.MaterialButton;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -39,12 +35,13 @@ import dashboard_fragment.staff_create_examination_form.ExaminationFormRepositor
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import doctor_patient_list.doctor_patient_list;
 import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+
 
 public class HomeFragment_doctor extends Fragment {
 
     private TextView tvName;
+    TextView btn_KhamNgay;
+    TextView ic_ChoKham;
     private List<ExaminationFormWithPatientDto> allForms = new ArrayList<>();
     private ExaminationFormRepository repository;
     private CardView btnExaminationList, btnCreateAppointment, btnViewMedicalRecords;
@@ -66,8 +63,6 @@ public class HomeFragment_doctor extends Fragment {
         repository = new ExaminationFormRepository(requireContext());
         SetAvatar(view, SharedPrefManager.getInstance(requireContext()).getProfile());
         loadAllFormsAndPatientDto(view);
-        nextPatient = getPriorityPatient();
-//        loadPatient(nextPatient, view);
         SetNumber(view);
         return view;
     }
@@ -79,9 +74,10 @@ public class HomeFragment_doctor extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     // Lưu dữ liệu vào biến toàn cục để dùng chung
                     allForms = response.body();
-
                     // Sau khi có dữ liệu, mới gọi hàm cập nhật các con số
                     SetNumber(headerView);
+                    nextPatient = getPriorityPatient();
+                    loadPatient(nextPatient, headerView);
                 }
             }
 
@@ -91,22 +87,25 @@ public class HomeFragment_doctor extends Fragment {
             }
         });
     }
-//    private void loadPatient(ExaminationFormWithPatientDto nextPatient, View view)
-//    {
-//        TextView Name = view.findViewById(R.id.nameNextPatient);
-//        TextView Time = view.findViewById(R.id.timeNextPatient);
-//        if(nextPatient != null)
-//        {
-//            Name.setText(nextPatient.getPatient_id());
-//            Time.setText(nextPatient.getGio_du_kien());
-//        }
-//        else
-//        {
-//            Name.setText("");
-//            Time.setText("");
-//            Toast.makeText(getContext(), "Không có lịch hẹn nào", Toast.LENGTH_SHORT).show();
-//        }
-//    }
+
+    private void loadPatient(ExaminationFormWithPatientDto nextPatient, View view) {
+        TextView Name = view.findViewById(R.id.nameNextPatient);
+        TextView Time = view.findViewById(R.id.timeNextPatient);
+
+        // Kiểm tra thêm điều kiện getPatient() != null để tránh crash
+        if (nextPatient != null && nextPatient.getPatient() != null) {
+            btn_KhamNgay.setVisibility(view.VISIBLE);
+            ic_ChoKham.setVisibility(view.VISIBLE);
+            Name.setText(nextPatient.getPatient().getHo_ten()); // Hiện tên thay vì ID
+            Time.setText(nextPatient.getGio_du_kien());
+        } else {
+            btn_KhamNgay.setVisibility(view.INVISIBLE);
+            ic_ChoKham.setVisibility(view.INVISIBLE);
+            Name.setText("Chưa có bệnh nhân");
+            Time.setText("");
+
+        }
+    }
     private void SetNumber(View view) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         String today = sdf.format(new Date());
@@ -178,7 +177,7 @@ public class HomeFragment_doctor extends Fragment {
 
         initializeViews(view);
         setupListeners();
-        
+
         // Hiển thị thông tin bác sĩ
         UserProfile profile = SharedPrefManager.getInstance(requireContext()).getProfile();
         if (profile != null && profile.getHo_ten() != null) {
@@ -191,7 +190,8 @@ public class HomeFragment_doctor extends Fragment {
         btnExaminationList = view.findViewById(R.id.btnExaminationList);
         btnCreateAppointment = view.findViewById(R.id.btnCreateAppointment);
         btnViewMedicalRecords = view.findViewById(R.id.btnViewMedicalRecords);
-
+        btn_KhamNgay = view.findViewById(R.id.btnKhamNgay);
+        ic_ChoKham = view.findViewById(R.id.txtChoKham);
     }
 
     private void setupListeners() {
@@ -220,67 +220,23 @@ public class HomeFragment_doctor extends Fragment {
         Intent intent = new Intent(getActivity(), doctor_patient_list.class);
         startActivity(intent);
     }
-    private List<ExaminationFormWithPatientDto> filterByTimeCondition(boolean isBefore) {
-        List<ExaminationFormWithPatientDto> result = new ArrayList<>();
-
-        SimpleDateFormat dateSdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
-        SimpleDateFormat timeSdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
-
-        Date now = new Date();
-        String today = dateSdf.format(now);
-        String currentTime = timeSdf.format(now);
-
-        for (ExaminationFormWithPatientDto form : allForms) {
-            if (form.getNgay_kham() == null || form.getGio_du_kien() == null) continue;
-
-            if ("Chờ khám".equals(form.getTrang_thai()) && dateSdf.format(form.getNgay_kham()).equals(today)) {
-
-                String formTime = form.getGio_du_kien(); // Đây là String "HH:mm"
-
-                if (isBefore) {
-                    // Giờ hẹn > Giờ hiện tại (Chưa tới)
-                    if (formTime.compareTo(currentTime) > 0) result.add(form);
-                } else {
-                    // Giờ hẹn <= Giờ hiện tại (Đã quá)
-                    if (formTime.compareTo(currentTime) <= 0) result.add(form);
-                }
-            }
-        }
-        return result;
-    }
     private ExaminationFormWithPatientDto getPriorityPatient() {
-        long nowMs = System.currentTimeMillis();
-        long fiveMinsMs = 5 * 60 * 1000;
+        if (allForms == null || allForms.isEmpty()) return null;
 
         SimpleDateFormat dateSdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        SimpleDateFormat fullSdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
-
-        String todayStr = dateSdf.format(new Date());
-        ExaminationFormWithPatientDto priorityPatient = null;
-        long minDiff = Long.MAX_VALUE;
+        String today = dateSdf.format(new Date());
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+        String now = sdf.format(new Date());
 
         for (ExaminationFormWithPatientDto form : allForms) {
-            if ("Đã khám".equals(form.getTrang_thai())) {
+            String formDate = (form.getNgay_kham() != null) ? dateSdf.format(form.getNgay_kham()) : "";
+            String formTime = (form.getGio_du_kien() != null) ? form.getGio_du_kien() : "";
+
+            if (today.equals(formDate) && "Chờ khám".equals(form.getTrang_thai()) && formTime.compareTo(now) > 0) {
                 return form;
             }
-
-            if ("Chờ khám".equals(form.getTrang_thai()) && form.getNgay_kham() != null && form.getGio_du_kien() != null) {
-                try {
-                    Date apptDate = fullSdf.parse(todayStr + " " + form.getGio_du_kien());
-                    long apptMs = apptDate.getTime();
-
-                    if (nowMs >= apptMs && nowMs <= (apptMs + fiveMinsMs)) {
-                        long diff = nowMs - apptMs;
-                        if (diff < minDiff) {
-                            minDiff = diff;
-                            priorityPatient = form;
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
         }
-        return priorityPatient;
+
+        return null;
     }
 }
