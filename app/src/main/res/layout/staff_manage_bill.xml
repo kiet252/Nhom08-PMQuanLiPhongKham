@@ -106,7 +106,7 @@
             app:boxCornerRadiusTopStart="12dp"
             app:boxStrokeColor="#0D3F6E"
             app:hintTextColor="#0D3F6E"
-            app:startIconDrawable="@drawable/ic_calendar"
+            app:startIconDrawable="@drawable/ic_calendar_month"
             app:startIconTint="#0D3F6E">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -135,7 +135,7 @@
             app:boxCornerRadiusTopStart="12dp"
             app:boxStrokeColor="#0D3F6E"
             app:hintTextColor="#0D3F6E"
-            app:startIconDrawable="@drawable/ic_calendar"
+            app:startIconDrawable="@drawable/ic_calendar_month"
             app:startIconTint="#0D3F6E">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -176,7 +176,8 @@
                 android:textAllCaps="false"
                 android:textStyle="bold"
                 app:backgroundTint="#0D3F6E"
-                app:cornerRadius="20dp" />
+                app:cornerRadius="20dp"
+                app:strokeWidth="1dp"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnFilterPaid"
@@ -191,7 +192,8 @@
                 app:cornerRadius="20dp"
                 app:icon="@drawable/ic_check_circle"
                 app:iconTint="#4CAF50"
-                app:strokeColor="#E2E8F0" />
+                app:strokeColor="#7B92AD"
+                app:strokeWidth="1dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnFilterUnpaid"
@@ -205,7 +207,8 @@
                 app:cornerRadius="20dp"
                 app:icon="@drawable/ic_timer"
                 app:iconTint="#FF9800"
-                app:strokeColor="#E2E8F0" />
+                app:strokeColor="#7B92AD"
+                app:strokeWidth="1dp" />
         </LinearLayout>
     </HorizontalScrollView>
 

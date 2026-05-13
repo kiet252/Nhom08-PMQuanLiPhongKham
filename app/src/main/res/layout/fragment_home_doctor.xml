@@ -139,7 +139,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:textAlignment="center"
-                                    android:text="Tổng hôm nay"
+                                    android:text="Tổng cộng"
                                     android:textColor="#E7FBFF"
                                     android:textSize="12sp"
                                     android:textStyle="bold" />
@@ -321,7 +321,7 @@
                                     android:layout_height="56dp"
                                     android:layout_marginStart="8dp"
                                     android:layout_marginTop="18dp"
-                                    android:background="@drawable/bg_light_gray_rounded"
+                                    android:background="@drawable/bg_doctor_ex_form_list"
                                     android:gravity="center">
 
                                     <ImageView
@@ -430,7 +430,7 @@
                                     android:layout_height="56dp"
                                     android:layout_marginStart="8dp"
                                     android:layout_marginTop="18dp"
-                                    android:background="@drawable/bg_light_gray_rounded"
+                                    android:background="@drawable/bg_doctor_show_med_record"
                                     android:gravity="center">
 
                                     <ImageView
@@ -515,7 +515,7 @@
                                 android:layout_height="56dp"
                                 android:layout_marginStart="8dp"
                                 android:layout_marginTop="18dp"
-                                android:background="@drawable/bg_light_gray_rounded"
+                                android:background="@drawable/bg_doctor_create_appointment"
                                 android:gravity="center">
 
                                 <ImageView
@@ -579,7 +579,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="150dp"
+        android:layout_marginTop="140dp"
         android:layout_marginEnd="20dp"
         app:cardBackgroundColor="@android:color/white"
         app:cardCornerRadius="18dp"
