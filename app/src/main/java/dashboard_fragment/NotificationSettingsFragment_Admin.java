@@ -291,40 +291,40 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         dateParams.setMargins(0, dp(8), 0, dp(18));
         layoutDanhSach.addView(tvNgay, dateParams);
 
-        for (ExaminationFormWithPatientDto form : forms) {
-            layoutDanhSach.addView(taoCardThongBao(form));
-        }
+//        for (ExaminationFormWithPatientDto form : forms) {
+//            layoutDanhSach.addView(taoCardThongBao(form));
+//        }
     }
 
-    private View taoCardThongBao(ExaminationFormWithPatientDto form) {
-        Context context = requireContext();
-        View card = LayoutInflater.from(context).inflate(
-                R.layout.admin_item_examination_notification,
-                layoutDanhSach,
-                false
-        );
-
-        View accent = card.findViewById(R.id.viewAdminNotificationAccent);
-        TextView tvTime = card.findViewById(R.id.tvAdminNotificationTime);
-        TextView tvPatientName = card.findViewById(R.id.tvAdminNotificationPatientName);
-        TextView tvStatus = card.findViewById(R.id.tvAdminNotificationStatus);
-        TextView tvPatientCode = card.findViewById(R.id.tvAdminNotificationPatientCode);
-        TextView tvSymptoms = card.findViewById(R.id.tvAdminNotificationSymptoms);
-        ImageView ivMore = card.findViewById(R.id.ivAdminNotificationMore);
-        StatusColor statusColor = layMauTrangThai(form.getTrang_thai());
-
-        accent.setBackgroundColor(statusColor.accentColor);
-        tvTime.setText(dinhDangGio(form.getGio_du_kien()));
-        tvPatientName.setText(layTenBenhNhan(form));
-        tvStatus.setText("• " + layChuoi(form.getTrang_thai(), STATUS_WAITING));
-        tvStatus.setTextColor(statusColor.textColor);
-        tvStatus.setBackgroundResource(layNenTrangThai(form.getTrang_thai()));
-        tvPatientCode.setText("Mã BN: " + layMaBenhNhan(form) + " - Số tiếp nhận: " + form.getSo_tiep_nhan());
-        tvSymptoms.setText(layChuoi(form.getTrieu_chung_ban_dau(), "Không có triệu chứng ban đầu"));
-        ivMore.setColorFilter(statusColor.textColor);
-
-        return card;
-    }
+//    private View taoCardThongBao(ExaminationFormWithPatientDto form) {
+//        Context context = requireContext();
+//        View card = LayoutInflater.from(context).inflate(
+//                R.layout.admin_item_examination_notification,
+//                layoutDanhSach,
+//                false
+//        );
+//
+//        View accent = card.findViewById(R.id.viewAdminNotificationAccent);
+//        TextView tvTime = card.findViewById(R.id.tvAdminNotificationTime);
+//        TextView tvPatientName = card.findViewById(R.id.tvAdminNotificationPatientName);
+//        TextView tvStatus = card.findViewById(R.id.tvAdminNotificationStatus);
+//        TextView tvPatientCode = card.findViewById(R.id.tvAdminNotificationPatientCode);
+//        TextView tvSymptoms = card.findViewById(R.id.tvAdminNotificationSymptoms);
+//        ImageView ivMore = card.findViewById(R.id.ivAdminNotificationMore);
+//        StatusColor statusColor = layMauTrangThai(form.getTrang_thai());
+//
+//        accent.setBackgroundColor(statusColor.accentColor);
+//        tvTime.setText(dinhDangGio(form.getGio_du_kien()));
+//        tvPatientName.setText(layTenBenhNhan(form));
+//        tvStatus.setText("• " + layChuoi(form.getTrang_thai(), STATUS_WAITING));
+//        tvStatus.setTextColor(statusColor.textColor);
+//        tvStatus.setBackgroundResource(layNenTrangThai(form.getTrang_thai()));
+//        tvPatientCode.setText("Mã BN: " + layMaBenhNhan(form) + " - Số tiếp nhận: " + form.getSo_tiep_nhan());
+//        tvSymptoms.setText(layChuoi(form.getTrieu_chung_ban_dau(), "Không có triệu chứng ban đầu"));
+//        ivMore.setColorFilter(statusColor.textColor);
+//
+//        return card;
+//    }
 
     private String layTenBenhNhan(ExaminationFormWithPatientDto form) {
         PatientBriefDto patient = form.getPatient();
