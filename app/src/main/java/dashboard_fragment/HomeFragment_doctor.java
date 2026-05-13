@@ -26,6 +26,7 @@ import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 import com.google.android.material.button.MaterialButton;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -34,6 +35,8 @@ import coil.Coil;
 import coil.request.ImageRequest;
 
 import dashboard_fragment.doctor_examination_list.ExaminationList_doctor;
+import dashboard_fragment.staff_create_examination_form.ExaminationFormRepository;
+import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import doctor_patient_list.doctor_patient_list;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -42,9 +45,11 @@ import retrofit2.Response;
 public class HomeFragment_doctor extends Fragment {
 
     private TextView tvName;
-
+    private List<ExaminationFormWithPatientDto> allForms = new ArrayList<>();
+    private ExaminationFormRepository repository;
     private CardView btnExaminationList, btnCreateAppointment, btnViewMedicalRecords;
 
+    private ExaminationFormWithPatientDto nextPatient;
 
     public HomeFragment_doctor() {
         // Required empty public constructor
@@ -58,120 +63,98 @@ public class HomeFragment_doctor extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home_doctor, container, false);
+        repository = new ExaminationFormRepository(requireContext());
         SetAvatar(view, SharedPrefManager.getInstance(requireContext()).getProfile());
+        loadAllFormsAndPatientDto(view);
+        nextPatient = getPriorityPatient();
+//        loadPatient(nextPatient, view);
         SetNumber(view);
         return view;
     }
-    private void SetNumber(View view)
-    {
-        SetTotalNumber(view);
-        SetWaitNumber(view);
-        SetCheckingNumber(view);
-        SetDoneNumber(view);
+
+    private void loadAllFormsAndPatientDto(View headerView) {
+        repository.getAllFormsToday().enqueue(new retrofit2.Callback<List<ExaminationFormWithPatientDto>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<ExaminationFormWithPatientDto>> call, @NonNull retrofit2.Response<List<ExaminationFormWithPatientDto>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    // Lưu dữ liệu vào biến toàn cục để dùng chung
+                    allForms = response.body();
+
+                    // Sau khi có dữ liệu, mới gọi hàm cập nhật các con số
+                    SetNumber(headerView);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<ExaminationFormWithPatientDto>> call, @NonNull Throwable t) {
+                Toast.makeText(getContext(), "Lỗi tải dữ liệu", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
-    private void SetTotalNumber(View view) {
-        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-        String filter = "eq." + today;
+//    private void loadPatient(ExaminationFormWithPatientDto nextPatient, View view)
+//    {
+//        TextView Name = view.findViewById(R.id.nameNextPatient);
+//        TextView Time = view.findViewById(R.id.timeNextPatient);
+//        if(nextPatient != null)
+//        {
+//            Name.setText(nextPatient.getPatient_id());
+//            Time.setText(nextPatient.getGio_du_kien());
+//        }
+//        else
+//        {
+//            Name.setText("");
+//            Time.setText("");
+//            Toast.makeText(getContext(), "Không có lịch hẹn nào", Toast.LENGTH_SHORT).show();
+//        }
+//    }
+    private void SetNumber(View view) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        String today = sdf.format(new Date());
 
-        // Lấy instance của ApiService từ Provider
-        PatientApiService apiService = SupabaseClientProvider.getClient(requireContext()).create(PatientApiService.class);
+        int total = 0;
+        int waitCount = 0;
+        int checkingCount = 0;
+        int doneCount = 0;
 
-        // Gọi API (chỉ cần truyền filter và "count")
-        apiService.getTodayCount(filter, "count")
-                .enqueue(new Callback<List<CountResponse>>() {
-                    @Override
-                    public void onResponse(Call<List<CountResponse>> call, Response<List<CountResponse>> response) {
-                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
-                            long total = response.body().get(0).getCount();
-                            // Hiển thị total lên TextView của bạn ở đây
-                            TextView patient_total = view.findViewById(R.id.PatientTotal);
-                            patient_total.setText(String.valueOf(total));
-                        }
-                    }
+        for (ExaminationFormWithPatientDto form : allForms) {
+            Date dateKham = form.getNgay_kham();
+            String status = form.getTrang_thai();
 
-                    @Override
-                    public void onFailure(Call<List<CountResponse>> call, Throwable t) {
-                    }
-                });
+            if (status == null) continue;
+
+            // Chuyển ngày khám sang String để so sánh (nếu có)
+            String formDateStr = (dateKham != null) ? sdf.format(dateKham) : "";
+            boolean isToday = formDateStr.equals(today);
+
+            if (status.equals("Đang khám")) {
+                // "Đang khám": Đếm tất cả, không check ngày
+                checkingCount++;
+                total++;
+            } else if (status.equals("Chờ khám") && isToday) {
+                // "Chờ khám": Chỉ đếm hôm nay
+                waitCount++;
+                total++;
+            } else if (status.equals("Đã khám") && isToday) {
+                // "Đã khám": Chỉ đếm hôm nay
+                doneCount++;
+                total++;
+            }
+        }
+
+        // Cập nhật UI
+        updateUI(view, total, waitCount, checkingCount, doneCount);
     }
-    private void SetWaitNumber(View view) {
-        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-        String filter = "eq." + today;
+    private void updateUI(View v, int total, int wait, int checking, int done) {
+        ((TextView) v.findViewById(R.id.PatientTotal)).setText(String.valueOf(total));
 
-        // Lấy instance của ApiService từ Provider
-        PatientApiService apiService = SupabaseClientProvider.getClient(requireContext()).create(PatientApiService.class);
+        ((TextView) v.findViewById(R.id.PatientWaiting)).setText(String.valueOf(wait));
+        ((TextView) v.findViewById(R.id.num_cho_kham)).setText(wait + " chờ khám");
 
-        // Gọi API (chỉ cần truyền filter và "count")
-        apiService.getTodayWaitCount(filter, "eq.Chờ khám","count")
-                .enqueue(new Callback<List<CountResponse>>() {
-                    @Override
-                    public void onResponse(Call<List<CountResponse>> call, Response<List<CountResponse>> response) {
-                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
-                            long total = response.body().get(0).getCount();
-                            // Hiển thị total lên TextView của bạn ở đây
-                            TextView patient_total = view.findViewById(R.id.PatientWaiting);
-                            TextView patient_waiting = view.findViewById(R.id.num_cho_kham);
-                            patient_total.setText(String.valueOf(total));
-                            patient_waiting.setText(String.valueOf(total) + " chờ khám");
-                        }
-                    }
+        ((TextView) v.findViewById(R.id.PatientChecking)).setText(String.valueOf(checking));
+        ((TextView) v.findViewById(R.id.num_dang_kham)).setText(checking + " đang khám");
 
-                    @Override
-                    public void onFailure(Call<List<CountResponse>> call, Throwable t) {
-                    }
-                });
+        ((TextView) v.findViewById(R.id.PatientDone)).setText(String.valueOf(done));
     }
-    private void SetCheckingNumber(View view) {
-
-        // Lấy instance của ApiService từ Provider
-        PatientApiService apiService = SupabaseClientProvider.getClient(requireContext()).create(PatientApiService.class);
-
-        // Gọi API (chỉ cần truyền filter và "count")
-        apiService.getCheckingCount("eq.Đang khám","count")
-                .enqueue(new Callback<List<CountResponse>>() {
-                    @Override
-                    public void onResponse(Call<List<CountResponse>> call, Response<List<CountResponse>> response) {
-                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
-                            long total = response.body().get(0).getCount();
-                            // Hiển thị total lên TextView của bạn ở đây
-                            TextView patient_total = view.findViewById(R.id.PatientChecking);
-                            TextView patient_checking = view.findViewById(R.id.num_dang_kham);
-                            patient_total.setText(String.valueOf(total));
-                            patient_checking.setText(String.valueOf(total) + " đang khám");
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<List<CountResponse>> call, Throwable t) {
-                    }
-                });
-    }
-    private void SetDoneNumber(View view) {
-        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-        String filter = "eq." + today;
-
-        // Lấy instance của ApiService từ Provider
-        PatientApiService apiService = SupabaseClientProvider.getClient(requireContext()).create(PatientApiService.class);
-
-        // Gọi API (chỉ cần truyền filter và "count")
-        apiService.getTodayWaitCount(filter, "eq.Đã khám","count")
-                .enqueue(new Callback<List<CountResponse>>() {
-                    @Override
-                    public void onResponse(Call<List<CountResponse>> call, Response<List<CountResponse>> response) {
-                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
-                            long total = response.body().get(0).getCount();
-                            // Hiển thị total lên TextView của bạn ở đây
-                            TextView patient_total = view.findViewById(R.id.PatientDone);
-                            patient_total.setText(String.valueOf(total));
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<List<CountResponse>> call, Throwable t) {
-                    }
-                });
-    }
-
 
 
 
@@ -192,7 +175,7 @@ public class HomeFragment_doctor extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
+
         initializeViews(view);
         setupListeners();
         
@@ -236,5 +219,68 @@ public class HomeFragment_doctor extends Fragment {
     private void openPatientList() {
         Intent intent = new Intent(getActivity(), doctor_patient_list.class);
         startActivity(intent);
+    }
+    private List<ExaminationFormWithPatientDto> filterByTimeCondition(boolean isBefore) {
+        List<ExaminationFormWithPatientDto> result = new ArrayList<>();
+
+        SimpleDateFormat dateSdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+        SimpleDateFormat timeSdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
+        Date now = new Date();
+        String today = dateSdf.format(now);
+        String currentTime = timeSdf.format(now);
+
+        for (ExaminationFormWithPatientDto form : allForms) {
+            if (form.getNgay_kham() == null || form.getGio_du_kien() == null) continue;
+
+            if ("Chờ khám".equals(form.getTrang_thai()) && dateSdf.format(form.getNgay_kham()).equals(today)) {
+
+                String formTime = form.getGio_du_kien(); // Đây là String "HH:mm"
+
+                if (isBefore) {
+                    // Giờ hẹn > Giờ hiện tại (Chưa tới)
+                    if (formTime.compareTo(currentTime) > 0) result.add(form);
+                } else {
+                    // Giờ hẹn <= Giờ hiện tại (Đã quá)
+                    if (formTime.compareTo(currentTime) <= 0) result.add(form);
+                }
+            }
+        }
+        return result;
+    }
+    private ExaminationFormWithPatientDto getPriorityPatient() {
+        long nowMs = System.currentTimeMillis();
+        long fiveMinsMs = 5 * 60 * 1000;
+
+        SimpleDateFormat dateSdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        SimpleDateFormat fullSdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+
+        String todayStr = dateSdf.format(new Date());
+        ExaminationFormWithPatientDto priorityPatient = null;
+        long minDiff = Long.MAX_VALUE;
+
+        for (ExaminationFormWithPatientDto form : allForms) {
+            if ("Đã khám".equals(form.getTrang_thai())) {
+                return form;
+            }
+
+            if ("Chờ khám".equals(form.getTrang_thai()) && form.getNgay_kham() != null && form.getGio_du_kien() != null) {
+                try {
+                    Date apptDate = fullSdf.parse(todayStr + " " + form.getGio_du_kien());
+                    long apptMs = apptDate.getTime();
+
+                    if (nowMs >= apptMs && nowMs <= (apptMs + fiveMinsMs)) {
+                        long diff = nowMs - apptMs;
+                        if (diff < minDiff) {
+                            minDiff = diff;
+                            priorityPatient = form;
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return priorityPatient;
     }
 }
