@@ -1,66 +1,56 @@
 package dashboard_fragment.doctor_examination_list.doctor_examination_form_detail;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+
 import com.example.nhom08_quanlyphongkham.R;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link TabPatientInfoFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class TabPatientInfoFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private View rootView;
 
     public TabPatientInfoFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment TabPatientInfoFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static TabPatientInfoFragment newInstance(String param1, String param2) {
-        TabPatientInfoFragment fragment = new TabPatientInfoFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_tab_patient_info, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        rootView = view;
+
+        ExaminationFormDetail_doctor activity = (ExaminationFormDetail_doctor) requireActivity();
+        applyStatus(activity.getCurrentStatus());
+        setupStatusClicks(activity);
+    }
+
+    private void setupStatusClicks(ExaminationFormDetail_doctor activity) {
+        View btnWaiting = rootView.findViewById(R.id.btnStatusWaiting);
+        View btnInProgress = rootView.findViewById(R.id.btnStatusInProgress);
+        View btnDone = rootView.findViewById(R.id.btnStatusDone);
+
+        btnWaiting.setOnClickListener(v -> onStatusSelected(activity, DoctorExaminationStatus.WAITING));
+        btnInProgress.setOnClickListener(v -> onStatusSelected(activity, DoctorExaminationStatus.IN_PROGRESS));
+        btnDone.setOnClickListener(v -> onStatusSelected(activity, DoctorExaminationStatus.DONE));
+    }
+
+    private void onStatusSelected(ExaminationFormDetail_doctor activity, DoctorExaminationStatus status) {
+        activity.updateCurrentStatus(status);
+        applyStatus(status);
+    }
+
+    private void applyStatus(DoctorExaminationStatus status) {
+        DoctorExaminationStatusStyle.applyStatusSectionStyle(
+                rootView,
+                status == null ? DoctorExaminationStatus.WAITING.getDisplayName() : status.getDisplayName()
+        );
     }
 }

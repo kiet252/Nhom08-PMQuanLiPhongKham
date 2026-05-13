@@ -15,6 +15,7 @@ import com.example.nhom08_quanlyphongkham.R;
 import java.util.ArrayList;
 import java.util.List;
 
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.DoctorExaminationStatus;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.PatientBriefDto;
 
@@ -82,19 +83,24 @@ public class DoctorExaminationFormAdapter extends RecyclerView.Adapter<DoctorExa
     }
 
     private static ViewType resolveViewType(ExaminationFormWithPatientDto form) {
-        String status = form.getTrang_thai();
-        if ("Đã khám".equalsIgnoreCase(status)) {
-            return ViewType.DONE;
+        switch (DoctorExaminationStatus.fromValue(form.getTrang_thai())) {
+            case DONE:
+                return ViewType.DONE;
+            case IN_PROGRESS:
+                return ViewType.IN_PROGRESS;
+            case WAITING:
+            default:
+                return ViewType.WAITING;
         }
-        if ("Đang khám".equalsIgnoreCase(status)) {
-            return ViewType.IN_PROGRESS;
-        }
-        return ViewType.WAITING;
     }
 
     static class DoctorExaminationFormViewHolder extends RecyclerView.ViewHolder {
         private final OnFormClickListener onFormClickListener;
-        private final TextView tvDoctorExaminationTime, tvDoctorExaminationPatientName, tvDoctorExaminationStatus, tvDoctorExaminationPatientCode, tvDoctorExaminationSymptoms;
+        private final TextView tvDoctorExaminationTime;
+        private final TextView tvDoctorExaminationPatientName;
+        private final TextView tvDoctorExaminationStatus;
+        private final TextView tvDoctorExaminationPatientCode;
+        private final TextView tvDoctorExaminationSymptoms;
         private final ImageView ivDoctorExaminationMore;
 
         DoctorExaminationFormViewHolder(@NonNull View itemView, OnFormClickListener onFormClickListener) {
@@ -115,7 +121,10 @@ public class DoctorExaminationFormAdapter extends RecyclerView.Adapter<DoctorExa
             tvDoctorExaminationPatientName.setText(patient != null
                     ? getDisplayText(patient.getHo_ten(), "--")
                     : "--");
-            tvDoctorExaminationStatus.setText("• " + getDisplayText(form.getTrang_thai(), "Chờ khám"));
+            tvDoctorExaminationStatus.setText("• " + getDisplayText(
+                    form.getTrang_thai(),
+                    DoctorExaminationStatus.WAITING.getDisplayName()
+            ));
             tvDoctorExaminationPatientCode.setText(buildPatientCode(form, patient));
             tvDoctorExaminationSymptoms.setText(getDisplayText(
                     form.getTrieu_chung_ban_dau(),

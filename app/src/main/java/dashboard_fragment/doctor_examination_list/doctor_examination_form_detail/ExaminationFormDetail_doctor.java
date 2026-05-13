@@ -4,9 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -21,8 +20,6 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.nhom08_quanlyphongkham.R;
-
-import java.util.Locale;
 
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.PatientBriefDto;
@@ -67,6 +64,7 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
     private LinearLayout tabDiagnosis;
     private LinearLayout tabPrescription;
     private ViewPager2 viewPagerDoctorExDetail;
+    private DoctorExaminationStatus currentStatus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,11 +90,11 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
         return new Intent(context, ExaminationFormDetail_doctor.class)
                 .putExtra(EXTRA_FORM_ID, safeText(form.getId(), "--"))
                 .putExtra(EXTRA_PATIENT_NAME, patient != null ? safeText(patient.getHo_ten(), "--") : "--")
-                .putExtra(EXTRA_STATUS, safeText(form.getTrang_thai(), "Cho kham"))
+                .putExtra(EXTRA_STATUS, safeText(form.getTrang_thai(), DoctorExaminationStatus.WAITING.getDisplayName()))
                 .putExtra(EXTRA_TIME, formatDisplayTime(form.getGio_du_kien()))
                 .putExtra(EXTRA_PATIENT_ID, patient != null ? safeText(patient.getId(), "--") : "--")
                 .putExtra(EXTRA_SEQUENCE_NUMBER, String.valueOf(form.getSo_tiep_nhan()))
-                .putExtra(EXTRA_SYMPTOMS, safeText(form.getTrieu_chung_ban_dau(), "Khong co trieu chung ban dau"));
+                .putExtra(EXTRA_SYMPTOMS, safeText(form.getTrieu_chung_ban_dau(), "Không có triệu chứng ban đầu"));
     }
 
     private void bindHeaderData() {
@@ -105,12 +103,26 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
         TextView tvTime = findViewById(R.id.tvDoctorExDetailTime);
         TextView tvPatientId = findViewById(R.id.tvDoctorExDetailPatientID);
         TextView tvSequenceNumber = findViewById(R.id.tvDoctorExDetailReceptNumber);
+        currentStatus = DoctorExaminationStatus.fromValue(
+                readExtra(EXTRA_STATUS, DoctorExaminationStatus.WAITING.getDisplayName())
+        );
 
         tvPatientName.setText(readExtra(EXTRA_PATIENT_NAME, "--"));
-        tvStatus.setText(buildStatusBadge(readExtra(EXTRA_STATUS, "Cho kham")));
+        DoctorExaminationStatusStyle.applyBadgeStyle(tvStatus, currentStatus.getDisplayName());
         tvTime.setText(readExtra(EXTRA_TIME, "--"));
         tvPatientId.setText(readExtra(EXTRA_PATIENT_ID, "--"));
         tvSequenceNumber.setText(readExtra(EXTRA_SEQUENCE_NUMBER, "--"));
+    }
+
+    public DoctorExaminationStatus getCurrentStatus() {
+        return currentStatus == null ? DoctorExaminationStatus.WAITING : currentStatus;
+    }
+
+    public void updateCurrentStatus(DoctorExaminationStatus status) {
+        currentStatus = status == null ? DoctorExaminationStatus.WAITING : status;
+        TextView tvStatus = findViewById(R.id.tvDoctorExDetailStatusBadge);
+        DoctorExaminationStatusStyle.applyBadgeStyle(tvStatus, currentStatus.getDisplayName());
+        getIntent().putExtra(EXTRA_STATUS, currentStatus.getDisplayName());
     }
 
     private void setupBackButton() {
@@ -179,10 +191,6 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
         return safeText(value, fallback);
     }
 
-    private String buildStatusBadge(String status) {
-        return String.format(Locale.getDefault(), "• %s", safeText(status, "Cho kham"));
-    }
-
     private static String formatDisplayTime(String rawTime) {
         String displayTime = safeText(rawTime, "--");
         if ("--".equals(displayTime)) {
@@ -197,7 +205,7 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
         return displayTime;
     }
 
-    private static String safeText(String value, String fallback) {
+    static String safeText(String value, String fallback) {
         return value == null || value.trim().isEmpty() ? fallback : value;
     }
 

@@ -59,6 +59,7 @@
                     android:textSize="13sp" />
 
                 <LinearLayout
+                    android:id="@+id/layoutDoctorExFormPatientInfoStatus"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
@@ -95,17 +96,19 @@
                         android:id="@+id/btnStatusInProgress"
                         android:layout_width="0dp"
                         android:layout_height="44dp"
-                        android:layout_weight="1"
                         android:layout_marginHorizontal="6dp"
+                        android:layout_weight="1"
                         android:background="@drawable/bg_doctor_detail_status_btn_default"
-                        android:gravity="center"
-                        android:orientation="horizontal"
                         android:clickable="true"
-                        android:focusable="true">
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
                         <ImageView
                             android:layout_width="18dp"
                             android:layout_height="18dp"
                             android:src="@drawable/ic_status_examining_doctor_ex_form_list" />
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -120,17 +123,19 @@
                         android:id="@+id/btnStatusDone"
                         android:layout_width="0dp"
                         android:layout_height="44dp"
-                        android:layout_weight="1"
                         android:layout_marginStart="6dp"
+                        android:layout_weight="1"
                         android:background="@drawable/bg_doctor_detail_status_btn_default"
-                        android:gravity="center"
-                        android:orientation="horizontal"
                         android:clickable="true"
-                        android:focusable="true">
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
                         <ImageView
                             android:layout_width="18dp"
                             android:layout_height="18dp"
                             android:src="@drawable/ic_status_examined_doctor_ex_form_list" />
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"

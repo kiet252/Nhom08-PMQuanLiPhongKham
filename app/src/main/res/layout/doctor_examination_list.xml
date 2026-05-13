@@ -72,7 +72,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:hint="       Nhập mã bệnh nhân hoặc tên bệnh nhân"
+                        android:hint="Nhập mã bệnh nhân hoặc tên bệnh nhân"
                         app:boxCornerRadiusBottomEnd="14dp"
                         app:boxCornerRadiusBottomStart="14dp"
                         app:boxCornerRadiusTopEnd="14dp"

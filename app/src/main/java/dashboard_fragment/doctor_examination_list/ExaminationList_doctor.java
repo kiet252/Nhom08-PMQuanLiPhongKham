@@ -34,32 +34,24 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.DoctorExaminationStatus;
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.ExaminationFormDetail_doctor;
 import dashboard_fragment.staff_create_examination_form.ExaminationFormRepository;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
-import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.ExaminationFormDetail_doctor;
 import retrofit2.Call;
 
 public class ExaminationList_doctor extends AppCompatActivity {
     private enum FilterTab { ALL, WAITING, IN_PROGRESS, DONE }
-    private enum ExaminationStatus {
-        WAITING("Chờ khám"),
-        IN_PROGRESS("Đang khám"),
-        DONE("Đã khám");
-
-        private final String value;
-
-        ExaminationStatus(String value) {
-            this.value = value;
-        }
-
-        public String getValue() {
-            return value;
-        }
-    }
 
     private ImageButton btnBack;
-    private LinearLayout btnFilterAllDoctorEx, btnFilterWaitingDoctorEx, btnFilterInProgressDoctorEx, btnFilterDoneDoctorEx;
-    private TextView tvCountAllDoctorEx, tvCountWaitingDoctorEx, tvCountInProgressDoctorEx, tvCountDoneDoctorEx;
+    private LinearLayout btnFilterAllDoctorEx;
+    private LinearLayout btnFilterWaitingDoctorEx;
+    private LinearLayout btnFilterInProgressDoctorEx;
+    private LinearLayout btnFilterDoneDoctorEx;
+    private TextView tvCountAllDoctorEx;
+    private TextView tvCountWaitingDoctorEx;
+    private TextView tvCountInProgressDoctorEx;
+    private TextView tvCountDoneDoctorEx;
     private TextInputEditText edtDoctorExaminationSearch;
     private RecyclerView rvDoctorExaminationList;
     private FilterTab selectedFilter = FilterTab.ALL;
@@ -138,7 +130,8 @@ public class ExaminationList_doctor extends AppCompatActivity {
     private void loadAllFormsAndPatientDto() {
         repository.getAllFormsToday().enqueue(new retrofit2.Callback<List<ExaminationFormWithPatientDto>>() {
             @Override
-            public void onResponse(@NonNull Call<List<ExaminationFormWithPatientDto>> call, @NonNull retrofit2.Response<List<ExaminationFormWithPatientDto>> response) {
+            public void onResponse(@NonNull Call<List<ExaminationFormWithPatientDto>> call,
+                                   @NonNull retrofit2.Response<List<ExaminationFormWithPatientDto>> response) {
                 if (response.isSuccessful()) {
                     if (response.body() != null && !response.body().isEmpty()) {
                         allForms = buildDisplayForms(response.body());
@@ -201,7 +194,7 @@ public class ExaminationList_doctor extends AppCompatActivity {
             return true;
         }
 
-        return isBeforeToday(formDate) && hasStatus(form, ExaminationStatus.IN_PROGRESS);
+        return isBeforeToday(formDate) && hasStatus(form, DoctorExaminationStatus.IN_PROGRESS);
     }
 
     private boolean isSameDay(Date first, Date second) {
@@ -262,23 +255,23 @@ public class ExaminationList_doctor extends AppCompatActivity {
 
     private void getAllWaitingExForms() {
         updateFilterSelection(FilterTab.WAITING);
-        resultExaminationFormsAndPatients = applySearchFilter(filterFormsByStatus(ExaminationStatus.WAITING));
+        resultExaminationFormsAndPatients = applySearchFilter(filterFormsByStatus(DoctorExaminationStatus.WAITING));
         refreshExaminationFormsList();
     }
 
     private void getAllInProgressExForms() {
         updateFilterSelection(FilterTab.IN_PROGRESS);
-        resultExaminationFormsAndPatients = applySearchFilter(filterFormsByStatus(ExaminationStatus.IN_PROGRESS));
+        resultExaminationFormsAndPatients = applySearchFilter(filterFormsByStatus(DoctorExaminationStatus.IN_PROGRESS));
         refreshExaminationFormsList();
     }
 
     private void getAllDoneExForms() {
         updateFilterSelection(FilterTab.DONE);
-        resultExaminationFormsAndPatients = applySearchFilter(filterFormsByStatus(ExaminationStatus.DONE));
+        resultExaminationFormsAndPatients = applySearchFilter(filterFormsByStatus(DoctorExaminationStatus.DONE));
         refreshExaminationFormsList();
     }
 
-    private List<ExaminationFormWithPatientDto> filterFormsByStatus(ExaminationStatus status) {
+    private List<ExaminationFormWithPatientDto> filterFormsByStatus(DoctorExaminationStatus status) {
         List<ExaminationFormWithPatientDto> filteredForms = new ArrayList<>();
         for (ExaminationFormWithPatientDto form : allForms) {
             if (hasStatus(form, status)) {
@@ -360,11 +353,11 @@ public class ExaminationList_doctor extends AppCompatActivity {
         int doneCount = 0;
 
         for (ExaminationFormWithPatientDto form : sourceForms) {
-            if (hasStatus(form, ExaminationStatus.WAITING)) {
+            if (hasStatus(form, DoctorExaminationStatus.WAITING)) {
                 waitingCount++;
-            } else if (hasStatus(form, ExaminationStatus.IN_PROGRESS)) {
+            } else if (hasStatus(form, DoctorExaminationStatus.IN_PROGRESS)) {
                 inProgressCount++;
-            } else if (hasStatus(form, ExaminationStatus.DONE)) {
+            } else if (hasStatus(form, DoctorExaminationStatus.DONE)) {
                 doneCount++;
             }
         }
@@ -375,8 +368,8 @@ public class ExaminationList_doctor extends AppCompatActivity {
         tvCountDoneDoctorEx.setText(String.valueOf(doneCount));
     }
 
-    private boolean hasStatus(ExaminationFormWithPatientDto form, ExaminationStatus status) {
-        return status.getValue().equalsIgnoreCase(form.getTrang_thai());
+    private boolean hasStatus(ExaminationFormWithPatientDto form, DoctorExaminationStatus status) {
+        return DoctorExaminationStatus.fromValue(form.getTrang_thai()) == status;
     }
 
     private void updateFilterSelection(FilterTab filter) {
