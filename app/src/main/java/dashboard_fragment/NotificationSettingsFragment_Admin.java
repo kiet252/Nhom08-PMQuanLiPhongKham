@@ -11,6 +11,8 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -34,6 +36,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import dashboard_fragment.staff_create_examination_form.ExaminationFormRepository;
+import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.DoctorBriefDto;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.PatientBriefDto;
 import retrofit2.Call;
@@ -52,12 +55,17 @@ public class NotificationSettingsFragment_Admin extends Fragment {
     private TextView tvTotal;
 
     private ExaminationFormRepository repository;
+    private FrameLayout rootContainer;
+    private View listView;
     private final Handler refreshHandler = new Handler(Looper.getMainLooper());
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", new Locale("vi", "VN"));
+
     private final Runnable autoRefreshRunnable = new Runnable() {
         @Override
         public void run() {
-            taiDuLieu(false);
+            if (listView != null && listView.getVisibility() == View.VISIBLE) {
+                taiDuLieu(false);
+            }
             refreshHandler.postDelayed(this, AUTO_REFRESH_DELAY_MS);
         }
     };
@@ -77,14 +85,17 @@ public class NotificationSettingsFragment_Admin extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_notification_settings_fragment_admin, container, false);
-        layoutDanhSach = view.findViewById(R.id.layout_danh_sach_thong_bao_fragment_admin);
-        tvEmptyState = view.findViewById(R.id.tv_admin_notification_empty);
-        tvLoadingState = view.findViewById(R.id.tv_admin_notification_loading);
-        tvTotal = view.findViewById(R.id.tv_admin_notification_total);
+        rootContainer = new FrameLayout(requireContext());
+        listView = inflater.inflate(R.layout.activity_notification_settings_fragment_admin, rootContainer, false);
+        rootContainer.addView(listView);
+
+        layoutDanhSach = listView.findViewById(R.id.layout_danh_sach_thong_bao_fragment_admin);
+        tvEmptyState = listView.findViewById(R.id.tv_admin_notification_empty);
+        tvLoadingState = listView.findViewById(R.id.tv_admin_notification_loading);
+        tvTotal = listView.findViewById(R.id.tv_admin_notification_total);
 
         taiDuLieu(true);
-        return view;
+        return rootContainer;
     }
 
     @Override
@@ -108,6 +119,8 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         tvEmptyState = null;
         tvLoadingState = null;
         tvTotal = null;
+        listView = null;
+        rootContainer = null;
     }
 
     private void taiDuLieu(boolean showLoading) {
@@ -291,40 +304,93 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         dateParams.setMargins(0, dp(8), 0, dp(18));
         layoutDanhSach.addView(tvNgay, dateParams);
 
-//        for (ExaminationFormWithPatientDto form : forms) {
-//            layoutDanhSach.addView(taoCardThongBao(form));
-//        }
+        for (ExaminationFormWithPatientDto form : forms) {
+            layoutDanhSach.addView(taoCardThongBao(form));
+        }
     }
 
-//    private View taoCardThongBao(ExaminationFormWithPatientDto form) {
-//        Context context = requireContext();
-//        View card = LayoutInflater.from(context).inflate(
-//                R.layout.admin_item_examination_notification,
-//                layoutDanhSach,
-//                false
-//        );
-//
-//        View accent = card.findViewById(R.id.viewAdminNotificationAccent);
-//        TextView tvTime = card.findViewById(R.id.tvAdminNotificationTime);
-//        TextView tvPatientName = card.findViewById(R.id.tvAdminNotificationPatientName);
-//        TextView tvStatus = card.findViewById(R.id.tvAdminNotificationStatus);
-//        TextView tvPatientCode = card.findViewById(R.id.tvAdminNotificationPatientCode);
-//        TextView tvSymptoms = card.findViewById(R.id.tvAdminNotificationSymptoms);
-//        ImageView ivMore = card.findViewById(R.id.ivAdminNotificationMore);
-//        StatusColor statusColor = layMauTrangThai(form.getTrang_thai());
-//
-//        accent.setBackgroundColor(statusColor.accentColor);
-//        tvTime.setText(dinhDangGio(form.getGio_du_kien()));
-//        tvPatientName.setText(layTenBenhNhan(form));
-//        tvStatus.setText("• " + layChuoi(form.getTrang_thai(), STATUS_WAITING));
-//        tvStatus.setTextColor(statusColor.textColor);
-//        tvStatus.setBackgroundResource(layNenTrangThai(form.getTrang_thai()));
-//        tvPatientCode.setText("Mã BN: " + layMaBenhNhan(form) + " - Số tiếp nhận: " + form.getSo_tiep_nhan());
-//        tvSymptoms.setText(layChuoi(form.getTrieu_chung_ban_dau(), "Không có triệu chứng ban đầu"));
-//        ivMore.setColorFilter(statusColor.textColor);
-//
-//        return card;
-//    }
+    private View taoCardThongBao(ExaminationFormWithPatientDto form) {
+        Context context = requireContext();
+        View card = LayoutInflater.from(context).inflate(
+                R.layout.admin_item_examination_notification,
+                layoutDanhSach,
+                false
+        );
+
+        View accent = card.findViewById(R.id.viewAdminNotificationAccent);
+        TextView tvTime = card.findViewById(R.id.tvAdminNotificationTime);
+        TextView tvPatientName = card.findViewById(R.id.tvAdminNotificationPatientName);
+        TextView tvStatus = card.findViewById(R.id.tvAdminNotificationStatus);
+        TextView tvPatientCode = card.findViewById(R.id.tvAdminNotificationPatientCode);
+        TextView tvSymptoms = card.findViewById(R.id.tvAdminNotificationSymptoms);
+        ImageView ivMore = card.findViewById(R.id.ivAdminNotificationMore);
+        StatusColor statusColor = layMauTrangThai(form.getTrang_thai());
+
+        accent.setBackgroundColor(statusColor.accentColor);
+        tvTime.setText(dinhDangGio(form.getGio_du_kien()));
+        tvPatientName.setText(layTenBenhNhan(form));
+        tvStatus.setText("• " + layChuoi(form.getTrang_thai(), STATUS_WAITING));
+        tvStatus.setTextColor(statusColor.textColor);
+        tvStatus.setBackgroundResource(layNenTrangThai(form.getTrang_thai()));
+        tvPatientCode.setText("Mã BN: " + layMaBenhNhan(form) + " - Số tiếp nhận: " + form.getSo_tiep_nhan());
+        tvSymptoms.setText(layChuoi(form.getTrieu_chung_ban_dau(), "Không có triệu chứng ban đầu"));
+        ivMore.setColorFilter(statusColor.textColor);
+
+        card.setOnClickListener(v -> hienThiChiTiet(form));
+
+        return card;
+    }
+
+    private void hienThiChiTiet(ExaminationFormWithPatientDto form) {
+        if (rootContainer == null) return;
+
+        View detailView = LayoutInflater.from(requireContext()).inflate(R.layout.admin_examination_form_detail, rootContainer, false);
+
+        ImageButton btnBack = detailView.findViewById(R.id.btnBackAdminExDetail);
+        TextView tvTitleTop = detailView.findViewById(R.id.tvAdminExDetailPatientNameTop);
+        TextView tvStatus = detailView.findViewById(R.id.tvAdminExDetailStatus);
+        TextView tvDateTime = detailView.findViewById(R.id.tvAdminExDetailDateTime);
+        TextView tvPatientCode = detailView.findViewById(R.id.tvAdminExDetailPatientCode);
+        TextView tvDoctorName = detailView.findViewById(R.id.tvAdminExDetailDoctorName);
+        TextView tvDoctorRole = detailView.findViewById(R.id.tvAdminExDetailDoctorRole);
+        TextView tvSymptoms = detailView.findViewById(R.id.tvAdminExDetailSymptoms);
+        TextView tvFee = detailView.findViewById(R.id.tvAdminExDetailFee);
+        TextView tvPaymentMethod = detailView.findViewById(R.id.tvAdminExDetailPaymentMethod);
+
+        StatusColor sc = layMauTrangThai(form.getTrang_thai());
+        PatientBriefDto patient = form.getPatient();
+        DoctorBriefDto doctor = form.getDoctor();
+
+        tvTitleTop.setText("Bệnh nhân: " + (patient != null ? patient.getHo_ten() : "N/A"));
+        tvStatus.setText("• " + layChuoi(form.getTrang_thai(), STATUS_WAITING));
+        tvStatus.setTextColor(sc.textColor);
+        tvStatus.setBackgroundResource(layNenTrangThai(form.getTrang_thai()));
+
+        String dateStr = form.getNgay_kham() != null ? dateFormat.format(form.getNgay_kham()) : "--/--/----";
+        tvDateTime.setText(dinhDangGio(form.getGio_du_kien()) + " | " + dateStr);
+
+        tvPatientCode.setText("Mã BN: " + layMaBenhNhan(form) + " | STN: " + form.getSo_tiep_nhan());
+
+        if (doctor != null) {
+            tvDoctorName.setText("BS. " + layChuoi(doctor.getHo_ten(), "Chưa phân công"));
+            tvDoctorRole.setText(layChuoi(doctor.getChuc_vu(), "Bác sĩ chuyên khoa"));
+        } else {
+            tvDoctorName.setText("Chưa phân công bác sĩ");
+            tvDoctorRole.setText("");
+        }
+
+        tvSymptoms.setText(layChuoi(form.getTrieu_chung_ban_dau(), "Không có triệu chứng chi tiết."));
+        tvFee.setText(String.format("%,d VNĐ", form.getPhi_kham()));
+        tvPaymentMethod.setText(layChuoi(form.getPhuong_thuc_thanh_toan(), "Tiền mặt"));
+
+        btnBack.setOnClickListener(v -> {
+            rootContainer.removeView(detailView);
+            listView.setVisibility(View.VISIBLE);
+        });
+
+        listView.setVisibility(View.GONE);
+        rootContainer.addView(detailView);
+    }
 
     private String layTenBenhNhan(ExaminationFormWithPatientDto form) {
         PatientBriefDto patient = form.getPatient();
