@@ -5,6 +5,8 @@ import java.util.Date;
 public class PatientBriefDto {
     private String id;
     private String ho_ten;
+    private String gioi_tinh;
+    private String so_dien_thoai;
     private Date ngay_sinh;
     private String dia_chi;
     private String cccd;
@@ -14,6 +16,12 @@ public class PatientBriefDto {
     }
     public String getHo_ten() {
         return ho_ten;
+    }
+    public String getGioi_tinh() {
+        return gioi_tinh;
+    }
+    public String getSo_dien_thoai() {
+        return so_dien_thoai;
     }
     public Date getNgay_sinh() {
         return ngay_sinh;

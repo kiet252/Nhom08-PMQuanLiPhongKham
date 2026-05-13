@@ -21,6 +21,9 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.nhom08_quanlyphongkham.R;
 
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.PatientBriefDto;
 
@@ -58,6 +61,11 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
     public static final String EXTRA_PATIENT_ID = "extra_patient_id";
     public static final String EXTRA_SEQUENCE_NUMBER = "extra_sequence_number";
     public static final String EXTRA_SYMPTOMS = "extra_symptoms";
+    public static final String EXTRA_PATIENT_BIRTHDAY = "extra_patient_birthday";
+    public static final String EXTRA_PATIENT_ADDRESS = "extra_patient_address";
+    public static final String EXTRA_PATIENT_CCCD = "extra_patient_cccd";
+    public static final String EXTRA_PATIENT_GENDER = "extra_patient_gender";
+    public static final String EXTRA_PATIENT_PHONE = "extra_patient_phone";
 
     private LinearLayout tabExformPatient;
     private LinearLayout tabCanLamSang;
@@ -94,7 +102,12 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
                 .putExtra(EXTRA_TIME, formatDisplayTime(form.getGio_du_kien()))
                 .putExtra(EXTRA_PATIENT_ID, patient != null ? safeText(patient.getId(), "--") : "--")
                 .putExtra(EXTRA_SEQUENCE_NUMBER, String.valueOf(form.getSo_tiep_nhan()))
-                .putExtra(EXTRA_SYMPTOMS, safeText(form.getTrieu_chung_ban_dau(), "Không có triệu chứng ban đầu"));
+                .putExtra(EXTRA_SYMPTOMS, safeText(form.getTrieu_chung_ban_dau(), "Không có triệu chứng ban đầu"))
+                .putExtra(EXTRA_PATIENT_BIRTHDAY, formatDate(patient != null ? patient.getNgay_sinh() : null))
+                .putExtra(EXTRA_PATIENT_ADDRESS, patient != null ? safeText(patient.getDia_chi(), "--") : "--")
+                .putExtra(EXTRA_PATIENT_CCCD, patient != null ? safeText(patient.getCccd(), "--") : "--")
+                .putExtra(EXTRA_PATIENT_GENDER, patient != null ? safeText(patient.getGioi_tinh(), "--") : "--")
+                .putExtra(EXTRA_PATIENT_PHONE, patient != null ? safeText(patient.getSo_dien_thoai(), "--") : "--");
     }
 
     private void bindHeaderData() {
@@ -123,6 +136,7 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
         TextView tvStatus = findViewById(R.id.tvDoctorExDetailStatusBadge);
         DoctorExaminationStatusStyle.applyBadgeStyle(tvStatus, currentStatus.getDisplayName());
         getIntent().putExtra(EXTRA_STATUS, currentStatus.getDisplayName());
+        updateStatusDependentUi();
     }
 
     private void setupBackButton() {
@@ -136,6 +150,7 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
         tabDiagnosis = findViewById(R.id.tabDiagnosis);
         tabPrescription = findViewById(R.id.tabPrescription);
         viewPagerDoctorExDetail = findViewById(R.id.viewPagerDoctorExDetail);
+        updateStatusDependentUi();
     }
 
     private void setupViewPager() {
@@ -158,6 +173,9 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
     }
 
     private void selectTab(DetailTab tab) {
+        if (isDoneLocked() && tab != DetailTab.PATIENT_INFO) {
+            return;
+        }
         viewPagerDoctorExDetail.setCurrentItem(tab.getPosition(), true);
     }
 
@@ -186,6 +204,29 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
         }
     }
 
+    private void updateStatusDependentUi() {
+        boolean isDone = isDoneLocked();
+        setTabEnabled(tabCanLamSang, !isDone);
+        setTabEnabled(tabDiagnosis, !isDone);
+        setTabEnabled(tabPrescription, !isDone);
+        if (viewPagerDoctorExDetail != null) {
+            viewPagerDoctorExDetail.setUserInputEnabled(!isDone);
+        }
+    }
+
+    private void setTabEnabled(LinearLayout tabView, boolean enabled) {
+        if (tabView == null) {
+            return;
+        }
+        tabView.setEnabled(enabled);
+        tabView.setClickable(enabled);
+        tabView.setAlpha(enabled ? 1f : 0.45f);
+    }
+
+    public boolean isDoneLocked() {
+        return getCurrentStatus() == DoctorExaminationStatus.DONE;
+    }
+
     private String readExtra(String key, String fallback) {
         String value = getIntent().getStringExtra(key);
         return safeText(value, fallback);
@@ -203,6 +244,13 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
         }
 
         return displayTime;
+    }
+
+    private static String formatDate(java.util.Date date) {
+        if (date == null) {
+            return "--";
+        }
+        return new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(date);
     }
 
     static String safeText(String value, String fallback) {
