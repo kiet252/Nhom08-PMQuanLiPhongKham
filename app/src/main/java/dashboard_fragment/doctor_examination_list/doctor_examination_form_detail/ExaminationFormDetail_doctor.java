@@ -1,16 +1,72 @@
 package dashboard_fragment.doctor_examination_list.doctor_examination_form_detail;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.nhom08_quanlyphongkham.R;
 
+import java.util.Locale;
+
+import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
+import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.PatientBriefDto;
+
 public class ExaminationFormDetail_doctor extends AppCompatActivity {
+    private enum DetailTab {
+        PATIENT_INFO(0),
+        CLINICAL(1),
+        DIAGNOSIS(2),
+        PRESCRIPTION(3);
+
+        private final int position;
+
+        DetailTab(int position) {
+            this.position = position;
+        }
+
+        int getPosition() {
+            return position;
+        }
+
+        static DetailTab fromPosition(int position) {
+            for (DetailTab tab : values()) {
+                if (tab.position == position) {
+                    return tab;
+                }
+            }
+            return PATIENT_INFO;
+        }
+    }
+
+    public static final String EXTRA_FORM_ID = "extra_form_id";
+    public static final String EXTRA_PATIENT_NAME = "extra_patient_name";
+    public static final String EXTRA_STATUS = "extra_status";
+    public static final String EXTRA_TIME = "extra_time";
+    public static final String EXTRA_PATIENT_ID = "extra_patient_id";
+    public static final String EXTRA_SEQUENCE_NUMBER = "extra_sequence_number";
+    public static final String EXTRA_SYMPTOMS = "extra_symptoms";
+
+    private LinearLayout tabExformPatient;
+    private LinearLayout tabCanLamSang;
+    private LinearLayout tabDiagnosis;
+    private LinearLayout tabPrescription;
+    private ViewPager2 viewPagerDoctorExDetail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,5 +78,152 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        bindHeaderData();
+        setupBackButton();
+        initializeViews();
+        setupViewPager();
+        setupTabClicks();
+    }
+
+    public static Intent createIntent(Context context, ExaminationFormWithPatientDto form) {
+        PatientBriefDto patient = form.getPatient();
+
+        return new Intent(context, ExaminationFormDetail_doctor.class)
+                .putExtra(EXTRA_FORM_ID, safeText(form.getId(), "--"))
+                .putExtra(EXTRA_PATIENT_NAME, patient != null ? safeText(patient.getHo_ten(), "--") : "--")
+                .putExtra(EXTRA_STATUS, safeText(form.getTrang_thai(), "Cho kham"))
+                .putExtra(EXTRA_TIME, formatDisplayTime(form.getGio_du_kien()))
+                .putExtra(EXTRA_PATIENT_ID, patient != null ? safeText(patient.getId(), "--") : "--")
+                .putExtra(EXTRA_SEQUENCE_NUMBER, String.valueOf(form.getSo_tiep_nhan()))
+                .putExtra(EXTRA_SYMPTOMS, safeText(form.getTrieu_chung_ban_dau(), "Khong co trieu chung ban dau"));
+    }
+
+    private void bindHeaderData() {
+        TextView tvPatientName = findViewById(R.id.tvDoctorExDetailPatientName);
+        TextView tvStatus = findViewById(R.id.tvDoctorExDetailStatusBadge);
+        TextView tvTime = findViewById(R.id.tvDoctorExDetailTime);
+        TextView tvPatientId = findViewById(R.id.tvDoctorExDetailPatientID);
+        TextView tvSequenceNumber = findViewById(R.id.tvDoctorExDetailReceptNumber);
+
+        tvPatientName.setText(readExtra(EXTRA_PATIENT_NAME, "--"));
+        tvStatus.setText(buildStatusBadge(readExtra(EXTRA_STATUS, "Cho kham")));
+        tvTime.setText(readExtra(EXTRA_TIME, "--"));
+        tvPatientId.setText(readExtra(EXTRA_PATIENT_ID, "--"));
+        tvSequenceNumber.setText(readExtra(EXTRA_SEQUENCE_NUMBER, "--"));
+    }
+
+    private void setupBackButton() {
+        ImageButton btnBack = findViewById(R.id.btnBackDoctorExDetail);
+        btnBack.setOnClickListener(v -> finish());
+    }
+
+    private void initializeViews() {
+        tabExformPatient = findViewById(R.id.tabExformPatient);
+        tabCanLamSang = findViewById(R.id.tabCanLamSang);
+        tabDiagnosis = findViewById(R.id.tabDiagnosis);
+        tabPrescription = findViewById(R.id.tabPrescription);
+        viewPagerDoctorExDetail = findViewById(R.id.viewPagerDoctorExDetail);
+    }
+
+    private void setupViewPager() {
+        viewPagerDoctorExDetail.setAdapter(new DoctorExDetailPagerAdapter(this));
+        viewPagerDoctorExDetail.setCurrentItem(DetailTab.PATIENT_INFO.getPosition(), false);
+        updateSelectedTab(DetailTab.PATIENT_INFO);
+        viewPagerDoctorExDetail.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                updateSelectedTab(DetailTab.fromPosition(position));
+            }
+        });
+    }
+
+    private void setupTabClicks() {
+        tabExformPatient.setOnClickListener(v -> selectTab(DetailTab.PATIENT_INFO));
+        tabCanLamSang.setOnClickListener(v -> selectTab(DetailTab.CLINICAL));
+        tabDiagnosis.setOnClickListener(v -> selectTab(DetailTab.DIAGNOSIS));
+        tabPrescription.setOnClickListener(v -> selectTab(DetailTab.PRESCRIPTION));
+    }
+
+    private void selectTab(DetailTab tab) {
+        viewPagerDoctorExDetail.setCurrentItem(tab.getPosition(), true);
+    }
+
+    private void updateSelectedTab(DetailTab selectedTab) {
+        applyTabState(tabExformPatient, selectedTab == DetailTab.PATIENT_INFO);
+        applyTabState(tabCanLamSang, selectedTab == DetailTab.CLINICAL);
+        applyTabState(tabDiagnosis, selectedTab == DetailTab.DIAGNOSIS);
+        applyTabState(tabPrescription, selectedTab == DetailTab.PRESCRIPTION);
+    }
+
+    private void applyTabState(LinearLayout tabView, boolean isSelected) {
+        tabView.setBackgroundResource(isSelected
+                ? R.drawable.bg_doctor_detail_tab_selected
+                : R.drawable.bg_doctor_detail_tab_unselected);
+
+        int textColor = ContextCompat.getColor(this, isSelected ? android.R.color.white : R.color.filter_tab_unselected_text);
+        int iconColor = ContextCompat.getColor(this, isSelected ? android.R.color.white : R.color.filter_tab_unselected_text);
+
+        for (int index = 0; index < tabView.getChildCount(); index++) {
+            View child = tabView.getChildAt(index);
+            if (child instanceof TextView) {
+                ((TextView) child).setTextColor(textColor);
+            } else if (child instanceof ImageView) {
+                ((ImageView) child).setColorFilter(iconColor);
+            }
+        }
+    }
+
+    private String readExtra(String key, String fallback) {
+        String value = getIntent().getStringExtra(key);
+        return safeText(value, fallback);
+    }
+
+    private String buildStatusBadge(String status) {
+        return String.format(Locale.getDefault(), "• %s", safeText(status, "Cho kham"));
+    }
+
+    private static String formatDisplayTime(String rawTime) {
+        String displayTime = safeText(rawTime, "--");
+        if ("--".equals(displayTime)) {
+            return displayTime;
+        }
+
+        String[] parts = displayTime.split(":");
+        if (parts.length >= 2) {
+            return parts[0] + ":" + parts[1];
+        }
+
+        return displayTime;
+    }
+
+    private static String safeText(String value, String fallback) {
+        return value == null || value.trim().isEmpty() ? fallback : value;
+    }
+
+    private static class DoctorExDetailPagerAdapter extends FragmentStateAdapter {
+        DoctorExDetailPagerAdapter(AppCompatActivity activity) {
+            super(activity);
+        }
+
+        @Override
+        public int getItemCount() {
+            return 4;
+        }
+
+        @Override
+        public Fragment createFragment(int position) {
+            switch (DetailTab.fromPosition(position)) {
+                case CLINICAL:
+                    return new TabClinicalFragment();
+                case DIAGNOSIS:
+                    return new TabDiagnosisFragment();
+                case PRESCRIPTION:
+                    return new TabPrescriptionFragment();
+                case PATIENT_INFO:
+                default:
+                    return new TabPatientInfoFragment();
+            }
+        }
     }
 }

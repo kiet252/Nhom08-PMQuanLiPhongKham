@@ -20,9 +20,12 @@ import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.Ex
 public class DoctorExaminationGroupAdapter extends RecyclerView.Adapter<DoctorExaminationGroupAdapter.GroupViewHolder> {
     private final Context context;
     private final List<DoctorExaminationDateGroup> groups = new ArrayList<>();
+    private final DoctorExaminationFormAdapter.OnFormClickListener onFormClickListener;
 
-    public DoctorExaminationGroupAdapter(Context context) {
+    public DoctorExaminationGroupAdapter(Context context,
+                                         DoctorExaminationFormAdapter.OnFormClickListener onFormClickListener) {
         this.context = context;
+        this.onFormClickListener = onFormClickListener;
     }
 
     public void submitList(List<DoctorExaminationDateGroup> newGroups) {
@@ -51,7 +54,8 @@ public class DoctorExaminationGroupAdapter extends RecyclerView.Adapter<DoctorEx
             View row = DoctorExaminationFormAdapter.createBoundRow(
                     context,
                     holder.layoutDoctorExaminationContainer,
-                    form
+                    form,
+                    onFormClickListener
             );
             holder.layoutDoctorExaminationContainer.addView(row);
         }

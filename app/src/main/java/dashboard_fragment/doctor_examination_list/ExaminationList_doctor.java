@@ -1,5 +1,6 @@
 package dashboard_fragment.doctor_examination_list;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -35,6 +36,7 @@ import java.util.Map;
 
 import dashboard_fragment.staff_create_examination_form.ExaminationFormRepository;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.ExaminationFormDetail_doctor;
 import retrofit2.Call;
 
 public class ExaminationList_doctor extends AppCompatActivity {
@@ -104,7 +106,7 @@ public class ExaminationList_doctor extends AppCompatActivity {
         rvDoctorExaminationList = findViewById(R.id.rvDoctorExaminationList);
         rvDoctorExaminationList.setLayoutManager(new LinearLayoutManager(this));
 
-        groupAdapter = new DoctorExaminationGroupAdapter(this);
+        groupAdapter = new DoctorExaminationGroupAdapter(this, this::openExaminationFormDetails);
         rvDoctorExaminationList.setAdapter(groupAdapter);
     }
 
@@ -413,5 +415,10 @@ public class ExaminationList_doctor extends AppCompatActivity {
 
     private void backToPreviousActivity() {
         finish();
+    }
+
+    private void openExaminationFormDetails(ExaminationFormWithPatientDto form) {
+        Intent intent = ExaminationFormDetail_doctor.createIntent(this, form);
+        startActivity(intent);
     }
 }
