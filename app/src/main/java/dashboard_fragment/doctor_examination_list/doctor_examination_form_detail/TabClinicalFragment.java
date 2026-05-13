@@ -1,12 +1,15 @@
 package dashboard_fragment.doctor_examination_list.doctor_examination_form_detail;
 
+import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -30,6 +33,8 @@ public class TabClinicalFragment extends Fragment {
     private final Map<String, View> arrows = new HashMap<>();
     private final Map<String, Boolean> expandedStates = new HashMap<>();
     private final Map<String, Integer> sectionColors = new HashMap<>();
+    private final Map<String, Integer> selectedCounts = new HashMap<>();
+    private final Map<String, TextView> badges = new HashMap<>();
 
     private ClinicalRepository clinicalRepository;
 
@@ -50,6 +55,8 @@ public class TabClinicalFragment extends Fragment {
 
         bindSectionViews(view);
         bindSectionColors();
+        initializeSectionCounts();
+        attachSectionBadges();
         setupSectionClicks(view);
         setupPreviewButton(view);
 
@@ -82,6 +89,54 @@ public class TabClinicalFragment extends Fragment {
         sectionColors.put("Siêu âm", 0xFF0F9FAF);
         sectionColors.put("Nội soi", 0xFF9B59B6);
         sectionColors.put("Thính học", 0xFFF39C12);
+    }
+
+    private void initializeSectionCounts() {
+        for (String key : optionContainers.keySet()) {
+            selectedCounts.put(key, 0);
+        }
+    }
+
+    private void attachSectionBadges() {
+        attachBadgeToHeader(R.id.headerBlood, R.id.arrowBlood, "Xét nghiệm máu", 0xFFE74C78);
+        attachBadgeToHeader(R.id.headerImaging, R.id.arrowImaging, "Chẩn đoán hình ảnh", 0xFF3D7BE0);
+        attachBadgeToHeader(R.id.headerUltrasound, R.id.arrowUltrasound, "Siêu âm", 0xFF0F9FAF);
+        attachBadgeToHeader(R.id.headerEndoscopy, R.id.arrowEndoscopy, "Nội soi", 0xFF9B59B6);
+        attachBadgeToHeader(R.id.headerAudiology, R.id.arrowAudiology, "Thính học", 0xFFF39C12);
+    }
+
+    private void attachBadgeToHeader(int headerResId, int arrowResId, String sectionKey, int accentColor) {
+        View root = getView();
+        if (root == null) {
+            return;
+        }
+
+        LinearLayout headerLayout = root.findViewById(headerResId);
+        ImageView arrowView = root.findViewById(arrowResId);
+        if (headerLayout == null || arrowView == null) {
+            return;
+        }
+
+        ViewGroup row = (ViewGroup) arrowView.getParent();
+        if (row == null) {
+            return;
+        }
+
+        TextView badge = new TextView(requireContext());
+        LinearLayout.LayoutParams badgeParams = new LinearLayout.LayoutParams(dp(24), dp(24));
+        badgeParams.rightMargin = dp(10);
+        badge.setLayoutParams(badgeParams);
+        badge.setGravity(Gravity.CENTER);
+        badge.setText("0");
+        badge.setTextColor(0xFFFFFFFF);
+        badge.setTextSize(12);
+        badge.setTypeface(Typeface.DEFAULT_BOLD);
+        badge.setBackground(createCountBadgeBackground(accentColor));
+        badge.setVisibility(View.GONE);
+
+        int arrowIndex = row.indexOfChild(arrowView);
+        row.addView(badge, arrowIndex);
+        badges.put(sectionKey, badge);
     }
 
     private void setupSectionClicks(View view) {
@@ -153,6 +208,11 @@ public class TabClinicalFragment extends Fragment {
             container.removeAllViews();
         }
 
+        for (String key : selectedCounts.keySet()) {
+            selectedCounts.put(key, 0);
+            updateBadge(key, 0);
+        }
+
         for (ClinicalItem item : items) {
             String loai = normalize(item.getLoai_dich_vu());
 
@@ -163,6 +223,7 @@ public class TabClinicalFragment extends Fragment {
 
                     if (container != null) {
                         container.addView(createClinicalOption(
+                                key,
                                 item,
                                 accentColor != null ? accentColor : 0xFF64748B
                         ));
@@ -173,7 +234,7 @@ public class TabClinicalFragment extends Fragment {
         }
     }
 
-    private View createClinicalOption(ClinicalItem item, int accentColor) {
+    private View createClinicalOption(String sectionKey, ClinicalItem item, int accentColor) {
         LinearLayout row = new LinearLayout(requireContext());
         LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -187,14 +248,14 @@ public class TabClinicalFragment extends Fragment {
         row.setPadding(dp(12), dp(10), dp(12), dp(10));
         row.setBackground(createOptionBackground());
 
-        android.widget.ImageView tickView = new android.widget.ImageView(requireContext());
+        ImageView tickView = new ImageView(requireContext());
         LinearLayout.LayoutParams tickParams = new LinearLayout.LayoutParams(dp(22), dp(22));
         tickParams.rightMargin = dp(10);
         tickView.setLayoutParams(tickParams);
         tickView.setImageResource(R.drawable.bg_clinical_circle_unchecked);
         tickView.setTag(false);
 
-        android.widget.TextView textView = new android.widget.TextView(requireContext());
+        TextView textView = new TextView(requireContext());
         textView.setLayoutParams(new LinearLayout.LayoutParams(
                 0,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -214,14 +275,44 @@ public class TabClinicalFragment extends Fragment {
                 tickView.setImageResource(R.drawable.bg_clinical_circle_unchecked);
                 tickView.setTag(false);
                 textView.setTextColor(0xFF334155);
+                decreaseSectionCount(sectionKey);
             } else {
                 tickView.setImageDrawable(createCheckedCircleDrawable(accentColor));
                 tickView.setTag(true);
                 textView.setTextColor(accentColor);
+                increaseSectionCount(sectionKey);
             }
         });
 
         return row;
+    }
+
+    private void increaseSectionCount(String sectionKey) {
+        int current = selectedCounts.containsKey(sectionKey) ? selectedCounts.get(sectionKey) : 0;
+        int newCount = current + 1;
+        selectedCounts.put(sectionKey, newCount);
+        updateBadge(sectionKey, newCount);
+    }
+
+    private void decreaseSectionCount(String sectionKey) {
+        int current = selectedCounts.containsKey(sectionKey) ? selectedCounts.get(sectionKey) : 0;
+        int newCount = Math.max(0, current - 1);
+        selectedCounts.put(sectionKey, newCount);
+        updateBadge(sectionKey, newCount);
+    }
+
+    private void updateBadge(String sectionKey, int count) {
+        TextView badge = badges.get(sectionKey);
+        if (badge == null) {
+            return;
+        }
+
+        if (count <= 0) {
+            badge.setVisibility(View.GONE);
+        } else {
+            badge.setVisibility(View.VISIBLE);
+            badge.setText(String.valueOf(count));
+        }
     }
 
     private GradientDrawable createOptionBackground() {
@@ -229,6 +320,13 @@ public class TabClinicalFragment extends Fragment {
         drawable.setColor(0xFFF8FAFC);
         drawable.setCornerRadius(dp(12));
         drawable.setStroke(dp(1), 0xFFD8DEE9);
+        return drawable;
+    }
+
+    private GradientDrawable createCountBadgeBackground(int color) {
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setShape(GradientDrawable.OVAL);
+        drawable.setColor(color);
         return drawable;
     }
 
