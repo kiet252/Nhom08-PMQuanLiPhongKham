@@ -47,15 +47,33 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#D8E0EA" />
+    <EditText
+        android:id="@+id/edtSearchMedicine"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginStart="14dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="14dp"
+        android:background="@drawable/bg_doctor_detail_symptom_input"
+        android:drawableStart="@drawable/ic_search"
+        android:drawablePadding="8dp"
+        android:gravity="center_vertical"
+        android:hint="Tìm theo tên thuốc hoặc hoạt chất"
+        android:inputType="text"
+        android:paddingHorizontal="12dp"
+        android:textColor="#1E293B"
+        android:textColorHint="#94A3B8"
+        android:textSize="14sp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvMedicineList"
         android:layout_width="match_parent"
         android:layout_height="320dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="10dp"
         android:paddingHorizontal="14dp"
         android:clipToPadding="false"
         android:scrollbars="vertical" />
+
 
     <LinearLayout
         android:layout_width="match_parent"

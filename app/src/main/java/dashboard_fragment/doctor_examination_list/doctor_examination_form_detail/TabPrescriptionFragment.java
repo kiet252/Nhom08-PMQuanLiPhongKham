@@ -93,14 +93,31 @@ public class TabPrescriptionFragment extends Fragment {
                 .create();
 
         androidx.recyclerview.widget.RecyclerView rvMedicineList = dialogView.findViewById(R.id.rvMedicineList);
+        android.widget.EditText edtSearchMedicine = dialogView.findViewById(R.id.edtSearchMedicine);
         View btnClose = dialogView.findViewById(R.id.btnCloseMedicineDialog);
         View btnConfirm = dialogView.findViewById(R.id.btnConfirmMedicineSelection);
+
 
         dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineSelectAdapter adapter =
                 new dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineSelectAdapter(medicineItems);
 
         rvMedicineList.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(requireContext()));
         rvMedicineList.setAdapter(adapter);
+
+        edtSearchMedicine.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+                adapter.filter(s == null ? "" : s.toString());
+            }
+        });
 
         btnClose.setOnClickListener(v -> dialog.dismiss());
 
