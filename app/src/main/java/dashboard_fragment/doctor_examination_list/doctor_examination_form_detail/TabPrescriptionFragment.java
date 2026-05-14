@@ -1,66 +1,290 @@
 package dashboard_fragment.doctor_examination_list.doctor_examination_form_detail;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.nhom08_quanlyphongkham.R;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link TabPrescriptionFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class TabPrescriptionFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private PrescriptionRepository prescriptionRepository;
+    private java.util.List<dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionItem> selectedMedicines = new java.util.ArrayList<>();
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private android.widget.LinearLayout containerSelectedMedicines;
+    private View layoutPrescriptionEmptyState;
+    private View cardPrescriptionSummary;
+    private android.widget.TextView tvPrescriptionSummary;
 
     public TabPrescriptionFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment TabPrescriptionFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static TabPrescriptionFragment newInstance(String param1, String param2) {
-        TabPrescriptionFragment fragment = new TabPrescriptionFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_tab_prescription, container, false);
     }
+
+    @Override
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        prescriptionRepository = new PrescriptionRepository(requireContext());
+
+        containerSelectedMedicines = view.findViewById(R.id.containerSelectedMedicines);
+        layoutPrescriptionEmptyState = view.findViewById(R.id.layoutPrescriptionEmptyState);
+        cardPrescriptionSummary = view.findViewById(R.id.cardPrescriptionSummary);
+        tvPrescriptionSummary = view.findViewById(R.id.tvPrescriptionSummary);
+
+
+        super.onViewCreated(view, savedInstanceState);
+
+        View btnAddMedicine = view.findViewById(R.id.btnAddMedicine);
+        View btnSavePrescription = view.findViewById(R.id.btnSavePrescription);
+
+        if (btnAddMedicine != null) {
+            btnAddMedicine.setOnClickListener(v -> showMedicineDialog());
+        }
+
+        if (btnSavePrescription != null) {
+            btnSavePrescription.setOnClickListener(v ->
+                    Toast.makeText(requireContext(), "Lưu bệnh án & hoàn thành", Toast.LENGTH_SHORT).show()
+            );
+        }
+    }
+
+    private void showMedicineDialog() {
+        prescriptionRepository.getAllMedicines().enqueue(new retrofit2.Callback<java.util.List<dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineItem>>() {
+            @Override
+            public void onResponse(
+                    @androidx.annotation.NonNull retrofit2.Call<java.util.List<dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineItem>> call,
+                    @androidx.annotation.NonNull retrofit2.Response<java.util.List<dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineItem>> response
+            ) {
+                if (!isAdded()) return;
+
+                if (response.isSuccessful() && response.body() != null) {
+                    openMedicineDialog(response.body());
+                } else {
+                    android.widget.Toast.makeText(requireContext(), "Không tải được danh sách thuốc", android.widget.Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(
+                    @androidx.annotation.NonNull retrofit2.Call<java.util.List<dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineItem>> call,
+                    @androidx.annotation.NonNull Throwable t
+            ) {
+                if (!isAdded()) return;
+                android.widget.Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), android.widget.Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+    private void openMedicineDialog(java.util.List<dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineItem> medicineItems) {
+        View dialogView = getLayoutInflater().inflate(R.layout.doctor_select_medicine_dialog, null, false);
+
+        androidx.appcompat.app.AlertDialog dialog = new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setView(dialogView)
+                .create();
+
+        androidx.recyclerview.widget.RecyclerView rvMedicineList = dialogView.findViewById(R.id.rvMedicineList);
+        View btnClose = dialogView.findViewById(R.id.btnCloseMedicineDialog);
+        View btnConfirm = dialogView.findViewById(R.id.btnConfirmMedicineSelection);
+
+        dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineSelectAdapter adapter =
+                new dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineSelectAdapter(medicineItems);
+
+        rvMedicineList.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(requireContext()));
+        rvMedicineList.setAdapter(adapter);
+
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+
+        btnConfirm.setOnClickListener(v -> {
+            selectedMedicines.clear();
+            for (dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineItem item : adapter.getItems()) {
+                if (item.isSelected()) {
+                    selectedMedicines.add(
+                            new dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionItem(item)
+                    );
+                }
+            }
+
+
+            renderSelectedMedicines();
+
+            android.widget.Toast.makeText(requireContext(),
+                    "Đã chọn " + selectedMedicines.size() + " thuốc",
+                    android.widget.Toast.LENGTH_SHORT).show();
+
+            dialog.dismiss();
+
+        });
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        dialog.show();
+    }
+    private void renderSelectedMedicines() {
+        if (containerSelectedMedicines == null) return;
+
+        containerSelectedMedicines.removeAllViews();
+
+        if (selectedMedicines.isEmpty()) {
+            containerSelectedMedicines.setVisibility(View.GONE);
+            if (layoutPrescriptionEmptyState != null) {
+                layoutPrescriptionEmptyState.setVisibility(View.VISIBLE);
+            }
+            if (cardPrescriptionSummary != null) {
+                cardPrescriptionSummary.setVisibility(View.GONE);
+            }
+            return;
+        }
+
+        containerSelectedMedicines.setVisibility(View.VISIBLE);
+        if (layoutPrescriptionEmptyState != null) {
+            layoutPrescriptionEmptyState.setVisibility(View.GONE);
+        }
+        if (cardPrescriptionSummary != null) {
+            cardPrescriptionSummary.setVisibility(View.VISIBLE);
+        }
+
+        java.util.List<String> frequencyOptions = java.util.Arrays.asList(
+                "1 lần/ngày", "2 lần/ngày", "3 lần/ngày", "4 lần/ngày", "Sáng/Tối", "Sáng/Trưa/Tối"
+        );
+        java.util.List<String> durationOptions = java.util.Arrays.asList(
+                "3 ngày", "5 ngày", "7 ngày", "10 ngày", "14 ngày", "1 tháng"
+        );
+
+        for (int i = 0; i < selectedMedicines.size(); i++) {
+            dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionItem item = selectedMedicines.get(i);
+
+
+            View itemView = getLayoutInflater().inflate(R.layout.doctor_item_selected_medicine, containerSelectedMedicines, false);
+
+            android.widget.TextView tvIndex = itemView.findViewById(R.id.tvMedicineIndex);
+            android.widget.TextView tvName = itemView.findViewById(R.id.tvSelectedMedicineName);
+            android.widget.TextView tvStock = itemView.findViewById(R.id.tvSelectedMedicineStock);
+            android.widget.EditText edtDose = itemView.findViewById(R.id.edtSelectedDose);
+            android.widget.EditText edtNote = itemView.findViewById(R.id.edtSelectedNote);
+            android.widget.AutoCompleteTextView spinnerFrequency = itemView.findViewById(R.id.spinnerSelectedFrequency);
+            android.widget.AutoCompleteTextView spinnerDuration = itemView.findViewById(R.id.spinnerSelectedDuration);
+            android.widget.ImageView btnRemove = itemView.findViewById(R.id.btnRemoveMedicine);
+
+            tvIndex.setText(String.valueOf(i + 1));
+            tvName.setText(item.getMedicine().getTen_thuoc());
+            tvStock.setText(item.getMedicine().getStockText());
+
+            edtDose.setText(item.getLieuDung());
+            edtNote.setText(item.getGhiChu());
+
+
+            android.widget.ArrayAdapter<String> frequencyAdapter = new android.widget.ArrayAdapter<>(
+                    requireContext(),
+                    android.R.layout.simple_list_item_1,
+                    frequencyOptions
+            );
+            spinnerFrequency.setAdapter(frequencyAdapter);
+            spinnerFrequency.setText(item.getTanSuat(), false);
+
+            android.widget.ArrayAdapter<String> durationAdapter = new android.widget.ArrayAdapter<>(
+                    requireContext(),
+                    android.R.layout.simple_list_item_1,
+                    durationOptions
+            );
+            spinnerDuration.setAdapter(durationAdapter);
+            spinnerDuration.setText(item.getThoiGian(), false);
+
+            spinnerFrequency.setThreshold(0);
+            spinnerDuration.setThreshold(0);
+
+            spinnerFrequency.setOnClickListener(v -> spinnerFrequency.showDropDown());
+            spinnerDuration.setOnClickListener(v -> spinnerDuration.showDropDown());
+
+            spinnerFrequency.setOnFocusChangeListener((v, hasFocus) -> {
+                if (hasFocus) {
+                    spinnerFrequency.showDropDown();
+                }
+            });
+
+            spinnerDuration.setOnFocusChangeListener((v, hasFocus) -> {
+                if (hasFocus) {
+                    spinnerDuration.showDropDown();
+                }
+            });
+
+
+            spinnerFrequency.setOnItemClickListener((parent, view1, position, id) -> {
+                item.setTanSuat(frequencyOptions.get(position));
+                updatePrescriptionSummary();
+            });
+
+            spinnerDuration.setOnItemClickListener((parent, view12, position, id) -> {
+                item.setThoiGian(durationOptions.get(position));
+                updatePrescriptionSummary();
+            });
+
+
+            edtDose.setOnFocusChangeListener((v, hasFocus) -> {
+                if (!hasFocus) {
+                    item.setLieuDung(edtDose.getText().toString().trim());
+                    updatePrescriptionSummary();
+                }
+            });
+
+            edtNote.setOnFocusChangeListener((v, hasFocus) -> {
+                if (!hasFocus) {
+                    item.setGhiChu(edtNote.getText().toString().trim());
+                }
+            });
+
+            btnRemove.setOnClickListener(v -> {
+                selectedMedicines.remove(item);
+                renderSelectedMedicines();
+            });
+
+            containerSelectedMedicines.addView(itemView);
+        }
+
+        updatePrescriptionSummary();
+    }
+    private void updatePrescriptionSummary() {
+        if (tvPrescriptionSummary == null) return;
+
+        if (selectedMedicines.isEmpty()) {
+            tvPrescriptionSummary.setText("");
+            return;
+        }
+
+        StringBuilder builder = new StringBuilder();
+
+        for (int i = 0; i < selectedMedicines.size(); i++) {
+            dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionItem item = selectedMedicines.get(i);
+
+            builder.append("• ")
+                    .append(item.getMedicine().getTen_thuoc())
+                    .append(" - ")
+                    .append(item.getLieuDung())
+                    .append(", ")
+                    .append(item.getTanSuat())
+                    .append(", ")
+                    .append(item.getThoiGian());
+
+
+            if (i < selectedMedicines.size() - 1) {
+                builder.append("\n");
+            }
+        }
+
+        tvPrescriptionSummary.setText(builder.toString());
+    }
+
+
+
 }
