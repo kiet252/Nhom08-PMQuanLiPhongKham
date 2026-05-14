@@ -19,6 +19,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -26,16 +27,10 @@ import com.example.nhom08_quanlyphongkham.R;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import dashboard_fragment.doctor_examination_list.ExaminationList_doctor;
 import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.medical_join_diagnosis_join_prescription.FullMedicalRecordResponse;
-import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.medical_join_diagnosis_join_prescription.MedicalRecordClinicalWrapper;
-import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.medical_join_diagnosis_join_prescription.MedicalRecordDiagnosisWrapper;
-import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.medical_join_diagnosis_join_prescription.MedicalRecordMedicineWrapper;
-import dashboard_fragment.staff_manage_examination_form.ManageExaminationForm_staff;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.PatientBriefDto;
 import retrofit2.Call;
@@ -87,6 +82,7 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
     private ViewPager2 viewPagerDoctorExDetail;
     private DoctorExaminationStatus currentStatus;
     private MedicalRecordRepository MedRecordRepository;
+    private DoctorExDetailViewModel doctorExDetailViewModel;
     private static FullMedicalRecordResponse currentMedicalRecord;
     private static String currentFormId;
 
@@ -102,8 +98,10 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
         });
 
         bindHeaderData();
+        currentFormId = readExtra(EXTRA_FORM_ID, "--");
         setupBackButton();
         initializeViews();
+        doctorExDetailViewModel = new ViewModelProvider(this).get(DoctorExDetailViewModel.class);
         setupViewPager();
         setupTabClicks();
 
@@ -318,8 +316,10 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
                     if (response.body() != null && !response.body().isEmpty()) {
                         Toast.makeText(ExaminationFormDetail_doctor.this, "Tải bệnh án thành công!", Toast.LENGTH_SHORT).show();
                         currentMedicalRecord = response.body().get(0);
+                        doctorExDetailViewModel.setMedicalRecord(currentMedicalRecord);
                     } else {
                         Toast.makeText(ExaminationFormDetail_doctor.this, "Phiếu khám chưa có bệnh án. Tiến hành tạo mới!", Toast.LENGTH_SHORT).show();
+                        doctorExDetailViewModel.setMedicalRecord(null);
                     }
                 } else {
                     try {

@@ -14,13 +14,16 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.nhom08_quanlyphongkham.R;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.clinical_logic.ClinicalItem;
 import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.medical_join_diagnosis_join_prescription.MedicalRecordClinicalWrapper;
@@ -36,8 +39,9 @@ public class TabClinicalFragment extends Fragment {
     private final Map<String, Integer> sectionColors = new HashMap<>();
     private final Map<String, Integer> selectedCounts = new HashMap<>();
     private final Map<String, TextView> badges = new HashMap<>();
-
+    private final Set<String> preselectedClinicalNames = new HashSet<>();
     private ClinicalRepository clinicalRepository;
+    private List<ClinicalItem> availableClinicalItems;
 
     public TabClinicalFragment() {
     }
@@ -61,8 +65,33 @@ public class TabClinicalFragment extends Fragment {
         attachSectionBadges();
         setupSectionClicks(view);
         setupPreviewButton(view);
+        observeMedicalRecord();
 
         loadClinicalItems();
+    }
+
+    private void observeMedicalRecord() {
+        DoctorExDetailViewModel viewModel =
+                new ViewModelProvider(requireActivity()).get(DoctorExDetailViewModel.class);
+
+        viewModel.getMedicalRecord().observe(getViewLifecycleOwner(), record -> {
+            preselectedClinicalNames.clear();
+
+            if (record != null && record.getClinicalData() != null) {
+                for (MedicalRecordClinicalWrapper wrapper : record.getClinicalData()) {
+                    if (wrapper == null || wrapper.getClinical() == null) {
+                        continue;
+                    }
+
+                    String clinicalName = normalize(wrapper.getClinical().getTen_dich_vu());
+                    if (!clinicalName.isEmpty()) {
+                        preselectedClinicalNames.add(clinicalName);
+                    }
+                }
+            }
+
+            renderClinicalItemsIfReady();
+        });
     }
 
     private void bindSectionViews(View view) {
@@ -188,7 +217,8 @@ public class TabClinicalFragment extends Fragment {
                 }
 
                 if (response.isSuccessful() && response.body() != null) {
-                    bindClinicalItems(response.body());
+                    availableClinicalItems = response.body();
+                    renderClinicalItemsIfReady();
                 } else {
                     Toast.makeText(requireContext(), "Không tải được dữ liệu cận lâm sàng", Toast.LENGTH_SHORT).show();
                 }
@@ -203,6 +233,14 @@ public class TabClinicalFragment extends Fragment {
                 Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void renderClinicalItemsIfReady() {
+        if (availableClinicalItems == null || !isAdded()) {
+            return;
+        }
+
+        bindClinicalItems(availableClinicalItems);
     }
 
     private void bindClinicalItems(List<ClinicalItem> items) {
@@ -224,11 +262,16 @@ public class TabClinicalFragment extends Fragment {
                     Integer accentColor = sectionColors.get(key);
 
                     if (container != null) {
+                        boolean isPreselected = preselectedClinicalNames.contains(normalize(item.getTen_dich_vu()));
                         container.addView(createClinicalOption(
                                 key,
                                 item,
-                                accentColor != null ? accentColor : 0xFF64748B
+                                accentColor != null ? accentColor : 0xFF64748B,
+                                isPreselected
                         ));
+                        if (isPreselected) {
+                            increaseSectionCount(key);
+                        }
                     }
                     break;
                 }
@@ -236,7 +279,7 @@ public class TabClinicalFragment extends Fragment {
         }
     }
 
-    private View createClinicalOption(String sectionKey, ClinicalItem item, int accentColor) {
+    private View createClinicalOption(String sectionKey, ClinicalItem item, int accentColor, boolean isInitiallyChecked) {
         LinearLayout row = new LinearLayout(requireContext());
         LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -266,6 +309,12 @@ public class TabClinicalFragment extends Fragment {
         textView.setText(item.getTen_dich_vu());
         textView.setTextColor(0xFF334155);
         textView.setTextSize(14);
+
+        if (isInitiallyChecked) {
+            tickView.setImageDrawable(createCheckedCircleDrawable(accentColor));
+            tickView.setTag(true);
+            textView.setTextColor(accentColor);
+        }
 
         row.addView(tickView);
         row.addView(textView);

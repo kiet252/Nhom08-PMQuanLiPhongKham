@@ -9,6 +9,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -25,6 +26,7 @@ public class TabPrescriptionFragment extends Fragment {
     private View layoutPrescriptionEmptyState;
     private View cardPrescriptionSummary;
     private android.widget.TextView tvPrescriptionSummary;
+    private boolean hasLoadedPrescriptionFromRecord;
 
     public TabPrescriptionFragment() {
     }
@@ -46,6 +48,7 @@ public class TabPrescriptionFragment extends Fragment {
 
 
         super.onViewCreated(view, savedInstanceState);
+        observeMedicalRecord();
 
         View btnAddMedicine = view.findViewById(R.id.btnAddMedicine);
         View btnSavePrescription = view.findViewById(R.id.btnSavePrescription);
@@ -59,6 +62,49 @@ public class TabPrescriptionFragment extends Fragment {
                     Toast.makeText(requireContext(), "Lưu bệnh án & hoàn thành", Toast.LENGTH_SHORT).show()
             );
         }
+    }
+
+    private void observeMedicalRecord() {
+        DoctorExDetailViewModel viewModel =
+                new ViewModelProvider(requireActivity()).get(DoctorExDetailViewModel.class);
+
+        viewModel.getMedicalRecord().observe(getViewLifecycleOwner(), record -> {
+            if (record == null || record.getMedicineData() == null || hasLoadedPrescriptionFromRecord) {
+                return;
+            }
+
+            selectedMedicines.clear();
+
+            for (MedicalRecordMedicineWrapper wrapper : record.getMedicineData()) {
+                if (wrapper == null || wrapper.getMedicine() == null) {
+                    continue;
+                }
+
+                dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionItem item =
+                        new dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionItem(wrapper.getMedicine());
+
+                int parsedDose = extractLeadingNumber(wrapper.getLieuDung());
+                if (parsedDose > 0) {
+                    item.setLieuDung(parsedDose);
+                }
+
+                if (wrapper.getLieuDung() != null && !wrapper.getLieuDung().trim().isEmpty()) {
+                    item.setGhiChu(wrapper.getLieuDung().trim());
+                }
+
+                item.setTanSuat("");
+                item.setThoiGian("");
+
+                if (wrapper.getSoLuong() > 0) {
+                    item.setSoLuong(wrapper.getSoLuong());
+                }
+
+                selectedMedicines.add(item);
+            }
+
+            hasLoadedPrescriptionFromRecord = !selectedMedicines.isEmpty();
+            renderSelectedMedicines();
+        });
     }
 
     private void showMedicineDialog() {
@@ -362,6 +408,23 @@ public class TabPrescriptionFragment extends Fragment {
         tvPrescriptionSummary.setText(builder.toString());
     }
 
+    private int extractLeadingNumber(String text) {
+        if (text == null) {
+            return 0;
+        }
+
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(\\d+)").matcher(text);
+        if (!matcher.find()) {
+            return 0;
+        }
+
+        try {
+            return Integer.parseInt(matcher.group(1));
+        } catch (NumberFormatException exception) {
+            return 0;
+        }
+    }
+
     private int parseFrequencyPerDay(String frequencyText) {
         if (frequencyText == null) return 0;
 
@@ -407,6 +470,9 @@ public class TabPrescriptionFragment extends Fragment {
             android.widget.TextView tvStock
     ) {
         int quantity = calculateQuantity(item);
+        if (quantity <= 0) {
+            quantity = item.getSoLuong();
+        }
         item.setSoLuong(quantity);
 
         String donVi = item.getMedicine().getDon_vi() == null || item.getMedicine().getDon_vi().trim().isEmpty()

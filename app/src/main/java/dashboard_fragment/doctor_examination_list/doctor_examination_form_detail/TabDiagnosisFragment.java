@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.nhom08_quanlyphongkham.R;
 
@@ -37,6 +38,7 @@ public class TabDiagnosisFragment extends Fragment {
     private Map<String, List<DiagnosisOption>> diagnosisGroups;
     private LinearLayout containerDiagnosisGroups;
     private TextView tvPrimaryDiagnosis;
+    private MedicalRecordDiagnosisWrapper initialDiagnosisData;
 
 
     public TabDiagnosisFragment() {
@@ -56,9 +58,20 @@ public class TabDiagnosisFragment extends Fragment {
         containerDiagnosisGroups = view.findViewById(R.id.containerDiagnosisGroups);
         tvPrimaryDiagnosis = view.findViewById(R.id.tvPrimaryDiagnosis);
 
+        observeMedicalRecord();
         renderDiagnosisGroups();
         setupContinueButton(view);
         updatePrimaryDiagnosisText();
+    }
+
+    private void observeMedicalRecord() {
+        DoctorExDetailViewModel viewModel =
+                new ViewModelProvider(requireActivity()).get(DoctorExDetailViewModel.class);
+
+        viewModel.getMedicalRecord().observe(getViewLifecycleOwner(), record -> {
+            initialDiagnosisData = record == null ? null : record.getDiagnosisNotes();
+            updatePrimaryDiagnosisText();
+        });
     }
 
     private void renderDiagnosisGroups() {
@@ -248,8 +261,14 @@ public class TabDiagnosisFragment extends Fragment {
 
     private void updatePrimaryDiagnosisText() {
         if (selectedDiagnoses.isEmpty()) {
-            tvPrimaryDiagnosis.setText("Chưa chọn chẩn đoán");
-            tvPrimaryDiagnosis.setTextColor(0xFF64748B);
+            String diagnosisSummary = buildDiagnosisSummary(initialDiagnosisData);
+            if (diagnosisSummary.isEmpty()) {
+                tvPrimaryDiagnosis.setText("Chưa chọn chẩn đoán");
+                tvPrimaryDiagnosis.setTextColor(0xFF64748B);
+            } else {
+                tvPrimaryDiagnosis.setText(diagnosisSummary);
+                tvPrimaryDiagnosis.setTextColor(0xFF1E293B);
+            }
             return;
         }
 
@@ -265,6 +284,37 @@ public class TabDiagnosisFragment extends Fragment {
 
         tvPrimaryDiagnosis.setText(builder.toString());
         tvPrimaryDiagnosis.setTextColor(0xFF1E293B);
+    }
+
+    private String buildDiagnosisSummary(MedicalRecordDiagnosisWrapper diagnosisData) {
+        if (diagnosisData == null) {
+            return "";
+        }
+
+        List<String> lines = new ArrayList<>();
+        appendDiagnosisLine(lines, "Chẩn đoán chính", diagnosisData.getChanDoanChinh());
+        appendDiagnosisLine(lines, "Chẩn đoán bổ sung", diagnosisData.getChanDoanBoSung());
+        appendDiagnosisLine(lines, "Ghi chú lâm sàng", diagnosisData.getGhiChuLamSang());
+
+        if (lines.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < lines.size(); i++) {
+            builder.append(lines.get(i));
+            if (i < lines.size() - 1) {
+                builder.append("\n");
+            }
+        }
+        return builder.toString();
+    }
+
+    private void appendDiagnosisLine(List<String> lines, String label, String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return;
+        }
+        lines.add(label + ": " + value.trim());
     }
 
     private void setupContinueButton(View view) {
