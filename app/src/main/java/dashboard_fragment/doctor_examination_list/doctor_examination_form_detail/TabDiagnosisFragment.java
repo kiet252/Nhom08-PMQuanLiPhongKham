@@ -37,11 +37,7 @@ public class TabDiagnosisFragment extends Fragment {
     private Map<String, List<DiagnosisOption>> diagnosisGroups;
     private LinearLayout containerDiagnosisGroups;
     private TextView tvPrimaryDiagnosis;
-    private MedicalRecordDiagnosisWrapper DiagnosisData;
 
-    public TabDiagnosisFragment(MedicalRecordDiagnosisWrapper DiagnosisData) {
-        this.DiagnosisData = DiagnosisData;
-    }
 
     public TabDiagnosisFragment() {
     }

@@ -36,16 +36,12 @@ public class TabClinicalFragment extends Fragment {
     private final Map<String, Integer> sectionColors = new HashMap<>();
     private final Map<String, Integer> selectedCounts = new HashMap<>();
     private final Map<String, TextView> badges = new HashMap<>();
-    private MedicalRecordClinicalWrapper clinicalData;
 
     private ClinicalRepository clinicalRepository;
 
     public TabClinicalFragment() {
     }
 
-    public TabClinicalFragment(MedicalRecordClinicalWrapper clinicalData) {
-        this.clinicalData = clinicalData;
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

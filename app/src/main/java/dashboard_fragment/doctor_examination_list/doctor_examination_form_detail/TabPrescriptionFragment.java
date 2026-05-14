@@ -25,10 +25,7 @@ public class TabPrescriptionFragment extends Fragment {
     private View layoutPrescriptionEmptyState;
     private View cardPrescriptionSummary;
     private android.widget.TextView tvPrescriptionSummary;
-    private MedicalRecordMedicineWrapper medicalData;
-    public TabPrescriptionFragment(MedicalRecordMedicineWrapper medicalData) {
-        this.medicalData = medicalData;
-    }
+
     public TabPrescriptionFragment() {
     }
 

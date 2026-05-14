@@ -291,11 +291,11 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
         public Fragment createFragment(int position) {
             switch (DetailTab.fromPosition(position)) {
                 case CLINICAL:
-                    return new TabClinicalFragment((MedicalRecordClinicalWrapper) currentMedicalRecord.getClinicalData());
+                    return new TabClinicalFragment();
                 case DIAGNOSIS:
-                    return new TabDiagnosisFragment((MedicalRecordDiagnosisWrapper) currentMedicalRecord.getDiagnosisNotes());
+                    return new TabDiagnosisFragment();
                 case PRESCRIPTION:
-                    return new TabPrescriptionFragment((MedicalRecordMedicineWrapper) currentMedicalRecord.getMedicineData());
+                    return new TabPrescriptionFragment();
                 case PATIENT_INFO:
                 default:
                     return new TabPatientInfoFragment();
