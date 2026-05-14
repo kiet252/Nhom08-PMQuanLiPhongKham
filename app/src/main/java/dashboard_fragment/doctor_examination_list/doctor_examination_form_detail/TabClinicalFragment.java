@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.clinical_logic.ClinicalItem;
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.medical_join_diagnosis_join_prescription.MedicalRecordClinicalWrapper;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -35,10 +36,15 @@ public class TabClinicalFragment extends Fragment {
     private final Map<String, Integer> sectionColors = new HashMap<>();
     private final Map<String, Integer> selectedCounts = new HashMap<>();
     private final Map<String, TextView> badges = new HashMap<>();
+    private MedicalRecordClinicalWrapper clinicalData;
 
     private ClinicalRepository clinicalRepository;
 
     public TabClinicalFragment() {
+    }
+
+    public TabClinicalFragment(MedicalRecordClinicalWrapper clinicalData) {
+        this.clinicalData = clinicalData;
     }
 
     @Override

@@ -23,6 +23,7 @@ import java.util.Map;
 
 import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.diagnosis_logic.DiagnosisOption;
 import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.diagnosis_logic.DiagnosisSeedData;
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.medical_join_diagnosis_join_prescription.MedicalRecordDiagnosisWrapper;
 
 public class TabDiagnosisFragment extends Fragment {
 
@@ -36,6 +37,11 @@ public class TabDiagnosisFragment extends Fragment {
     private Map<String, List<DiagnosisOption>> diagnosisGroups;
     private LinearLayout containerDiagnosisGroups;
     private TextView tvPrimaryDiagnosis;
+    private MedicalRecordDiagnosisWrapper DiagnosisData;
+
+    public TabDiagnosisFragment(MedicalRecordDiagnosisWrapper DiagnosisData) {
+        this.DiagnosisData = DiagnosisData;
+    }
 
     public TabDiagnosisFragment() {
     }

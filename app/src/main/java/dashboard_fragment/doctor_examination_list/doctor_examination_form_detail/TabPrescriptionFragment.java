@@ -14,6 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.nhom08_quanlyphongkham.R;
 
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.medical_join_diagnosis_join_prescription.MedicalRecordMedicineWrapper;
+
 public class TabPrescriptionFragment extends Fragment {
 
     private PrescriptionRepository prescriptionRepository;
@@ -23,7 +25,10 @@ public class TabPrescriptionFragment extends Fragment {
     private View layoutPrescriptionEmptyState;
     private View cardPrescriptionSummary;
     private android.widget.TextView tvPrescriptionSummary;
-
+    private MedicalRecordMedicineWrapper medicalData;
+    public TabPrescriptionFragment(MedicalRecordMedicineWrapper medicalData) {
+        this.medicalData = medicalData;
+    }
     public TabPrescriptionFragment() {
     }
 

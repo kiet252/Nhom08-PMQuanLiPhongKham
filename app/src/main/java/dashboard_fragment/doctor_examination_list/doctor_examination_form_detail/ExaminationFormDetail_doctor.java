@@ -9,8 +9,10 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
@@ -22,12 +24,21 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.nhom08_quanlyphongkham.R;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import dashboard_fragment.doctor_examination_list.ExaminationList_doctor;
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.medical_join_diagnosis_join_prescription.FullMedicalRecordResponse;
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.medical_join_diagnosis_join_prescription.MedicalRecordClinicalWrapper;
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.medical_join_diagnosis_join_prescription.MedicalRecordDiagnosisWrapper;
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.medical_join_diagnosis_join_prescription.MedicalRecordMedicineWrapper;
+import dashboard_fragment.staff_manage_examination_form.ManageExaminationForm_staff;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.PatientBriefDto;
+import retrofit2.Call;
 
 public class ExaminationFormDetail_doctor extends AppCompatActivity {
     private enum DetailTab {
@@ -75,6 +86,9 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
     private LinearLayout tabPrescription;
     private ViewPager2 viewPagerDoctorExDetail;
     private DoctorExaminationStatus currentStatus;
+    private MedicalRecordRepository MedRecordRepository;
+    private static FullMedicalRecordResponse currentMedicalRecord;
+    private static String currentFormId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,10 +106,14 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
         initializeViews();
         setupViewPager();
         setupTabClicks();
+
+        MedRecordRepository = new MedicalRecordRepository(this);
+        requestFullMedicalRecord();
     }
 
     public static Intent createIntent(Context context, ExaminationFormWithPatientDto form) {
         PatientBriefDto patient = form.getPatient();
+        currentFormId = form.getId();
 
         return new Intent(context, ExaminationFormDetail_doctor.class)
                 .putExtra(EXTRA_FORM_ID, safeText(form.getId(), "--"))
@@ -273,11 +291,11 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
         public Fragment createFragment(int position) {
             switch (DetailTab.fromPosition(position)) {
                 case CLINICAL:
-                    return new TabClinicalFragment();
+                    return new TabClinicalFragment((MedicalRecordClinicalWrapper) currentMedicalRecord.getClinicalData());
                 case DIAGNOSIS:
-                    return new TabDiagnosisFragment();
+                    return new TabDiagnosisFragment((MedicalRecordDiagnosisWrapper) currentMedicalRecord.getDiagnosisNotes());
                 case PRESCRIPTION:
-                    return new TabPrescriptionFragment();
+                    return new TabPrescriptionFragment((MedicalRecordMedicineWrapper) currentMedicalRecord.getMedicineData());
                 case PATIENT_INFO:
                 default:
                     return new TabPatientInfoFragment();
@@ -290,5 +308,32 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
 
         setResult(Activity.RESULT_OK, data);
         finish();
+    }
+
+    private void requestFullMedicalRecord() {
+        MedRecordRepository.getMedicalRecordJoinDiagnosisJoinPrescription(currentFormId).enqueue(new retrofit2.Callback<List<FullMedicalRecordResponse>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<FullMedicalRecordResponse>> call, @NonNull retrofit2.Response<List<FullMedicalRecordResponse>> response) {
+                if (response.isSuccessful()) {
+                    if (response.body() != null && !response.body().isEmpty()) {
+                        Toast.makeText(ExaminationFormDetail_doctor.this, "Tải bệnh án thành công!", Toast.LENGTH_SHORT).show();
+                        currentMedicalRecord = response.body().get(0);
+                    } else {
+                        Toast.makeText(ExaminationFormDetail_doctor.this, "Phiếu khám chưa có bệnh án. Tiến hành tạo mới!", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    try {
+                        Toast.makeText(ExaminationFormDetail_doctor.this, "Lỗi: " + response.code() + " " + (response.errorBody()).string(), Toast.LENGTH_LONG).show();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<FullMedicalRecordResponse>> call, @NonNull Throwable t) {
+                Toast.makeText(ExaminationFormDetail_doctor.this, "Lỗi kết nối khi tải bệnh án: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
