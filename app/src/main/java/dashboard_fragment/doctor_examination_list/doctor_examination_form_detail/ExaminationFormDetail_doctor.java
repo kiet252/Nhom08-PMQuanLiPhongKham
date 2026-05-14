@@ -1,5 +1,6 @@
 package dashboard_fragment.doctor_examination_list.doctor_examination_form_detail;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ import com.example.nhom08_quanlyphongkham.R;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
+import dashboard_fragment.doctor_examination_list.ExaminationList_doctor;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.PatientBriefDto;
 
@@ -281,5 +283,12 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
                     return new TabPatientInfoFragment();
             }
         }
+    }
+
+    public void requestListReload() {
+        Intent data = new Intent();
+
+        setResult(Activity.RESULT_OK, data);
+        finish();
     }
 }

@@ -1,5 +1,6 @@
 package dashboard_fragment.doctor_examination_list;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -11,6 +12,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultCaller;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -105,6 +109,14 @@ public class ExaminationList_doctor extends AppCompatActivity {
         rvDoctorExaminationList.setAdapter(groupAdapter);
     }
 
+    private final ActivityResultLauncher<Intent> ExaminationFormLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    loadAllFormsAndPatientDto();
+                }
+            }
+    );
+
     private void setupListeners() {
         btnBack.setOnClickListener(v -> backToPreviousActivity());
         btnFilterAllDoctorEx.setOnClickListener(v -> getAllExForms());
@@ -130,7 +142,7 @@ public class ExaminationList_doctor extends AppCompatActivity {
         });
     }
 
-    private void loadAllFormsAndPatientDto() {
+    public void loadAllFormsAndPatientDto() {
         UserProfile doctorProfile = SharedPrefManager.getInstance(this).getProfile();
         String currentDoctorId = doctorProfile.getID();
 
@@ -418,6 +430,6 @@ public class ExaminationList_doctor extends AppCompatActivity {
 
     private void openExaminationFormDetails(ExaminationFormWithPatientDto form) {
         Intent intent = ExaminationFormDetail_doctor.createIntent(this, form);
-        startActivity(intent);
+        ExaminationFormLauncher.launch(intent);
     }
 }

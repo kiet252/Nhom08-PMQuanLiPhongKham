@@ -7,6 +7,8 @@ import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 import java.util.List;
 
 import dashboard_fragment.doctor_examination_list.ExFormApiGetAllExFormToday;
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.info_logic.ExFormUpdateSpecificExFormApiService;
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.info_logic.ExaminationFormSpecificFormUpdateBody;
 import dashboard_fragment.staff_create_examination_form.create_ex_form_logic.CreateExFormRequest;
 import dashboard_fragment.staff_create_examination_form.create_ex_form_logic.ExFormApiCreateService;
 import dashboard_fragment.staff_create_examination_form.get_ex_form_logic.ExFormApiGetByDateService;
@@ -23,6 +25,7 @@ public class ExaminationFormRepository {
     private final ExFormApiGetFormsWithPatient getFormByPatientCCCDOrIDService;
     private final ExFormApiUpdateStatusService updateStatusService;
     private final ExFormApiGetAllExFormToday getAllExFormToday;
+    private final ExFormUpdateSpecificExFormApiService updateSpecificExForm;
 
     public ExaminationFormRepository(Context context) {
         Retrofit client = SupabaseClientProvider.getClient(context);
@@ -32,6 +35,7 @@ public class ExaminationFormRepository {
         this.getFormByPatientCCCDOrIDService = client.create(ExFormApiGetFormsWithPatient.class);
         this.updateStatusService = client.create(ExFormApiUpdateStatusService.class);
         this.getAllExFormToday = client.create(ExFormApiGetAllExFormToday.class);
+        this.updateSpecificExForm = client.create(ExFormUpdateSpecificExFormApiService.class);
     }
 
     public Call<List<ExaminationForm>> createForm(CreateExFormRequest newForm) {
@@ -75,5 +79,13 @@ public class ExaminationFormRepository {
                 "not.in.(Vắng,Đã hủy)",
                 doctorFilter
         );
+    }
+
+    public Call<Void> patchExaminationForm(String id, String newStatus, String newSymptoms) {
+        String filter = "eq." + id;
+
+        ExaminationFormSpecificFormUpdateBody updateData = new ExaminationFormSpecificFormUpdateBody(newStatus, newSymptoms);
+
+        return updateSpecificExForm.updateExaminationStatus(filter, updateData);
     }
 }

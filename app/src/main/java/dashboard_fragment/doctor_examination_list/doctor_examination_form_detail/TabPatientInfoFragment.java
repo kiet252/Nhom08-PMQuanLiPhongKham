@@ -1,20 +1,37 @@
 package dashboard_fragment.doctor_examination_list.doctor_examination_form_detail;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.example.nhom08_quanlyphongkham.R;
+import com.example.nhom08_quanlyphongkham.StaffItem;
+import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.google.android.material.button.MaterialButton;
+
+import java.io.IOException;
+import java.util.List;
+
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.info_logic.ExaminationFormSpecificFormUpdateBody;
+import dashboard_fragment.staff_create_examination_form.ExaminationFormRepository;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class TabPatientInfoFragment extends Fragment {
     private View rootView;
+    private ExaminationFormRepository ExFormRepository;
+    private DoctorExaminationStatus currentExaminationStatus;
+    private String currentFormId;
+    private EditText edtSymptoms;
 
     public TabPatientInfoFragment() {
     }
@@ -30,9 +47,12 @@ public class TabPatientInfoFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         rootView = view;
 
+        ExFormRepository = new ExaminationFormRepository(getContext());
+
         ExaminationFormDetail_doctor activity = (ExaminationFormDetail_doctor) requireActivity();
         bindFormData(activity);
-        applyStatus(activity.getCurrentStatus());
+        currentExaminationStatus = activity.getCurrentStatus();
+        applyStatus(currentExaminationStatus);
         updateBottomButton(activity);
         setupStatusClicks(activity);
         setupContinueButton(activity);
@@ -49,6 +69,7 @@ public class TabPatientInfoFragment extends Fragment {
     }
 
     private void onStatusSelected(ExaminationFormDetail_doctor activity, DoctorExaminationStatus status) {
+        currentExaminationStatus = status;
         activity.updateCurrentStatus(status);
         applyStatus(status);
         updateBottomButton(activity);
@@ -62,6 +83,7 @@ public class TabPatientInfoFragment extends Fragment {
     }
 
     private void bindFormData(ExaminationFormDetail_doctor activity) {
+        currentFormId = activity.getIntent().getStringExtra(ExaminationFormDetail_doctor.EXTRA_FORM_ID);
         setText(R.id.tvDetailPatientFullName,
                 activity.getIntent().getStringExtra(ExaminationFormDetail_doctor.EXTRA_PATIENT_NAME),
                 "--");
@@ -84,7 +106,7 @@ public class TabPatientInfoFragment extends Fragment {
                 activity.getIntent().getStringExtra(ExaminationFormDetail_doctor.EXTRA_PATIENT_PHONE),
                 "--");
 
-        EditText edtSymptoms = rootView.findViewById(R.id.edtDetailSymptoms);
+        edtSymptoms = rootView.findViewById(R.id.edtDetailSymptoms);
         if (edtSymptoms != null) {
             edtSymptoms.setText(ExaminationFormDetail_doctor.safeText(
                     activity.getIntent().getStringExtra(ExaminationFormDetail_doctor.EXTRA_SYMPTOMS),
@@ -98,12 +120,7 @@ public class TabPatientInfoFragment extends Fragment {
         if (btnContinue == null) {
             return;
         }
-        btnContinue.setOnClickListener(v -> {
-            if (activity.isDoneLocked()) {
-                return;
-            }
-            activity.findViewById(R.id.tabCanLamSang).performClick();
-        });
+        btnContinue.setOnClickListener(v -> updateExaminationFormInfo(activity));
     }
 
     private void updateBottomButton(ExaminationFormDetail_doctor activity) {
@@ -127,4 +144,37 @@ public class TabPatientInfoFragment extends Fragment {
             textView.setText(ExaminationFormDetail_doctor.safeText(value, fallback));
         }
     }
+
+    private void updateExaminationFormInfo(ExaminationFormDetail_doctor activity) {
+
+        String currentStatus = currentExaminationStatus.getDisplayName();
+        String currentSymptom = edtSymptoms.getText().toString();
+
+        ExFormRepository.patchExaminationForm(currentFormId, currentStatus, currentSymptom).enqueue(new retrofit2.Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull retrofit2.Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(requireContext(), "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
+                    activity.findViewById(R.id.tabCanLamSang).performClick();
+
+                    if (activity.isDoneLocked()) {
+                        activity.requestListReload();
+                    }
+                } else {
+                    try {
+                        String errorMsg = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
+                        Toast.makeText(requireContext(), "Lỗi cập nhật: " + response.code() + " " + errorMsg, Toast.LENGTH_LONG).show();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
 }
