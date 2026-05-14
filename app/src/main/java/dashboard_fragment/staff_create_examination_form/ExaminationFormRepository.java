@@ -62,11 +62,18 @@ public class ExaminationFormRepository {
     }
 
     public Call<List<ExaminationFormWithPatientDto>> getAllFormsToday() {
+        return getAllFormsToday(null);
+    }
+
+    public Call<List<ExaminationFormWithPatientDto>> getAllFormsToday(String currentProfileId) {
+        String doctorFilter = (currentProfileId == null) ? null : "eq." + currentProfileId;
+
         return getAllExFormToday.getFormsByDate(
                 null,
                 "*,patient:patient!examination_form_patient_id_fkey(id,cccd,ho_ten,gioi_tinh,so_dien_thoai,ngay_sinh,dia_chi),doctor:profiles!examination_form_doctor_id_fkey(id,ho_ten,chuc_vu)",
                 "ngay_kham.desc,gio_du_kien.asc",
-                "not.in.(Vắng,Đã hủy)"
+                "not.in.(Vắng,Đã hủy)",
+                doctorFilter
         );
     }
 }

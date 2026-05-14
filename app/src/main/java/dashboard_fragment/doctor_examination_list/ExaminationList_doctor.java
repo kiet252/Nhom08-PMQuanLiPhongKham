@@ -1,6 +1,7 @@
 package dashboard_fragment.doctor_examination_list;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -20,6 +21,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.nhom08_quanlyphongkham.R;
+import com.example.nhom08_quanlyphongkham.UserProfile;
+import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.IOException;
@@ -128,7 +131,10 @@ public class ExaminationList_doctor extends AppCompatActivity {
     }
 
     private void loadAllFormsAndPatientDto() {
-        repository.getAllFormsToday().enqueue(new retrofit2.Callback<List<ExaminationFormWithPatientDto>>() {
+        UserProfile doctorProfile = SharedPrefManager.getInstance(this).getProfile();
+        String currentDoctorId = doctorProfile.getID();
+
+        repository.getAllFormsToday(currentDoctorId).enqueue(new retrofit2.Callback<List<ExaminationFormWithPatientDto>>() {
             @Override
             public void onResponse(@NonNull Call<List<ExaminationFormWithPatientDto>> call,
                                    @NonNull retrofit2.Response<List<ExaminationFormWithPatientDto>> response) {

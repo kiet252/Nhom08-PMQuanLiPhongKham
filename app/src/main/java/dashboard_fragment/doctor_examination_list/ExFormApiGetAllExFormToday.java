@@ -13,6 +13,7 @@ public interface ExFormApiGetAllExFormToday {
             @Query("ngay_kham") String ngayKham,
             @Query(value = "select", encoded = true) String select,
             @Query("order") String order,
-            @Query("trang_thai") String trangThai
+            @Query("trang_thai") String trangThai,
+            @Query("doctor_id") String doctorId
     );
 }
