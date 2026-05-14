@@ -2,10 +2,12 @@ package dashboard_fragment.doctor_examination_list.doctor_examination_form_detai
 
 public class PrescriptionItem {
     private final MedicineItem medicine;
-    private String lieuDung = "1 viên";
+    private int lieuDung = 1;
     private String ghiChu = "";
     private String tanSuat = "2 lần/ngày";
     private String thoiGian = "7 ngày";
+    private int soLuong = 14;
+
     public PrescriptionItem(MedicineItem medicine) {
         this.medicine = medicine;
     }
@@ -14,11 +16,11 @@ public class PrescriptionItem {
         return medicine;
     }
 
-    public String getLieuDung() {
+    public int getLieuDung() {
         return lieuDung;
     }
 
-    public void setLieuDung(String lieuDung) {
+    public void setLieuDung(int lieuDung) {
         this.lieuDung = lieuDung;
     }
 
@@ -44,5 +46,13 @@ public class PrescriptionItem {
 
     public void setThoiGian(String thoiGian) {
         this.thoiGian = thoiGian;
+    }
+
+    public int getSoLuong() {
+        return soLuong;
+    }
+
+    public void setSoLuong(int soLuong) {
+        this.soLuong = soLuong;
     }
 }

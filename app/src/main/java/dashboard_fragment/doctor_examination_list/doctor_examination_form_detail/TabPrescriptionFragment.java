@@ -188,18 +188,29 @@ public class TabPrescriptionFragment extends Fragment {
             android.widget.TextView tvIndex = itemView.findViewById(R.id.tvMedicineIndex);
             android.widget.TextView tvName = itemView.findViewById(R.id.tvSelectedMedicineName);
             android.widget.TextView tvStock = itemView.findViewById(R.id.tvSelectedMedicineStock);
+            android.widget.TextView tvDoseUnit = itemView.findViewById(R.id.tvSelectedDoseUnit);
+            android.widget.TextView tvQuantity = itemView.findViewById(R.id.tvSelectedQuantity);
+
             android.widget.EditText edtDose = itemView.findViewById(R.id.edtSelectedDose);
             android.widget.EditText edtNote = itemView.findViewById(R.id.edtSelectedNote);
             android.widget.AutoCompleteTextView spinnerFrequency = itemView.findViewById(R.id.spinnerSelectedFrequency);
             android.widget.AutoCompleteTextView spinnerDuration = itemView.findViewById(R.id.spinnerSelectedDuration);
             android.widget.ImageView btnRemove = itemView.findViewById(R.id.btnRemoveMedicine);
 
+
             tvIndex.setText(String.valueOf(i + 1));
             tvName.setText(item.getMedicine().getTen_thuoc());
-            tvStock.setText(item.getMedicine().getStockText());
 
-            edtDose.setText(item.getLieuDung());
+            String donVi = item.getMedicine().getDon_vi() == null || item.getMedicine().getDon_vi().trim().isEmpty()
+                    ? "đơn vị"
+                    : item.getMedicine().getDon_vi().trim();
+
+            tvDoseUnit.setText(donVi);
+
+            edtDose.setText(String.valueOf(item.getLieuDung()));
             edtNote.setText(item.getGhiChu());
+
+            updateSelectedMedicineComputedViews(item, tvQuantity, tvStock);
 
 
             android.widget.ArrayAdapter<String> frequencyAdapter = new android.widget.ArrayAdapter<>(
@@ -239,27 +250,63 @@ public class TabPrescriptionFragment extends Fragment {
 
             spinnerFrequency.setOnItemClickListener((parent, view1, position, id) -> {
                 item.setTanSuat(frequencyOptions.get(position));
+                updateSelectedMedicineComputedViews(item, tvQuantity, tvStock);
                 updatePrescriptionSummary();
             });
+
 
             spinnerDuration.setOnItemClickListener((parent, view12, position, id) -> {
                 item.setThoiGian(durationOptions.get(position));
+                updateSelectedMedicineComputedViews(item, tvQuantity, tvStock);
                 updatePrescriptionSummary();
             });
 
 
-            edtDose.setOnFocusChangeListener((v, hasFocus) -> {
-                if (!hasFocus) {
-                    item.setLieuDung(edtDose.getText().toString().trim());
+
+            edtDose.addTextChangedListener(new android.text.TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
+
+                @Override
+                public void afterTextChanged(android.text.Editable s) {
+                    int doseValue = 0;
+
+                    try {
+                        String value = s == null ? "" : s.toString().trim();
+                        doseValue = value.isEmpty() ? 0 : Integer.parseInt(value);
+                    } catch (Exception e) {
+                        doseValue = 0;
+                    }
+
+                    item.setLieuDung(doseValue);
+                    updateSelectedMedicineComputedViews(item, tvQuantity, tvStock);
                     updatePrescriptionSummary();
                 }
             });
 
-            edtNote.setOnFocusChangeListener((v, hasFocus) -> {
-                if (!hasFocus) {
-                    item.setGhiChu(edtNote.getText().toString().trim());
+
+
+            edtNote.addTextChangedListener(new android.text.TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
+
+                @Override
+                public void afterTextChanged(android.text.Editable s) {
+                    item.setGhiChu(s == null ? "" : s.toString().trim());
+                    updatePrescriptionSummary();
                 }
             });
+
 
             btnRemove.setOnClickListener(v -> {
                 selectedMedicines.remove(item);
@@ -284,14 +331,25 @@ public class TabPrescriptionFragment extends Fragment {
         for (int i = 0; i < selectedMedicines.size(); i++) {
             dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionItem item = selectedMedicines.get(i);
 
+            String donVi = item.getMedicine().getDon_vi() == null || item.getMedicine().getDon_vi().trim().isEmpty()
+                    ? "đơn vị"
+                    : item.getMedicine().getDon_vi().trim();
+
             builder.append("• ")
                     .append(item.getMedicine().getTen_thuoc())
                     .append(" - ")
                     .append(item.getLieuDung())
+                    .append(" ")
+                    .append(donVi)
                     .append(", ")
                     .append(item.getTanSuat())
                     .append(", ")
                     .append(item.getThoiGian());
+
+            if (item.getGhiChu() != null && !item.getGhiChu().trim().isEmpty()) {
+                builder.append(", ").append(item.getGhiChu().trim());
+            }
+
 
 
             if (i < selectedMedicines.size() - 1) {
@@ -302,6 +360,61 @@ public class TabPrescriptionFragment extends Fragment {
         tvPrescriptionSummary.setText(builder.toString());
     }
 
+    private int parseFrequencyPerDay(String frequencyText) {
+        if (frequencyText == null) return 0;
 
+        String value = frequencyText.trim().toLowerCase();
+
+        if (value.startsWith("1 lần")) return 1;
+        if (value.startsWith("2 lần")) return 2;
+        if (value.startsWith("3 lần")) return 3;
+        if (value.startsWith("4 lần")) return 4;
+        if (value.contains("sáng/tối")) return 2;
+        if (value.contains("sáng/trưa/tối")) return 3;
+
+        return 0;
+    }
+
+    private int parseDurationDays(String durationText) {
+        if (durationText == null) return 0;
+
+        String value = durationText.trim().toLowerCase();
+
+        if (value.startsWith("3 ngày")) return 3;
+        if (value.startsWith("5 ngày")) return 5;
+        if (value.startsWith("7 ngày")) return 7;
+        if (value.startsWith("10 ngày")) return 10;
+        if (value.startsWith("14 ngày")) return 14;
+        if (value.startsWith("1 tháng")) return 30;
+
+        return 0;
+    }
+
+    private int calculateQuantity(dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionItem item) {
+        int dose = item.getLieuDung();
+        int frequency = parseFrequencyPerDay(item.getTanSuat());
+        int duration = parseDurationDays(item.getThoiGian());
+
+        return dose * frequency * duration;
+    }
+
+
+    private void updateSelectedMedicineComputedViews(
+            dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionItem item,
+            android.widget.TextView tvQuantity,
+            android.widget.TextView tvStock
+    ) {
+        int quantity = calculateQuantity(item);
+        item.setSoLuong(quantity);
+
+        String donVi = item.getMedicine().getDon_vi() == null || item.getMedicine().getDon_vi().trim().isEmpty()
+                ? "đơn vị"
+                : item.getMedicine().getDon_vi().trim();
+
+        tvQuantity.setText("Số lượng kê: " + quantity + " " + donVi);
+
+        int tonKhoConLai = Math.max(0, item.getMedicine().getTon_kho() - quantity);
+        tvStock.setText("TK: " + tonKhoConLai + " " + donVi);
+    }
 
 }
