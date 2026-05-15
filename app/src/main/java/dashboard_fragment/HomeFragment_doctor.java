@@ -42,6 +42,8 @@ public class HomeFragment_doctor extends Fragment {
     private TextView tvName;
     TextView btn_KhamNgay;
     TextView ic_ChoKham;
+    UserProfile profile;
+
     private List<ExaminationFormWithPatientDto> allForms = new ArrayList<>();
     private ExaminationFormRepository repository;
     private CardView btnExaminationList, btnCreateAppointment, btnViewMedicalRecords;
@@ -59,6 +61,7 @@ public class HomeFragment_doctor extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        profile = SharedPrefManager.getInstance(requireContext()).getProfile();
         View view = inflater.inflate(R.layout.fragment_home_doctor, container, false);
         repository = new ExaminationFormRepository(requireContext());
         SetAvatar(view, SharedPrefManager.getInstance(requireContext()).getProfile());
@@ -68,7 +71,9 @@ public class HomeFragment_doctor extends Fragment {
     }
 
     private void loadAllFormsAndPatientDto(View headerView) {
-        repository.getAllFormsToday().enqueue(new retrofit2.Callback<List<ExaminationFormWithPatientDto>>() {
+
+        if(profile.getID() == null) return;
+        repository.getAllFormsToday(profile.getID()).enqueue(new retrofit2.Callback<List<ExaminationFormWithPatientDto>>() {
             @Override
             public void onResponse(@NonNull Call<List<ExaminationFormWithPatientDto>> call, @NonNull retrofit2.Response<List<ExaminationFormWithPatientDto>> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -101,8 +106,8 @@ public class HomeFragment_doctor extends Fragment {
         } else {
             btn_KhamNgay.setVisibility(view.INVISIBLE);
             ic_ChoKham.setVisibility(view.INVISIBLE);
-            Name.setText("Chưa có bệnh nhân");
             Time.setText("");
+            Name.setText("Chưa có bệnh nhân");
 
         }
     }
@@ -121,20 +126,16 @@ public class HomeFragment_doctor extends Fragment {
 
             if (status == null) continue;
 
-            // Chuyển ngày khám sang String để so sánh (nếu có)
             String formDateStr = (dateKham != null) ? sdf.format(dateKham) : "";
             boolean isToday = formDateStr.equals(today);
 
             if (status.equals("Đang khám")) {
-                // "Đang khám": Đếm tất cả, không check ngày
                 checkingCount++;
                 total++;
             } else if (status.equals("Chờ khám") && isToday) {
-                // "Chờ khám": Chỉ đếm hôm nay
                 waitCount++;
                 total++;
             } else if (status.equals("Đã khám") && isToday) {
-                // "Đã khám": Chỉ đếm hôm nay
                 doneCount++;
                 total++;
             }
@@ -154,11 +155,6 @@ public class HomeFragment_doctor extends Fragment {
 
         ((TextView) v.findViewById(R.id.PatientDone)).setText(String.valueOf(done));
     }
-
-
-
-
-
     public void SetAvatar(View view, UserProfile userprofile)
     {
         ImageView avatar;
@@ -178,9 +174,7 @@ public class HomeFragment_doctor extends Fragment {
         initializeViews(view);
         setupListeners();
 
-        // Hiển thị thông tin bác sĩ
-        UserProfile profile = SharedPrefManager.getInstance(requireContext()).getProfile();
-        if (profile != null && profile.getHo_ten() != null) {
+    if (profile != null && profile.getHo_ten() != null) {
             tvName.setText(profile.getHo_ten());
         }
     }

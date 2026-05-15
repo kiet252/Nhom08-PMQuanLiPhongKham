@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.example.nhom08_quanlyphongkham.UserProfile;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,9 +29,10 @@ public class ProfileRepository {
                 "*"
         );
     }
-    public Call<List<UserProfile>> getListProfile(String role) {
+    public Call<List<UserProfile>> getListProfile(String role, String status) {
         return profileApiService.getListProfiles(
                 role,
+                status,
                 "id,ho_ten,chuc_vu,anh_dai_dien"
         );
     }
@@ -49,4 +51,10 @@ public class ProfileRepository {
                 "eq." + userId,
                 updates);
         }
+    public Call<ResponseBody> deactivateStaff(String staffId) {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("trang_thai_hoat_dong", "Vô hiệu hoá");
+        return updateProfile(staffId, updates);
+    }
+
 }

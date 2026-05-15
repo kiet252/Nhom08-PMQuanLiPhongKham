@@ -1,10 +1,12 @@
 package com.example.nhom08_quanlyphongkham;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -16,6 +18,7 @@ import com.google.android.material.imageview.ShapeableImageView;
 import java.util.List;
 
 import dashboard_fragment.account_change_password_request.set_staff_detail;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -31,7 +34,6 @@ public class staff_detail extends AppCompatActivity {
     private TextView birthday;
     private TextView address;
     private TextView role;
-    private TextView password;
     private ShapeableImageView picture_link;
 
 
@@ -64,11 +66,11 @@ public class staff_detail extends AppCompatActivity {
         btnEdit.setOnClickListener(v -> {
             if (userProfile != null) {
                 Intent intent = new Intent(staff_detail.this, set_staff_detail.class);
-                intent.putExtra("user_profile", userProfile); // Truyền cả Object (UserProfile đã có Serializable)
+                intent.putExtra("user_profile", userProfile);
                 editLauncher.launch(intent);
             }
         });
-        // Tìm nút xóa (đã có id trong layout staff_detail.xml)
+
         com.google.android.material.button.MaterialButton btnDelete = findViewById(R.id.btnDeleteStaff);
 
         btnDelete.setOnClickListener(v -> {
@@ -79,7 +81,6 @@ public class staff_detail extends AppCompatActivity {
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK) {
-                    // Khi nhận được RESULT_OK, gọi hàm load data của bạn
                     loadData(id);
                 }
             }
@@ -91,10 +92,8 @@ public class staff_detail extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<UserProfile>> call, Response<List<UserProfile>> response) {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
-                    // Lấy profile đầu tiên trong danh sách trả về
                     userProfile = response.body().get(0);
 
-                    // Đổ dữ liệu vào các TextView
                     name.setText(userProfile.getHo_ten());
                     email.setText(userProfile.getEmail());
                     gender.setText(userProfile.getGioitinh());
@@ -102,33 +101,25 @@ public class staff_detail extends AppCompatActivity {
                     address.setText(userProfile.getDia_chi());
                     role.setText(userProfile.getChuc_vu());
 
-                    // Xử lý ngày sinh (vì là kiểu Date nên cần format lại nếu muốn đẹp)
                     if (userProfile.getNgay_sinh() != null) {
-                        // Định dạng ngày/tháng/năm
                         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
                         String formattedDate = sdf.format(userProfile.getNgay_sinh());
                         birthday.setText(formattedDate);
                     }
                     if (userProfile.getCreated_at() != null) {
-                        // Định dạng ngày/tháng/năm
                         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
                         String formattedDate = sdf.format(userProfile.getCreated_at());
                         date_created.setText(formattedDate);
                     }
-
-                    // Với hình ảnh, bạn nên dùng thư viện Glide hoặc Picasso để load link
-//                     Glide.with(staff_detail.this).load(userProfile.getPictureLink()).into(picture_link);
                 }
             }
 
             @Override
             public void onFailure(Call<List<UserProfile>> call, Throwable t) {
-                return;
             }
         });
     }
     private void showDeleteConfirmationDialog() {
-        // 1. Khởi tạo Dialog
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
         android.view.View view = getLayoutInflater().inflate(R.layout.admin_delete_staff_dialog, null);
         builder.setView(view);
@@ -138,7 +129,6 @@ public class staff_detail extends AppCompatActivity {
             dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
         }
 
-        // 2. Ánh xạ các nút trong Dialog
         com.google.android.material.button.MaterialButton btnConfirm = view.findViewById(R.id.btnDeleteConfirm);
         com.google.android.material.button.MaterialButton btnCancel = view.findViewById(R.id.btnDeleteCancel);
         android.widget.TextView tvMessage = view.findViewById(R.id.tvDeleteConfirmMessage);
@@ -147,21 +137,34 @@ public class staff_detail extends AppCompatActivity {
             tvMessage.setText("Bạn có chắc chắn muốn xóa nhân viên " + userProfile.getHo_ten() + " khỏi hệ thống không?");
         }
 
-        // 3. Xử lý sự kiện nút Hủy
         btnCancel.setOnClickListener(v -> dialog.dismiss());
 
-        // 4. Xử lý sự kiện nút Xóa
         btnConfirm.setOnClickListener(v -> {
-            deleteStaffFromDatabase(); // Gọi hàm xóa
+            deleteStaffFromDatabase(userProfile.getID());
             dialog.dismiss();
         });
 
         dialog.show();
     }
 
-    private void deleteStaffFromDatabase() {
-        // TODO: Viết lệnh xóa trên database (Supabase) tại đây
-        // Ví dụ: profileRepository.deleteProfile(userProfile.getID()).enqueue(...)
-        android.widget.Toast.makeText(this, "Đang thực hiện xóa nhân viên...", android.widget.Toast.LENGTH_SHORT).show();
+    private void deleteStaffFromDatabase(String staffId) {
+        ProfileRepository profile = new ProfileRepository(this);
+        profile.deactivateStaff(staffId).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(staff_detail.this, "Đã vô hiệu hoá nhân viên thành công!", Toast.LENGTH_SHORT).show();
+                    setResult(Activity.RESULT_OK);
+                    finish();
+                } else {
+                    Toast.makeText(staff_detail.this, "Lỗi khi cập nhật trạng thái", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Toast.makeText(staff_detail.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

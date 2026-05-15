@@ -67,6 +67,7 @@ public class ExaminationFormRepository {
 
     public Call<List<ExaminationFormWithPatientDto>> getAllFormsToday() {
         return getAllFormsToday(null);
+
     }
 
     public Call<List<ExaminationFormWithPatientDto>> getAllFormsToday(String currentProfileId) {

@@ -26,12 +26,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import io.github.jan.supabase.realtime.PostgresAction;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
-
 
 public class admin_manage_staff extends AppCompatActivity {
 
@@ -40,30 +37,29 @@ public class admin_manage_staff extends AppCompatActivity {
     private TextView tvEmptyText;
     private StaffItemAdapter adapter;
     private List<StaffItem> staffList;
-    private List<StaffItem> staffListOriginal = new ArrayList<>(); // Danh sách gốc để lọc
-    private boolean isAscending = true; // Theo dõi trạng thái sắp xếp
+    private List<StaffItem> staffListOriginal = new ArrayList<>();
+    private boolean isAscending = true;
 
     ActivityResultLauncher<Intent> editLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
+                // Nhận kết quả từ staff_detail (Activity.RESULT_OK) để load lại data
                 if (result.getResultCode() == Activity.RESULT_OK) {
-                    // Khi nhận được RESULT_OK, gọi hàm load data của bạn
                     loadData(new ProfileRepository(this));
                 }
             }
     );
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_manage_staff);
 
-        // 1. Ánh xạ các View
         recyclerView = findViewById(R.id.rvEmployee);
         layoutEmpty = findViewById(R.id.layoutEmpty);
         tvEmptyText = findViewById(R.id.tvEmptyText);
         EditText etSearch = findViewById(R.id.etSearch);
 
-        // 2. Thiết lập RecyclerView
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         staffList = new ArrayList<>();
         adapter = new StaffItemAdapter(staffList);
@@ -74,13 +70,9 @@ public class admin_manage_staff extends AppCompatActivity {
         });
         recyclerView.setAdapter(adapter);
 
-        // 3. Khởi tạo Repository
         ProfileRepository profileRepository = new ProfileRepository(this);
-
-        // 4. Gọi API lấy dữ liệu
         loadData(profileRepository);
 
-        // 5. Xử lý Tìm kiếm (Search)
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -94,23 +86,18 @@ public class admin_manage_staff extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        // 6. Xử lý Sắp xếp (Sort)
         findViewById(R.id.btnSort).setOnClickListener(v -> sortList());
-
-        // 7. Xử lý Lọc (Filter)
         findViewById(R.id.btnFilter).setOnClickListener(v -> showFilterDialog());
-
-        // Các nút khác
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
         findViewById(R.id.fabAdd).setOnClickListener(v -> {
             Intent intent = new Intent(admin_manage_staff.this, create_staff.class);
             editLauncher.launch(intent);
         });
-
     }
 
     private void loadData(ProfileRepository profileRepository) {
-        profileRepository.getListProfile("neq.Quản trị viên").enqueue(new Callback<List<UserProfile>>() {
+        // Cập nhật: Lọc theo chức vụ và chỉ lấy nhân viên "Đang hoạt động"
+        profileRepository.getListProfile("neq.Quản trị viên", "eq.Đang hoạt động").enqueue(new Callback<List<UserProfile>>() {
             @Override
             public void onResponse(Call<List<UserProfile>> call, Response<List<UserProfile>> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -119,7 +106,7 @@ public class admin_manage_staff extends AppCompatActivity {
                     staffList.clear();
 
                     if (profiles.isEmpty()) {
-                        updateUI(true, "Hiện tại chưa có nhân viên nào trong hệ thống");
+                        updateUI(true, "Hiện tại không có nhân viên nào đang hoạt động");
                     } else {
                         updateUI(false, "");
                         for (UserProfile profile : profiles) {

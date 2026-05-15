@@ -15,13 +15,14 @@ public class UserProfile implements Serializable {
     private String chuc_vu;
 
     private String anh_dai_dien;
+    private String trang_thai_hoat_dong;
 
     private Date created_at;
     private String id;
     public UserProfile() {
     }
 
-    public UserProfile(String id, String email, String user_name, String ho_ten, Date ngay_sinh, String so_dien_thoai, String dia_chi, String gioitinh, String chuc_vu, String anh_dai_dien) {
+    public UserProfile(String id, String email, String user_name, String ho_ten, Date ngay_sinh, String so_dien_thoai, String dia_chi, String gioitinh, String chuc_vu, String anh_dai_dien, String trang_thai_hoat_dong) {
         this.id = id;
         this.email = email;
         this.user_name = user_name;
@@ -32,6 +33,8 @@ public class UserProfile implements Serializable {
         this.gioitinh = gioitinh;
         this.chuc_vu = chuc_vu;
         this.anh_dai_dien = anh_dai_dien;
+        this.trang_thai_hoat_dong = trang_thai_hoat_dong;
+
     }
 
     public String getEmail() {
@@ -63,4 +66,8 @@ public class UserProfile implements Serializable {
     }
     public String getAnh_dai_dien() {return anh_dai_dien; }
     public Date getCreated_at() {return created_at; }
+
+    public String getTrang_thai_hoat_dong() {
+        return trang_thai_hoat_dong;
+    }
 }

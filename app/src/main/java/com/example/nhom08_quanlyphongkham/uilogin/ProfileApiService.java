@@ -22,7 +22,8 @@ public interface ProfileApiService {
 
     @GET("rest/v1/profiles")
     Call<List<UserProfile>> getListProfiles(
-            @Query("chuc_vu") String role, // Tham số này sẽ truyền "neq.Quản trị viên"
+            @Query("chuc_vu") String role,
+            @Query("trang_thai_hoat_dong") String status,
             @Query("select") String select
     );
 

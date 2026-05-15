@@ -73,9 +73,7 @@ public class AccountFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments() != null) {
-            userprofile = SharedPrefManager.getInstance(requireContext()).getProfile();
-        }
+        userprofile = SharedPrefManager.getInstance(requireContext()).getProfile();
 
         authRepository = new AuthRepository(requireContext());
     }
@@ -107,6 +105,8 @@ public class AccountFragment extends Fragment {
     }
 
     private void setViewProfile() {
+        if (userprofile == null) return;
+
         textviewProfile.setText(userprofile.getHo_ten());
         textviewEmail.setText(userprofile.getEmail());
         textviewPhone.setText(userprofile.getSo_dien_thoai());
@@ -120,13 +120,24 @@ public class AccountFragment extends Fragment {
         textviewGender.setText(userprofile.getGioitinh());
         textviewAddress.setText(userprofile.getDia_chi());
         textviewJobTitle.setText(userprofile.getChuc_vu());
-        ImageRequest request = new ImageRequest.Builder(getContext())
-                .data(userprofile.getAnh_dai_dien())
-                .target(imgProfileanh_dai_dien)
-                .crossfade(true) // Hiệu ứng mờ dần khi hiện ảnh
-                .build();
 
-        Coil.imageLoader(getContext()).enqueue(request);
+        String avatarUrl = userprofile.getAnh_dai_dien();
+        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+            // Nối thêm base URL nếu avatarUrl chỉ là tên file
+            if (!avatarUrl.startsWith("http")) {
+                avatarUrl = "https://waiuciilyysobnvcwshd.supabase.co/storage/v1/object/public/avatars/" + avatarUrl;
+            }
+
+            ImageRequest request = new ImageRequest.Builder(requireContext())
+                    .data(avatarUrl)
+                    .target(imgProfileanh_dai_dien)
+                    .crossfade(true)
+                    .placeholder(R.drawable.ic_launcher_background)
+                    .error(R.drawable.ic_launcher_background)
+                    .build();
+
+            Coil.imageLoader(requireContext()).enqueue(request);
+        }
     }
 
 
@@ -303,7 +314,8 @@ public class AccountFragment extends Fragment {
                                 diaChi != null ? diaChi : userprofile.getDia_chi(),
                                 gioiTinh != null ? gioiTinh : userprofile.getGioitinh(),
                                 userprofile.getChuc_vu(),
-                                anh_dai_dien != null ? anh_dai_dien : userprofile.getAnh_dai_dien()
+                                anh_dai_dien != null ? anh_dai_dien : userprofile.getAnh_dai_dien(),
+                                userprofile.getTrang_thai_hoat_dong()
                         );
                     }
 
