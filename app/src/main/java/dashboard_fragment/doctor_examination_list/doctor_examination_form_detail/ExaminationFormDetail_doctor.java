@@ -197,6 +197,18 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
         viewPagerDoctorExDetail.setCurrentItem(tab.getPosition(), true);
     }
 
+    public void navigateToClinicalTab() {
+        selectTab(DetailTab.CLINICAL);
+    }
+
+    public void navigateToDiagnosisTab() {
+        selectTab(DetailTab.DIAGNOSIS);
+    }
+
+    public void navigateToPrescriptionTab() {
+        selectTab(DetailTab.PRESCRIPTION);
+    }
+
     private void updateSelectedTab(DetailTab selectedTab) {
         applyTabState(tabExformPatient, selectedTab == DetailTab.PATIENT_INFO);
         applyTabState(tabCanLamSang, selectedTab == DetailTab.CLINICAL);

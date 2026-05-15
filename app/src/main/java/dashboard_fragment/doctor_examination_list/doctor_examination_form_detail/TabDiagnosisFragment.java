@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -39,7 +38,7 @@ public class TabDiagnosisFragment extends Fragment {
     private LinearLayout containerDiagnosisGroups;
     private TextView tvPrimaryDiagnosis;
     private MedicalRecordDiagnosisWrapper initialDiagnosisData;
-
+    private DoctorExDetailViewModel doctorExDetailViewModel;
 
     public TabDiagnosisFragment() {
     }
@@ -57,6 +56,14 @@ public class TabDiagnosisFragment extends Fragment {
         diagnosisGroups = DiagnosisSeedData.getDiagnosisGroups();
         containerDiagnosisGroups = view.findViewById(R.id.containerDiagnosisGroups);
         tvPrimaryDiagnosis = view.findViewById(R.id.tvPrimaryDiagnosis);
+        doctorExDetailViewModel =
+                new ViewModelProvider(requireActivity()).get(DoctorExDetailViewModel.class);
+
+        if (!doctorExDetailViewModel.hasDiagnosisSelectionInitialized()) {
+            doctorExDetailViewModel.initializeSelectedDiagnoses(selectedDiagnoses);
+        }
+        selectedDiagnoses.clear();
+        selectedDiagnoses.addAll(doctorExDetailViewModel.getSelectedDiagnoses());
 
         observeMedicalRecord();
         renderDiagnosisGroups();
@@ -65,10 +72,7 @@ public class TabDiagnosisFragment extends Fragment {
     }
 
     private void observeMedicalRecord() {
-        DoctorExDetailViewModel viewModel =
-                new ViewModelProvider(requireActivity()).get(DoctorExDetailViewModel.class);
-
-        viewModel.getMedicalRecord().observe(getViewLifecycleOwner(), record -> {
+        doctorExDetailViewModel.getMedicalRecord().observe(getViewLifecycleOwner(), record -> {
             initialDiagnosisData = record == null ? null : record.getDiagnosisNotes();
             updatePrimaryDiagnosisText();
         });
@@ -158,6 +162,7 @@ public class TabDiagnosisFragment extends Fragment {
         optionContainers.put(groupName, optionsContainer);
         arrows.put(groupName, arrow);
         badges.put(groupName, badge);
+        updateBadge(groupName, selectedCounts.get(groupName));
 
         return card;
     }
@@ -191,6 +196,14 @@ public class TabDiagnosisFragment extends Fragment {
         row.addView(tickView);
         row.addView(textView);
 
+        boolean isInitiallyChecked = selectedDiagnoses.contains(option.getDiagnosisName());
+        if (isInitiallyChecked) {
+            tickView.setImageDrawable(createCheckedCircleDrawable(0xFF0D3F6E));
+            tickView.setTag(true);
+            textView.setTextColor(0xFF0D3F6E);
+            increaseGroupCount(groupName);
+        }
+
         row.setOnClickListener(v -> {
             boolean isChecked = Boolean.TRUE.equals(tickView.getTag());
 
@@ -210,6 +223,7 @@ public class TabDiagnosisFragment extends Fragment {
                 increaseGroupCount(groupName);
             }
 
+            doctorExDetailViewModel.setSelectedDiagnoses(selectedDiagnoses);
             updatePrimaryDiagnosisText();
         });
 
@@ -263,7 +277,7 @@ public class TabDiagnosisFragment extends Fragment {
         if (selectedDiagnoses.isEmpty()) {
             String diagnosisSummary = buildDiagnosisSummary(initialDiagnosisData);
             if (diagnosisSummary.isEmpty()) {
-                tvPrimaryDiagnosis.setText("Chưa chọn chẩn đoán");
+                tvPrimaryDiagnosis.setText("Chẩn đoán chính");
                 tvPrimaryDiagnosis.setTextColor(0xFF64748B);
             } else {
                 tvPrimaryDiagnosis.setText(diagnosisSummary);
@@ -320,7 +334,7 @@ public class TabDiagnosisFragment extends Fragment {
     private void setupContinueButton(View view) {
         View btnContinue = view.findViewById(R.id.btnContinueDiagnosis);
         btnContinue.setOnClickListener(v ->
-                Toast.makeText(requireContext(), "Tiếp tục — Kê đơn thuốc", Toast.LENGTH_SHORT).show()
+                ((ExaminationFormDetail_doctor) requireActivity()).navigateToPrescriptionTab()
         );
     }
 

@@ -1,32 +1,46 @@
 package dashboard_fragment.doctor_examination_list.doctor_examination_form_detail;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.nhom08_quanlyphongkham.R;
+import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.medical_join_diagnosis_join_prescription.FullMedicalRecordResponse;
 import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.medical_join_diagnosis_join_prescription.MedicalRecordMedicineWrapper;
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineItem;
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionItem;
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.send_full_medical_record_db.SaveFullMedicalRecordMedicinePayload;
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.send_full_medical_record_db.SaveFullMedicalRecordRequest;
+import retrofit2.Call;
 
 public class TabPrescriptionFragment extends Fragment {
 
     private PrescriptionRepository prescriptionRepository;
-    private java.util.List<dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionItem> selectedMedicines = new java.util.ArrayList<>();
+    private MedicalRecordRepository medicalRecordRepository;
+    private List<PrescriptionItem> selectedMedicines = new ArrayList<>();
 
     private android.widget.LinearLayout containerSelectedMedicines;
     private View layoutPrescriptionEmptyState;
     private View cardPrescriptionSummary;
     private android.widget.TextView tvPrescriptionSummary;
-    private boolean hasLoadedPrescriptionFromRecord;
+    private DoctorExDetailViewModel doctorExDetailViewModel;
 
     public TabPrescriptionFragment() {
     }
@@ -40,15 +54,19 @@ public class TabPrescriptionFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         prescriptionRepository = new PrescriptionRepository(requireContext());
+        medicalRecordRepository = new MedicalRecordRepository(requireContext());
 
         containerSelectedMedicines = view.findViewById(R.id.containerSelectedMedicines);
         layoutPrescriptionEmptyState = view.findViewById(R.id.layoutPrescriptionEmptyState);
         cardPrescriptionSummary = view.findViewById(R.id.cardPrescriptionSummary);
         tvPrescriptionSummary = view.findViewById(R.id.tvPrescriptionSummary);
-
+        doctorExDetailViewModel =
+                new ViewModelProvider(requireActivity()).get(DoctorExDetailViewModel.class);
+        selectedMedicines = doctorExDetailViewModel.getSelectedMedicines();
 
         super.onViewCreated(view, savedInstanceState);
         observeMedicalRecord();
+        renderSelectedMedicines();
 
         View btnAddMedicine = view.findViewById(R.id.btnAddMedicine);
         View btnSavePrescription = view.findViewById(R.id.btnSavePrescription);
@@ -58,30 +76,26 @@ public class TabPrescriptionFragment extends Fragment {
         }
 
         if (btnSavePrescription != null) {
-            btnSavePrescription.setOnClickListener(v ->
-                    Toast.makeText(requireContext(), "Lưu bệnh án & hoàn thành", Toast.LENGTH_SHORT).show()
-            );
+            btnSavePrescription.setOnClickListener(v -> saveFullMedicalRecord());
         }
     }
 
     private void observeMedicalRecord() {
-        DoctorExDetailViewModel viewModel =
-                new ViewModelProvider(requireActivity()).get(DoctorExDetailViewModel.class);
-
-        viewModel.getMedicalRecord().observe(getViewLifecycleOwner(), record -> {
-            if (record == null || record.getMedicineData() == null || hasLoadedPrescriptionFromRecord) {
+        doctorExDetailViewModel.getMedicalRecord().observe(getViewLifecycleOwner(), record -> {
+            if (record == null
+                    || record.getMedicineData() == null
+                    || doctorExDetailViewModel.hasPrescriptionSelectionInitialized()) {
                 return;
             }
 
-            selectedMedicines.clear();
+            List<PrescriptionItem> prefilledMedicines = new ArrayList<>();
 
             for (MedicalRecordMedicineWrapper wrapper : record.getMedicineData()) {
                 if (wrapper == null || wrapper.getMedicine() == null) {
                     continue;
                 }
 
-                dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionItem item =
-                        new dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionItem(wrapper.getMedicine());
+                PrescriptionItem item = new PrescriptionItem(wrapper.getMedicine());
 
                 int parsedDose = extractLeadingNumber(wrapper.getLieuDung());
                 if (parsedDose > 0) {
@@ -92,48 +106,51 @@ public class TabPrescriptionFragment extends Fragment {
                     item.setGhiChu(wrapper.getLieuDung().trim());
                 }
 
-                item.setTanSuat("");
-                item.setThoiGian("");
+                item.setTanSuat(wrapper.getTanSuat() == null ? "" : wrapper.getTanSuat().trim());
+                item.setThoiGian(wrapper.getThoiGian() == null ? "" : wrapper.getThoiGian().trim());
 
                 if (wrapper.getSoLuong() > 0) {
                     item.setSoLuong(wrapper.getSoLuong());
                 }
 
-                selectedMedicines.add(item);
+                prefilledMedicines.add(item);
             }
 
-            hasLoadedPrescriptionFromRecord = !selectedMedicines.isEmpty();
+            doctorExDetailViewModel.initializeSelectedMedicines(prefilledMedicines);
+            selectedMedicines = doctorExDetailViewModel.getSelectedMedicines();
             renderSelectedMedicines();
         });
     }
 
     private void showMedicineDialog() {
-        prescriptionRepository.getAllMedicines().enqueue(new retrofit2.Callback<java.util.List<dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineItem>>() {
+        prescriptionRepository.getAllMedicines().enqueue(new retrofit2.Callback<List<MedicineItem>>() {
             @Override
             public void onResponse(
-                    @androidx.annotation.NonNull retrofit2.Call<java.util.List<dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineItem>> call,
-                    @androidx.annotation.NonNull retrofit2.Response<java.util.List<dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineItem>> response
+                    @NonNull Call<List<MedicineItem>> call,
+                    @NonNull retrofit2.Response<List<MedicineItem>> response
             ) {
-                if (!isAdded()) return;
+                if (!isAdded()) {
+                    return;
+                }
 
                 if (response.isSuccessful() && response.body() != null) {
                     openMedicineDialog(response.body());
                 } else {
-                    android.widget.Toast.makeText(requireContext(), "Không tải được danh sách thuốc", android.widget.Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Khong tai duoc danh sach thuoc", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(
-                    @androidx.annotation.NonNull retrofit2.Call<java.util.List<dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineItem>> call,
-                    @androidx.annotation.NonNull Throwable t
-            ) {
-                if (!isAdded()) return;
-                android.widget.Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), android.widget.Toast.LENGTH_SHORT).show();
+            public void onFailure(@NonNull Call<List<MedicineItem>> call, @NonNull Throwable t) {
+                if (!isAdded()) {
+                    return;
+                }
+                Toast.makeText(requireContext(), "Loi ket noi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
-    private void openMedicineDialog(java.util.List<dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineItem> medicineItems) {
+
+    private void openMedicineDialog(List<MedicineItem> medicineItems) {
         View dialogView = getLayoutInflater().inflate(R.layout.doctor_select_medicine_dialog, null, false);
 
         androidx.appcompat.app.AlertDialog dialog = new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
@@ -145,6 +162,15 @@ public class TabPrescriptionFragment extends Fragment {
         View btnClose = dialogView.findViewById(R.id.btnCloseMedicineDialog);
         View btnConfirm = dialogView.findViewById(R.id.btnConfirmMedicineSelection);
 
+        Set<Integer> selectedMedicineIds = new LinkedHashSet<>();
+        for (PrescriptionItem selectedMedicine : selectedMedicines) {
+            if (selectedMedicine != null && selectedMedicine.getMedicine() != null) {
+                selectedMedicineIds.add(selectedMedicine.getMedicine().getId());
+            }
+        }
+        for (MedicineItem medicineItem : medicineItems) {
+            medicineItem.setSelected(selectedMedicineIds.contains(medicineItem.getId()));
+        }
 
         dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineSelectAdapter adapter =
                 new dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineSelectAdapter(medicineItems);
@@ -170,24 +196,22 @@ public class TabPrescriptionFragment extends Fragment {
         btnClose.setOnClickListener(v -> dialog.dismiss());
 
         btnConfirm.setOnClickListener(v -> {
-            selectedMedicines.clear();
-            for (dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineItem item : adapter.getItems()) {
+            List<PrescriptionItem> updatedMedicines = new ArrayList<>();
+            for (MedicineItem item : adapter.getItems()) {
                 if (item.isSelected()) {
-                    selectedMedicines.add(
-                            new dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionItem(item)
-                    );
+                    updatedMedicines.add(new PrescriptionItem(item));
                 }
             }
 
-
+            doctorExDetailViewModel.replaceSelectedMedicines(updatedMedicines);
+            selectedMedicines = doctorExDetailViewModel.getSelectedMedicines();
             renderSelectedMedicines();
 
-            android.widget.Toast.makeText(requireContext(),
-                    "Đã chọn " + selectedMedicines.size() + " thuốc",
-                    android.widget.Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(),
+                    "Da chon " + selectedMedicines.size() + " thuoc",
+                    Toast.LENGTH_SHORT).show();
 
             dialog.dismiss();
-
         });
 
         if (dialog.getWindow() != null) {
@@ -196,8 +220,12 @@ public class TabPrescriptionFragment extends Fragment {
 
         dialog.show();
     }
+
     private void renderSelectedMedicines() {
-        if (containerSelectedMedicines == null) return;
+        selectedMedicines = doctorExDetailViewModel.getSelectedMedicines();
+        if (containerSelectedMedicines == null) {
+            return;
+        }
 
         containerSelectedMedicines.removeAllViews();
 
@@ -220,17 +248,15 @@ public class TabPrescriptionFragment extends Fragment {
             cardPrescriptionSummary.setVisibility(View.VISIBLE);
         }
 
-        java.util.List<String> frequencyOptions = java.util.Arrays.asList(
-                "1 lần/ngày", "2 lần/ngày", "3 lần/ngày", "4 lần/ngày", "Sáng/Tối", "Sáng/Trưa/Tối"
+        List<String> frequencyOptions = java.util.Arrays.asList(
+                "1 l\u1ea7n/ng\u00e0y", "2 l\u1ea7n/ng\u00e0y", "3 l\u1ea7n/ng\u00e0y", "4 l\u1ea7n/ng\u00e0y", "S\u00e1ng/T\u1ed1i", "S\u00e1ng/Tr\u01b0a/T\u1ed1i"
         );
-        java.util.List<String> durationOptions = java.util.Arrays.asList(
-                "3 ngày", "5 ngày", "7 ngày", "10 ngày", "14 ngày", "1 tháng"
+        List<String> durationOptions = java.util.Arrays.asList(
+                "3 ng\u00e0y", "5 ng\u00e0y", "7 ng\u00e0y", "10 ng\u00e0y", "14 ng\u00e0y", "1 th\u00e1ng"
         );
 
         for (int i = 0; i < selectedMedicines.size(); i++) {
-            dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionItem item = selectedMedicines.get(i);
-
-
+            PrescriptionItem item = selectedMedicines.get(i);
             View itemView = getLayoutInflater().inflate(R.layout.doctor_item_selected_medicine, containerSelectedMedicines, false);
 
             android.widget.TextView tvIndex = itemView.findViewById(R.id.tvMedicineIndex);
@@ -245,12 +271,11 @@ public class TabPrescriptionFragment extends Fragment {
             android.widget.AutoCompleteTextView spinnerDuration = itemView.findViewById(R.id.spinnerSelectedDuration);
             android.widget.ImageView btnRemove = itemView.findViewById(R.id.btnRemoveMedicine);
 
-
             tvIndex.setText(String.valueOf(i + 1));
             tvName.setText(item.getMedicine().getTen_thuoc());
 
             String donVi = item.getMedicine().getDon_vi() == null || item.getMedicine().getDon_vi().trim().isEmpty()
-                    ? "đơn vị"
+                    ? "\u0111\u01a1n v\u1ecb"
                     : item.getMedicine().getDon_vi().trim();
 
             tvDoseUnit.setText(donVi);
@@ -259,7 +284,6 @@ public class TabPrescriptionFragment extends Fragment {
             edtNote.setText(item.getGhiChu());
 
             updateSelectedMedicineComputedViews(item, tvQuantity, tvStock);
-
 
             android.widget.ArrayAdapter<String> frequencyAdapter = new android.widget.ArrayAdapter<>(
                     requireContext(),
@@ -295,21 +319,17 @@ public class TabPrescriptionFragment extends Fragment {
                 }
             });
 
-
             spinnerFrequency.setOnItemClickListener((parent, view1, position, id) -> {
                 item.setTanSuat(frequencyOptions.get(position));
                 updateSelectedMedicineComputedViews(item, tvQuantity, tvStock);
                 updatePrescriptionSummary();
             });
 
-
             spinnerDuration.setOnItemClickListener((parent, view12, position, id) -> {
                 item.setThoiGian(durationOptions.get(position));
                 updateSelectedMedicineComputedViews(item, tvQuantity, tvStock);
                 updatePrescriptionSummary();
             });
-
-
 
             edtDose.addTextChangedListener(new android.text.TextWatcher() {
                 @Override
@@ -322,7 +342,7 @@ public class TabPrescriptionFragment extends Fragment {
 
                 @Override
                 public void afterTextChanged(android.text.Editable s) {
-                    int doseValue = 0;
+                    int doseValue;
 
                     try {
                         String value = s == null ? "" : s.toString().trim();
@@ -336,8 +356,6 @@ public class TabPrescriptionFragment extends Fragment {
                     updatePrescriptionSummary();
                 }
             });
-
-
 
             edtNote.addTextChangedListener(new android.text.TextWatcher() {
                 @Override
@@ -355,7 +373,6 @@ public class TabPrescriptionFragment extends Fragment {
                 }
             });
 
-
             btnRemove.setOnClickListener(v -> {
                 selectedMedicines.remove(item);
                 renderSelectedMedicines();
@@ -366,8 +383,11 @@ public class TabPrescriptionFragment extends Fragment {
 
         updatePrescriptionSummary();
     }
+
     private void updatePrescriptionSummary() {
-        if (tvPrescriptionSummary == null) return;
+        if (tvPrescriptionSummary == null) {
+            return;
+        }
 
         if (selectedMedicines.isEmpty()) {
             tvPrescriptionSummary.setText("");
@@ -377,13 +397,13 @@ public class TabPrescriptionFragment extends Fragment {
         StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < selectedMedicines.size(); i++) {
-            dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionItem item = selectedMedicines.get(i);
+            PrescriptionItem item = selectedMedicines.get(i);
 
             String donVi = item.getMedicine().getDon_vi() == null || item.getMedicine().getDon_vi().trim().isEmpty()
-                    ? "đơn vị"
+                    ? "\u0111\u01a1n v\u1ecb"
                     : item.getMedicine().getDon_vi().trim();
 
-            builder.append("• ")
+            builder.append("\u2022 ")
                     .append(item.getMedicine().getTen_thuoc())
                     .append(" - ")
                     .append(item.getLieuDung())
@@ -398,14 +418,138 @@ public class TabPrescriptionFragment extends Fragment {
                 builder.append(", ").append(item.getGhiChu().trim());
             }
 
-
-
             if (i < selectedMedicines.size() - 1) {
                 builder.append("\n");
             }
         }
 
         tvPrescriptionSummary.setText(builder.toString());
+    }
+
+    private void saveFullMedicalRecord() {
+        long exFormId = readCurrentFormId();
+        if (exFormId <= 0) {
+            Toast.makeText(requireContext(), "Không xác định được phiếu khám để lưu", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String doctorId = SharedPrefManager.getInstance(requireContext()).getProfile().getID();
+
+        if (doctorId == null || doctorId.trim().isEmpty()) {
+            Toast.makeText(requireContext(), "Không tìm thấy thông tin bác sĩ điều trị", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+
+        SaveFullMedicalRecordRequest request = new SaveFullMedicalRecordRequest(
+                exFormId,
+                doctorId,
+                buildDiagnosisText(),
+                "",
+                "",
+                buildClinicalIdsPayload(),
+                buildMedicinePayload()
+        );
+
+        medicalRecordRepository.saveFullMedicalRecord(request).enqueue(new retrofit2.Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull retrofit2.Response<Void> response) {
+                if (!isAdded()) {
+                    return;
+                }
+
+                if (response.isSuccessful()) {
+                    Toast.makeText(requireContext(), "Luu benh an thanh cong", Toast.LENGTH_SHORT).show();
+                    ExaminationFormDetail_doctor activity = (ExaminationFormDetail_doctor) requireActivity();
+                    activity.updateCurrentStatus(DoctorExaminationStatus.DONE);
+                    activity.requestListReload();
+                    return;
+                }
+
+                String errorMessage = "Khong the luu benh an";
+                if (response.errorBody() != null) {
+                    try {
+                        errorMessage = response.errorBody().string();
+                    } catch (IOException ignored) {
+                    }
+                }
+                Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                if (!isAdded()) {
+                    return;
+                }
+                Toast.makeText(requireContext(), "Loi ket noi khi luu benh an: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private long readCurrentFormId() {
+        ExaminationFormDetail_doctor activity = (ExaminationFormDetail_doctor) requireActivity();
+        String formIdText = activity.getIntent().getStringExtra(ExaminationFormDetail_doctor.EXTRA_FORM_ID);
+        if (formIdText == null) {
+            return -1L;
+        }
+        try {
+            return Long.parseLong(formIdText.trim());
+        } catch (NumberFormatException exception) {
+            return -1L;
+        }
+    }
+
+    private String buildDiagnosisText() {
+        Set<String> selectedDiagnoses = doctorExDetailViewModel.getSelectedDiagnoses();
+        if (!selectedDiagnoses.isEmpty()) {
+            return TextUtils.join("; ", selectedDiagnoses);
+        }
+
+        FullMedicalRecordResponse medicalRecord = doctorExDetailViewModel.getMedicalRecordValue();
+        if (medicalRecord != null && medicalRecord.getDiagnosisNotes() != null) {
+            String existingDiagnosis = medicalRecord.getDiagnosisNotes().getChanDoanChinh();
+            return existingDiagnosis == null ? "" : existingDiagnosis.trim();
+        }
+        return "";
+    }
+
+    private List<Long> buildClinicalIdsPayload() {
+        Set<Integer> clinicalIds = doctorExDetailViewModel.getSelectedClinicalIds();
+        if (clinicalIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Long> payload = new ArrayList<>();
+        for (Integer clinicalId : clinicalIds) {
+            if (clinicalId != null && clinicalId > 0) {
+                payload.add(clinicalId.longValue());
+            }
+        }
+        return payload;
+    }
+
+    private List<SaveFullMedicalRecordMedicinePayload> buildMedicinePayload() {
+        List<SaveFullMedicalRecordMedicinePayload> payload = new ArrayList<>();
+        for (PrescriptionItem item : doctorExDetailViewModel.getSelectedMedicines()) {
+            if (item == null || item.getMedicine() == null || item.getMedicine().getId() <= 0) {
+                continue;
+            }
+
+            payload.add(new SaveFullMedicalRecordMedicinePayload(
+                    item.getMedicine().getId(),
+                    item.getSoLuong(),
+                    Math.max(0, item.getLieuDung()),
+                    safeTrim(item.getTanSuat()),
+                    safeTrim(item.getThoiGian()),
+                    safeTrim(item.getGhiChu())
+            ));
+        }
+        return payload;
+    }
+
+    private String safeTrim(String value) {
+        return value == null ? "" : value.trim();
     }
 
     private int extractLeadingNumber(String text) {
@@ -426,36 +570,40 @@ public class TabPrescriptionFragment extends Fragment {
     }
 
     private int parseFrequencyPerDay(String frequencyText) {
-        if (frequencyText == null) return 0;
+        if (frequencyText == null) {
+            return 0;
+        }
 
         String value = frequencyText.trim().toLowerCase();
 
-        if (value.startsWith("1 lần")) return 1;
-        if (value.startsWith("2 lần")) return 2;
-        if (value.startsWith("3 lần")) return 3;
-        if (value.startsWith("4 lần")) return 4;
-        if (value.contains("sáng/tối")) return 2;
-        if (value.contains("sáng/trưa/tối")) return 3;
+        if (value.startsWith("1 l\u1ea7n")) return 1;
+        if (value.startsWith("2 l\u1ea7n")) return 2;
+        if (value.startsWith("3 l\u1ea7n")) return 3;
+        if (value.startsWith("4 l\u1ea7n")) return 4;
+        if (value.contains("s\u00e1ng/t\u1ed1i")) return 2;
+        if (value.contains("s\u00e1ng/tr\u01b0a/t\u1ed1i")) return 3;
 
         return 0;
     }
 
     private int parseDurationDays(String durationText) {
-        if (durationText == null) return 0;
+        if (durationText == null) {
+            return 0;
+        }
 
         String value = durationText.trim().toLowerCase();
 
-        if (value.startsWith("3 ngày")) return 3;
-        if (value.startsWith("5 ngày")) return 5;
-        if (value.startsWith("7 ngày")) return 7;
-        if (value.startsWith("10 ngày")) return 10;
-        if (value.startsWith("14 ngày")) return 14;
-        if (value.startsWith("1 tháng")) return 30;
+        if (value.startsWith("3 ng\u00e0y")) return 3;
+        if (value.startsWith("5 ng\u00e0y")) return 5;
+        if (value.startsWith("7 ng\u00e0y")) return 7;
+        if (value.startsWith("10 ng\u00e0y")) return 10;
+        if (value.startsWith("14 ng\u00e0y")) return 14;
+        if (value.startsWith("1 th\u00e1ng")) return 30;
 
         return 0;
     }
 
-    private int calculateQuantity(dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionItem item) {
+    private int calculateQuantity(PrescriptionItem item) {
         int dose = item.getLieuDung();
         int frequency = parseFrequencyPerDay(item.getTanSuat());
         int duration = parseDurationDays(item.getThoiGian());
@@ -463,9 +611,8 @@ public class TabPrescriptionFragment extends Fragment {
         return dose * frequency * duration;
     }
 
-
     private void updateSelectedMedicineComputedViews(
-            dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionItem item,
+            PrescriptionItem item,
             android.widget.TextView tvQuantity,
             android.widget.TextView tvStock
     ) {
@@ -476,13 +623,12 @@ public class TabPrescriptionFragment extends Fragment {
         item.setSoLuong(quantity);
 
         String donVi = item.getMedicine().getDon_vi() == null || item.getMedicine().getDon_vi().trim().isEmpty()
-                ? "đơn vị"
+                ? "\u0111\u01a1n v\u1ecb"
                 : item.getMedicine().getDon_vi().trim();
 
-        tvQuantity.setText("Số lượng kê: " + quantity + " " + donVi);
+        tvQuantity.setText("So luong ke: " + quantity + " " + donVi);
 
         int tonKhoConLai = Math.max(0, item.getMedicine().getTon_kho() - quantity);
         tvStock.setText("TK: " + tonKhoConLai + " " + donVi);
     }
-
 }

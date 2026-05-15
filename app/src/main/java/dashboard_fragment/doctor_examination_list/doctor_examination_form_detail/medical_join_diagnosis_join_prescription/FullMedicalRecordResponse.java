@@ -7,6 +7,7 @@ public class FullMedicalRecordResponse {
     private String chan_doan_chinh;
     private String chan_doan_bo_sung;
     private String ghi_chu_lam_sang;
+    private String doctor_id;
     private List<MedicalRecordClinicalWrapper> medical_record_clinical;
     private List<MedicalRecordMedicineWrapper> medical_record_medicine;
 
@@ -17,4 +18,8 @@ public class FullMedicalRecordResponse {
     public Long getId() { return id; }
     public List<MedicalRecordClinicalWrapper> getClinicalData() { return medical_record_clinical; }
     public List<MedicalRecordMedicineWrapper> getMedicineData() { return medical_record_medicine; }
+
+    public String getDoctor_id() {
+        return doctor_id;
+    }
 }
