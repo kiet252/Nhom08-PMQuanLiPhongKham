@@ -26,6 +26,10 @@ public class TabPatientInfoFragment extends Fragment {
     private String currentFormId;
     private EditText edtSymptoms;
 
+    private View btnWaiting;
+    private View btnInProgress;
+    private View btnDone;
+
     public TabPatientInfoFragment() {
     }
 
@@ -42,6 +46,10 @@ public class TabPatientInfoFragment extends Fragment {
 
         ExFormRepository = new ExaminationFormRepository(getContext());
 
+        btnWaiting = rootView.findViewById(R.id.btnStatusWaiting);
+        btnInProgress = rootView.findViewById(R.id.btnStatusInProgress);
+        btnDone = rootView.findViewById(R.id.btnStatusDone);
+
         ExaminationFormDetail_doctor activity = (ExaminationFormDetail_doctor) requireActivity();
         bindFormData(activity);
         currentExaminationStatus = activity.getCurrentStatus();
@@ -52,20 +60,26 @@ public class TabPatientInfoFragment extends Fragment {
     }
 
     private void setupStatusClicks(ExaminationFormDetail_doctor activity) {
-        View btnWaiting = rootView.findViewById(R.id.btnStatusWaiting);
-        View btnInProgress = rootView.findViewById(R.id.btnStatusInProgress);
-        View btnDone = rootView.findViewById(R.id.btnStatusDone);
-
-        btnWaiting.setOnClickListener(v -> onStatusSelected(activity, DoctorExaminationStatus.WAITING));
-        btnInProgress.setOnClickListener(v -> onStatusSelected(activity, DoctorExaminationStatus.IN_PROGRESS));
-        btnDone.setOnClickListener(v -> onStatusSelected(activity, DoctorExaminationStatus.DONE));
+        if (btnWaiting != null) {
+            btnWaiting.setOnClickListener(v -> onStatusSelected(activity, DoctorExaminationStatus.WAITING));
+        }
+        if (btnInProgress != null) {
+            btnInProgress.setOnClickListener(v -> onStatusSelected(activity, DoctorExaminationStatus.IN_PROGRESS));
+        }
+        if (btnDone != null) {
+            btnDone.setOnClickListener(v -> onStatusSelected(activity, DoctorExaminationStatus.DONE));
+        }
     }
 
     private void onStatusSelected(ExaminationFormDetail_doctor activity, DoctorExaminationStatus status) {
+        if (currentExaminationStatus == status) return;
+
         currentExaminationStatus = status;
         activity.updateCurrentStatus(status);
         applyStatus(status);
         updateBottomButton(activity);
+
+        updateExaminationFormInfo(activity, false);
     }
 
     private void applyStatus(DoctorExaminationStatus status) {
@@ -113,7 +127,10 @@ public class TabPatientInfoFragment extends Fragment {
         if (btnContinue == null) {
             return;
         }
-        btnContinue.setOnClickListener(v -> updateExaminationFormInfo(activity));
+        btnContinue.setOnClickListener(v -> {
+            updateExaminationFormInfo(activity, true);
+            activity.findViewById(R.id.tabCanLamSang).performClick();
+        });
     }
 
     private void updateBottomButton(ExaminationFormDetail_doctor activity) {
@@ -137,8 +154,14 @@ public class TabPatientInfoFragment extends Fragment {
             textView.setText(ExaminationFormDetail_doctor.safeText(value, fallback));
         }
     }
+    private void setStatusButtonsEnabled(boolean enabled) {
+        if (btnWaiting != null) btnWaiting.setEnabled(enabled);
+        if (btnInProgress != null) btnInProgress.setEnabled(enabled);
+        if (btnDone != null) btnDone.setEnabled(enabled);
+    }
 
-    private void updateExaminationFormInfo(ExaminationFormDetail_doctor activity) {
+    private void updateExaminationFormInfo(ExaminationFormDetail_doctor activity, boolean formCompleted) {
+        setStatusButtonsEnabled(false);
 
         String currentStatus = currentExaminationStatus.getDisplayName();
         String currentSymptom = edtSymptoms.getText().toString();
@@ -146,13 +169,13 @@ public class TabPatientInfoFragment extends Fragment {
         ExFormRepository.patchExaminationForm(currentFormId, currentStatus, currentSymptom).enqueue(new retrofit2.Callback<Void>() {
             @Override
             public void onResponse(@NonNull Call<Void> call, @NonNull retrofit2.Response<Void> response) {
+                setStatusButtonsEnabled(true);
+
                 if (response.isSuccessful()) {
                     Toast.makeText(requireContext(), "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
-                    activity.findViewById(R.id.tabCanLamSang).performClick();
 
-                    if (activity.isDoneLocked()) {
-                        activity.requestListReload();
-                    }
+                    activity.requestListReload(formCompleted);
+
                 } else {
                     try {
                         String errorMsg = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
@@ -165,9 +188,10 @@ public class TabPatientInfoFragment extends Fragment {
 
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                // 3. Đảm bảo luôn mở khóa lại nút kể cả khi gặp sự cố ngắt kết nối mạng mạng
+                setStatusButtonsEnabled(true);
                 Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
-
 }

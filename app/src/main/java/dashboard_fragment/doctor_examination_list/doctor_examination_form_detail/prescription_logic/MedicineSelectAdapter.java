@@ -47,12 +47,23 @@ public class MedicineSelectAdapter extends RecyclerView.Adapter<MedicineSelectAd
         holder.tvStock.setText(item.getStockText());
         holder.tvFunction.setText(item.getFunctionText());
 
-        updateSelectedUI(holder, item.isSelected());
+        boolean isOutOfStock = item.getTon_kho() <= 0;
 
-        holder.itemView.setOnClickListener(v -> {
-            item.setSelected(!item.isSelected());
+        if (isOutOfStock) {
+            item.setSelected(false);
+            updateSelectedUI(holder, false);
+
+            holder.itemView.setAlpha(0.4f);
+            holder.itemView.setOnClickListener(null);
+        } else {
+            holder.itemView.setAlpha(1.0f);
             updateSelectedUI(holder, item.isSelected());
-        });
+
+            holder.itemView.setOnClickListener(v -> {
+                item.setSelected(!item.isSelected());
+                updateSelectedUI(holder, item.isSelected());
+            });
+        }
     }
 
     private void updateSelectedUI(MedicineViewHolder holder, boolean isSelected) {

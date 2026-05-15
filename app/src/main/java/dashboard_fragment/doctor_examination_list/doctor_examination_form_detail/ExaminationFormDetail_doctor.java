@@ -313,11 +313,11 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
         }
     }
 
-    public void requestListReload() {
+    public void requestListReload(boolean isFormCompleted) {
         Intent data = new Intent();
 
         setResult(Activity.RESULT_OK, data);
-        finish();
+        if (isFormCompleted) finish();
     }
 
     private void requestFullMedicalRecord() {
@@ -326,11 +326,9 @@ public class ExaminationFormDetail_doctor extends AppCompatActivity {
             public void onResponse(@NonNull Call<List<FullMedicalRecordResponse>> call, @NonNull retrofit2.Response<List<FullMedicalRecordResponse>> response) {
                 if (response.isSuccessful()) {
                     if (response.body() != null && !response.body().isEmpty()) {
-                        Toast.makeText(ExaminationFormDetail_doctor.this, "Tải bệnh án thành công!", Toast.LENGTH_SHORT).show();
                         currentMedicalRecord = response.body().get(0);
                         doctorExDetailViewModel.setMedicalRecord(currentMedicalRecord);
                     } else {
-                        Toast.makeText(ExaminationFormDetail_doctor.this, "Phiếu khám chưa có bệnh án. Tiến hành tạo mới!", Toast.LENGTH_SHORT).show();
                         doctorExDetailViewModel.setMedicalRecord(null);
                     }
                 } else {

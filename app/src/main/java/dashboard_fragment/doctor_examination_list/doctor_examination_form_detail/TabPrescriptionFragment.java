@@ -460,10 +460,10 @@ public class TabPrescriptionFragment extends Fragment {
                 }
 
                 if (response.isSuccessful()) {
-                    Toast.makeText(requireContext(), "Luu benh an thanh cong", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Lưu bệnh án thành công", Toast.LENGTH_SHORT).show();
                     ExaminationFormDetail_doctor activity = (ExaminationFormDetail_doctor) requireActivity();
                     activity.updateCurrentStatus(DoctorExaminationStatus.DONE);
-                    activity.requestListReload();
+                    activity.requestListReload(true);
                     return;
                 }
 
