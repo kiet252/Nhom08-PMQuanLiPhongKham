@@ -16,7 +16,7 @@ import android.widget.TextView;
 
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
-import com.example.nhom08_quanlyphongkham.admin_manage_staff;
+import com.example.nhom08_quanlyphongkham.admin_manage_staff.admin_manage_staff;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 
 import coil.Coil;

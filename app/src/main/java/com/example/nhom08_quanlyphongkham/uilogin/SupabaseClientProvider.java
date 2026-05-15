@@ -9,7 +9,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class SupabaseClientProvider {
-    private static final String SUPABASE_URL = "https://waiuciilyysobnvcwshd.supabase.co/";
+    public static final String SUPABASE_URL = "https://waiuciilyysobnvcwshd.supabase.co/";
     private static Retrofit retrofit;
 
     public static Retrofit getClient(Context context) {
@@ -25,10 +25,8 @@ public class SupabaseClientProvider {
 
                         Request.Builder requestBuilder = original.newBuilder()
                                 .header("Content-Type", "application/json")
-                                // ADD THIS: Now you don't need apikey in your Interface methods!
                                 .header("apikey", context.getString(R.string.abAIkey));
 
-                        // Only add Bearer token if it exists and we aren't already on an auth path
                         if (token != null && !token.isEmpty() && !original.url().toString().contains("auth/v1/token")) {
                             requestBuilder.header("Authorization", "Bearer " + token);
                         }
@@ -40,14 +38,12 @@ public class SupabaseClientProvider {
                             String refreshToken = SharedPrefManager.getInstance(context).getRefreshToken();
                             if (refreshToken == null || refreshToken.isEmpty()) return null;
 
-                            // Internal AuthApi for refreshing (No interceptor to avoid loops)
                             AuthApiService authApi = new Retrofit.Builder()
                                     .baseUrl(SUPABASE_URL)
                                     .addConverterFactory(GsonConverterFactory.create())
                                     .build()
                                     .create(AuthApiService.class);
 
-                            // We pass apikey manually here because this internal Retrofit has no interceptor
                             retrofit2.Response<LoginResponse> refreshRes = authApi.refreshToken(
                                     context.getString(R.string.abAIkey),
                                     new RefreshTokenRequest(refreshToken)

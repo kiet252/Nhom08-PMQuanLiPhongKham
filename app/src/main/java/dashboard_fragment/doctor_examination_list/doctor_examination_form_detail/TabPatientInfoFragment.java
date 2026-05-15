@@ -1,7 +1,6 @@
 package dashboard_fragment.doctor_examination_list.doctor_examination_form_detail;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,18 +12,12 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.example.nhom08_quanlyphongkham.R;
-import com.example.nhom08_quanlyphongkham.StaffItem;
-import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.google.android.material.button.MaterialButton;
 
 import java.io.IOException;
-import java.util.List;
 
-import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.info_logic.ExaminationFormSpecificFormUpdateBody;
 import dashboard_fragment.staff_create_examination_form.ExaminationFormRepository;
 import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class TabPatientInfoFragment extends Fragment {
     private View rootView;

@@ -1,7 +1,6 @@
-package com.example.nhom08_quanlyphongkham;
+package com.example.nhom08_quanlyphongkham.admin_manage_staff;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageButton;
@@ -12,6 +11,8 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.nhom08_quanlyphongkham.R;
+import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.uilogin.ProfileRepository;
 import com.google.android.material.imageview.ShapeableImageView;
 
@@ -66,6 +67,7 @@ public class staff_detail extends AppCompatActivity {
         btnEdit.setOnClickListener(v -> {
             if (userProfile != null) {
                 Intent intent = new Intent(staff_detail.this, set_staff_detail.class);
+
                 intent.putExtra("user_profile", userProfile);
                 editLauncher.launch(intent);
             }

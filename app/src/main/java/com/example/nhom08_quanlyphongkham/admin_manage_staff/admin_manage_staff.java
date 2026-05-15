@@ -1,4 +1,4 @@
-package com.example.nhom08_quanlyphongkham;
+package com.example.nhom08_quanlyphongkham.admin_manage_staff;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -19,8 +19,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.nhom08_quanlyphongkham.R;
+import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.uilogin.ProfileRepository;
-import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
