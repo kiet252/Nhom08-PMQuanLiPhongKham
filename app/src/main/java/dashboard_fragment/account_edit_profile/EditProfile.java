@@ -1,12 +1,18 @@
 package dashboard_fragment.account_edit_profile;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -17,11 +23,15 @@ import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
+
+import coil.Coil;
+import coil.request.ImageRequest;
 import dashboard_fragment.account_edit_profile.update_profile_logic.UpdateProfileRequest;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -34,10 +44,14 @@ public class EditProfile extends AppCompatActivity {
 
     private TextInputEditText edtEditProfileFullName, edtEditProfileEmail, edtEditProfileBirthday, edtEditProfilePhone, edtEditProfileAddress;
 
+
     private RadioGroup rgEditProfileGender;
 
     private UserProfile userProfile;
     private String currentToken;
+
+    ImageView avatar;
+    private Uri selectedImageUri;
 
     private EditProfileRepository repository;
 
@@ -63,7 +77,6 @@ public class EditProfile extends AppCompatActivity {
     private void initializeViews() {
         btnBackEditProfile = findViewById(R.id.btnBackEditProfile);
         btnSaveEditProfile = findViewById(R.id.btnSaveEditProfile);
-
         edtEditProfileFullName = findViewById(R.id.edtEditProfileFullName);
         edtEditProfileEmail = findViewById(R.id.edtEditProfileEmail);
         edtEditProfileBirthday = findViewById(R.id.edtEditProfileBirthday);
@@ -71,6 +84,8 @@ public class EditProfile extends AppCompatActivity {
         edtEditProfileAddress = findViewById(R.id.edtEditProfileAddress);
 
         rgEditProfileGender = findViewById(R.id.rgEditProfileGender);
+        avatar = findViewById(R.id.imgAvatar);
+
     }
 
     private void getIntentInfo() {
@@ -100,12 +115,43 @@ public class EditProfile extends AppCompatActivity {
         } else {
             rgEditProfileGender.check(R.id.rbGenderOther);
         }
+        String avatarUrl = userProfile.getAnh_dai_dien();
+        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+            if (!avatarUrl.startsWith("http")) {
+                avatarUrl = "https://waiuciilyysobnvcwshd.supabase.co/storage/v1/object/public/avatars/" + avatarUrl;
+            }
+
+            ImageRequest request = new ImageRequest.Builder(this)
+                    .data(avatarUrl)
+                    .target(avatar)
+                    .crossfade(true)
+                    .placeholder(R.drawable.ic_launcher_background)
+                    .error(R.drawable.ic_launcher_background)
+                    .build();
+
+            Coil.imageLoader(this).enqueue(request);
+    }
     }
 
     private void setupListeners() {
         btnBackEditProfile.setOnClickListener(v -> finish());
         btnSaveEditProfile.setOnClickListener(v -> saveProfile());
+        avatar.setOnClickListener(v -> openGallery());
     }
+
+    private void openGallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        galleryLauncher.launch(intent);
+    }
+    private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    selectedImageUri = result.getData().getData();
+                    avatar.setImageURI(selectedImageUri);
+                }
+            }
+    );
 
     private void saveProfile() {
         if (userProfile == null) {

@@ -52,13 +52,12 @@
             android:orientation="vertical">
 
             <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="18dp"
-                android:foregroundGravity="center"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp">
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_gravity="center"
+                android:layout_marginBottom="18dp">
 
+                <!-- 1. Avatar đặt trước để làm lớp nền phía dưới -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardEditProfileAvatar"
                     android:layout_width="104dp"
@@ -68,37 +67,31 @@
                     app:cardCornerRadius="52dp"
                     app:cardElevation="3dp">
 
+                    <!-- Bạn nhớ thêm ImageView vào đây để hiển thị ảnh từ Gallery nhé -->
                     <ImageView
-                        android:id="@+id/imgEditProfileAvatar"
+                        android:id="@+id/imgAvatar"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="10dp"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/dashboard_icon_avatar" />
+                        android:src="@android:drawable/ic_menu_gallery" />
+
                 </androidx.cardview.widget.CardView>
 
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/btnChangeAvatar"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:layout_gravity="center_horizontal|bottom"
-                    android:layout_marginStart="72dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    app:cardBackgroundColor="#0D3F6E"
-                    app:cardCornerRadius="18dp"
-                    app:cardElevation="4dp">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_edit_profile"
-                        app:tint="@android:color/white" />
-                </com.google.android.material.card.MaterialCardView>
+                <!-- 2. Nút Camera đặt sau để đè lên trên Avatar, căn về góc dưới bên phải -->
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fabSelectAvatar3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="4dp"
+                    android:layout_marginBottom="4dp"
+                    android:backgroundTint="#0D3F6E"
+                    android:src="@android:drawable/ic_menu_camera"
+                    app:fabCustomSize="32dp"
+                    app:maxImageSize="16dp"
+                    app:tint="@color/white" />
 
             </FrameLayout>
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

@@ -88,8 +88,9 @@ public class HomeFragment_doctor extends Fragment {
 
             @Override
             public void onFailure(@NonNull Call<List<ExaminationFormWithPatientDto>> call, @NonNull Throwable t) {
-                Toast.makeText(getContext(), "Lỗi tải dữ liệu", Toast.LENGTH_SHORT).show();
-            }
+                if (isAdded() && getActivity() != null) {
+                    Toast.makeText(getActivity(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }            }
         });
     }
 
