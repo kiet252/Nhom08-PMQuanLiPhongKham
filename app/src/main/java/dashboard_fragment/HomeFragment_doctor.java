@@ -33,7 +33,6 @@ import coil.request.ImageRequest;
 import dashboard_fragment.doctor_examination_list.ExaminationList_doctor;
 import dashboard_fragment.staff_create_examination_form.ExaminationFormRepository;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
-import doctor_patient_list.doctor_patient_list;
 import retrofit2.Call;
 
 
@@ -203,16 +202,14 @@ public class HomeFragment_doctor extends Fragment {
         }
 
         if (btnViewMedicalRecords != null) {
-            btnViewMedicalRecords.setOnClickListener(v -> openPatientList());
+            btnViewMedicalRecords.setOnClickListener(v -> {
+                Intent intent = new Intent(getActivity(), dashboard_fragment.doctor_view_medical_record.ViewMedicalRecord_doctor.class);
+                startActivity(intent);});
         }
     }
 
     private void openExFormsLists() {
         Intent intent = new Intent(getActivity(), ExaminationList_doctor.class);
-        startActivity(intent);
-    }
-    private void openPatientList() {
-        Intent intent = new Intent(getActivity(), doctor_patient_list.class);
         startActivity(intent);
     }
     private ExaminationFormWithPatientDto getPriorityPatient() {

@@ -14,6 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Nhom08QuanLyPhongKham">
         <activity
+            android:name="dashboard_fragment.doctor_view_medical_record.ViewMedicalRecord_doctor"
+            android:exported="false" />
+        <activity
             android:name="dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.ExaminationFormDetail_doctor"
             android:exported="false" />
         <activity
@@ -59,8 +62,7 @@
         <activity
             android:name=".admin_manage_staff.create_staff"
             android:exported="false" />
-        <activity android:name="doctor_patient_list.doctor_patient_list"/>
-
+        <activity android:name="doctor_patient_list.doctor_patient_list" />
     </application>
 
 </manifest>
