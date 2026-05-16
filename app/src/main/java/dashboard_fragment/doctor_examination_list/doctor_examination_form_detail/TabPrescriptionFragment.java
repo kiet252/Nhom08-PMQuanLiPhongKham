@@ -446,8 +446,8 @@ public class TabPrescriptionFragment extends Fragment {
                 exFormId,
                 doctorId,
                 buildDiagnosisText(),
-                "",
-                "",
+                doctorExDetailViewModel.getAdditionalDiagnosis(),
+                doctorExDetailViewModel.getClinicalNote(),
                 buildClinicalIdsPayload(),
                 buildMedicinePayload()
         );

@@ -6,6 +6,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -37,6 +38,8 @@ public class TabDiagnosisFragment extends Fragment {
     private Map<String, List<DiagnosisOption>> diagnosisGroups;
     private LinearLayout containerDiagnosisGroups;
     private TextView tvPrimaryDiagnosis;
+    private EditText edtAdditionalDiagnosis;
+    private EditText edtClinicalNote;
     private MedicalRecordDiagnosisWrapper initialDiagnosisData;
     private DoctorExDetailViewModel doctorExDetailViewModel;
 
@@ -56,12 +59,43 @@ public class TabDiagnosisFragment extends Fragment {
         diagnosisGroups = DiagnosisSeedData.getDiagnosisGroups();
         containerDiagnosisGroups = view.findViewById(R.id.containerDiagnosisGroups);
         tvPrimaryDiagnosis = view.findViewById(R.id.tvPrimaryDiagnosis);
+        edtAdditionalDiagnosis = view.findViewById(R.id.edtAdditionalDiagnosis);
+        edtClinicalNote = view.findViewById(R.id.edtClinicalNote);
         doctorExDetailViewModel =
                 new ViewModelProvider(requireActivity()).get(DoctorExDetailViewModel.class);
 
         if (!doctorExDetailViewModel.hasDiagnosisSelectionInitialized()) {
             doctorExDetailViewModel.initializeSelectedDiagnoses(selectedDiagnoses);
         }
+        
+        edtAdditionalDiagnosis.setText(doctorExDetailViewModel.getAdditionalDiagnosis());
+        edtClinicalNote.setText(doctorExDetailViewModel.getClinicalNote());
+
+        edtAdditionalDiagnosis.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+                doctorExDetailViewModel.setAdditionalDiagnosis(s == null ? "" : s.toString());
+            }
+        });
+
+        edtClinicalNote.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+                doctorExDetailViewModel.setClinicalNote(s == null ? "" : s.toString());
+            }
+        });
         selectedDiagnoses.clear();
         selectedDiagnoses.addAll(doctorExDetailViewModel.getSelectedDiagnoses());
 
@@ -74,6 +108,20 @@ public class TabDiagnosisFragment extends Fragment {
     private void observeMedicalRecord() {
         doctorExDetailViewModel.getMedicalRecord().observe(getViewLifecycleOwner(), record -> {
             initialDiagnosisData = record == null ? null : record.getDiagnosisNotes();
+            
+            if (initialDiagnosisData != null) {
+                if (doctorExDetailViewModel.getAdditionalDiagnosis().isEmpty() && initialDiagnosisData.getChanDoanBoSung() != null) {
+                    String val = initialDiagnosisData.getChanDoanBoSung().trim();
+                    doctorExDetailViewModel.setAdditionalDiagnosis(val);
+                    if (edtAdditionalDiagnosis != null) edtAdditionalDiagnosis.setText(val);
+                }
+                if (doctorExDetailViewModel.getClinicalNote().isEmpty() && initialDiagnosisData.getGhiChuLamSang() != null) {
+                    String val = initialDiagnosisData.getGhiChuLamSang().trim();
+                    doctorExDetailViewModel.setClinicalNote(val);
+                    if (edtClinicalNote != null) edtClinicalNote.setText(val);
+                }
+            }
+            
             updatePrimaryDiagnosisText();
         });
     }

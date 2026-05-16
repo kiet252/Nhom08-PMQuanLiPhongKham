@@ -21,6 +21,8 @@ public class DoctorExDetailViewModel extends ViewModel {
     private boolean clinicalSelectionInitialized;
     private boolean diagnosisSelectionInitialized;
     private boolean prescriptionSelectionInitialized;
+    private String additionalDiagnosis = "";
+    private String clinicalNote = "";
 
     public LiveData<FullMedicalRecordResponse> getMedicalRecord() {
         return medicalRecord;
@@ -101,6 +103,22 @@ public class DoctorExDetailViewModel extends ViewModel {
 
     public Set<String> getSelectedDiagnoses() {
         return new LinkedHashSet<>(selectedDiagnoses);
+    }
+
+    public String getAdditionalDiagnosis() {
+        return additionalDiagnosis;
+    }
+
+    public void setAdditionalDiagnosis(String additionalDiagnosis) {
+        this.additionalDiagnosis = additionalDiagnosis;
+    }
+
+    public String getClinicalNote() {
+        return clinicalNote;
+    }
+
+    public void setClinicalNote(String clinicalNote) {
+        this.clinicalNote = clinicalNote;
     }
 
     public boolean hasPrescriptionSelectionInitialized() {
