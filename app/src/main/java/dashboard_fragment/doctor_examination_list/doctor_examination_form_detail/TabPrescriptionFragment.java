@@ -102,8 +102,8 @@ public class TabPrescriptionFragment extends Fragment {
                     item.setLieuDung(parsedDose);
                 }
 
-                if (wrapper.getLieuDung() != null && !wrapper.getLieuDung().trim().isEmpty()) {
-                    item.setGhiChu(wrapper.getLieuDung().trim());
+                if (wrapper.getGhiChu() != null && !wrapper.getGhiChu().trim().isEmpty()) {
+                    item.setGhiChu(wrapper.getGhiChu().trim());
                 }
 
                 item.setTanSuat(wrapper.getTanSuat() == null ? "" : wrapper.getTanSuat().trim());

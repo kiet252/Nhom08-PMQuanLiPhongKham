@@ -26,7 +26,7 @@ public class MedicalRecordRepository {
     public Call<List<FullMedicalRecordResponse>> getMedicalRecordJoinDiagnosisJoinPrescription(String exFormId) {
         String filter = "eq." + exFormId;
 
-        String selectFields = "id,chan_doan_chinh,chan_doan_bo_sung,ghi_chu_lam_sang,medical_record_clinical(clinical(id,ten_dich_vu,don_gia)),medical_record_medicine(so_luong,lieu_dung,tan_suat,thoi_gian,medicine(id,ten_thuoc,don_vi))";
+        String selectFields = "id,chan_doan_chinh,chan_doan_bo_sung,ghi_chu_lam_sang,medical_record_clinical(clinical(id,ten_dich_vu,don_gia)),medical_record_medicine(so_luong,lieu_dung,ghi_chu,tan_suat,thoi_gian,medicine(id,ten_thuoc,don_vi))";
 
         return MedicalJoinDiagnosisJoinPrescriptionApiService.getFullMedicalRecord(
                 filter,

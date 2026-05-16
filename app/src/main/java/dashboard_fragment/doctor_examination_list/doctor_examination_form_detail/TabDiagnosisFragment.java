@@ -110,6 +110,23 @@ public class TabDiagnosisFragment extends Fragment {
             initialDiagnosisData = record == null ? null : record.getDiagnosisNotes();
             
             if (initialDiagnosisData != null) {
+                if (doctorExDetailViewModel.getSelectedDiagnoses().isEmpty() && initialDiagnosisData.getChanDoanChinh() != null) {
+                    String[] parts = initialDiagnosisData.getChanDoanChinh().split(";");
+                    LinkedHashSet<String> prefilled = new LinkedHashSet<>();
+                    for (String p : parts) {
+                        if (!p.trim().isEmpty()) {
+                            prefilled.add(p.trim());
+                        }
+                    }
+                    doctorExDetailViewModel.setSelectedDiagnoses(prefilled);
+                    selectedDiagnoses.clear();
+                    selectedDiagnoses.addAll(prefilled);
+                    
+                    if (containerDiagnosisGroups.getChildCount() > 0) {
+                        renderDiagnosisGroups();
+                    }
+                }
+
                 if (doctorExDetailViewModel.getAdditionalDiagnosis().isEmpty() && initialDiagnosisData.getChanDoanBoSung() != null) {
                     String val = initialDiagnosisData.getChanDoanBoSung().trim();
                     doctorExDetailViewModel.setAdditionalDiagnosis(val);
@@ -323,14 +340,8 @@ public class TabDiagnosisFragment extends Fragment {
 
     private void updatePrimaryDiagnosisText() {
         if (selectedDiagnoses.isEmpty()) {
-            String diagnosisSummary = buildDiagnosisSummary(initialDiagnosisData);
-            if (diagnosisSummary.isEmpty()) {
-                tvPrimaryDiagnosis.setText("Chẩn đoán chính");
-                tvPrimaryDiagnosis.setTextColor(0xFF64748B);
-            } else {
-                tvPrimaryDiagnosis.setText(diagnosisSummary);
-                tvPrimaryDiagnosis.setTextColor(0xFF1E293B);
-            }
+            tvPrimaryDiagnosis.setText("Chẩn đoán chính");
+            tvPrimaryDiagnosis.setTextColor(0xFF64748B);
             return;
         }
 
@@ -346,37 +357,6 @@ public class TabDiagnosisFragment extends Fragment {
 
         tvPrimaryDiagnosis.setText(builder.toString());
         tvPrimaryDiagnosis.setTextColor(0xFF1E293B);
-    }
-
-    private String buildDiagnosisSummary(MedicalRecordDiagnosisWrapper diagnosisData) {
-        if (diagnosisData == null) {
-            return "";
-        }
-
-        List<String> lines = new ArrayList<>();
-        appendDiagnosisLine(lines, "Chẩn đoán chính", diagnosisData.getChanDoanChinh());
-        appendDiagnosisLine(lines, "Chẩn đoán bổ sung", diagnosisData.getChanDoanBoSung());
-        appendDiagnosisLine(lines, "Ghi chú lâm sàng", diagnosisData.getGhiChuLamSang());
-
-        if (lines.isEmpty()) {
-            return "";
-        }
-
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < lines.size(); i++) {
-            builder.append(lines.get(i));
-            if (i < lines.size() - 1) {
-                builder.append("\n");
-            }
-        }
-        return builder.toString();
-    }
-
-    private void appendDiagnosisLine(List<String> lines, String label, String value) {
-        if (value == null || value.trim().isEmpty()) {
-            return;
-        }
-        lines.add(label + ": " + value.trim());
     }
 
     private void setupContinueButton(View view) {
