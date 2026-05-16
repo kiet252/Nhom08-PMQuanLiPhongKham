@@ -17,6 +17,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -86,6 +87,12 @@ public class ExaminationList_doctor extends AppCompatActivity {
 
         repository = new ExaminationFormRepository(this);
         loadAllFormsAndPatientDto();
+        String autoOpenId = getIntent().getStringExtra("auto_open_form_id");
+        if (autoOpenId != null) {
+            loadAndAutoOpen(autoOpenId);
+        } else {
+            loadAllFormsAndPatientDto();
+        }
     }
 
     private void initializeViews() {
@@ -431,5 +438,38 @@ public class ExaminationList_doctor extends AppCompatActivity {
     private void openExaminationFormDetails(ExaminationFormWithPatientDto form) {
         Intent intent = ExaminationFormDetail_doctor.createIntent(this, form);
         ExaminationFormLauncher.launch(intent);
+    }
+    private void loadAndAutoOpen(String formId) {
+        UserProfile doctorProfile = SharedPrefManager.getInstance(this).getProfile();
+        repository.getAllFormsToday(doctorProfile.getID()).enqueue(new retrofit2.Callback<List<ExaminationFormWithPatientDto>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<ExaminationFormWithPatientDto>> call,
+                                   @NonNull retrofit2.Response<List<ExaminationFormWithPatientDto>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    allForms = buildDisplayForms(response.body());
+                    resultExaminationFormsAndPatients = new ArrayList<>(allForms);
+                    updateCounts(allForms);
+                    applySelectedFilter();
+
+                    for (ExaminationFormWithPatientDto form : allForms) {
+                        if (formId.equals(form.getId())) {
+                            Intent intent = ExaminationFormDetail_doctor.createIntent(
+                                    ExaminationList_doctor.this, form);
+                            ExaminationFormLauncher.launch(intent,
+                                    ActivityOptionsCompat.makeCustomAnimation(
+                                            ExaminationList_doctor.this, 0, 0));
+                            break;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<ExaminationFormWithPatientDto>> call,
+                                  @NonNull Throwable t) {
+                Toast.makeText(ExaminationList_doctor.this,
+                        "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

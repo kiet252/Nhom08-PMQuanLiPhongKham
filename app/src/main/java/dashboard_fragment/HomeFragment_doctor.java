@@ -1,5 +1,6 @@
 package dashboard_fragment;
 
+import android.app.TaskStackBuilder;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -17,6 +18,7 @@ import android.widget.Toast;
 
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
+import com.example.nhom08_quanlyphongkham.dashboard;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 
 import java.text.SimpleDateFormat;
@@ -31,6 +33,7 @@ import coil.Coil;
 import coil.request.ImageRequest;
 
 import dashboard_fragment.doctor_examination_list.ExaminationList_doctor;
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.ExaminationFormDetail_doctor;
 import dashboard_fragment.staff_create_examination_form.ExaminationFormRepository;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import retrofit2.Call;
@@ -205,6 +208,16 @@ public class HomeFragment_doctor extends Fragment {
             btnViewMedicalRecords.setOnClickListener(v -> {
                 Intent intent = new Intent(getActivity(), dashboard_fragment.doctor_view_medical_record.ViewMedicalRecord_doctor.class);
                 startActivity(intent);});
+        }
+        if(btn_KhamNgay != null)
+        {
+            btn_KhamNgay.setOnClickListener(v -> {
+                if (nextPatient == null || nextPatient.getPatient() == null) return;
+
+                Intent intent = new Intent(getActivity(), ExaminationList_doctor.class);
+                intent.putExtra("auto_open_form_id", nextPatient.getId());
+                startActivity(intent);
+            });
         }
     }
 

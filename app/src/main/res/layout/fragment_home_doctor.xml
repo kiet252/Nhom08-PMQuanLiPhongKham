@@ -648,6 +648,7 @@
                         android:text="Chờ khám"
                         android:textColor="#E67E22"
                         android:textSize="13sp"
+                        android:visibility="invisible"
                         android:textStyle="bold" />
 
                     <com.google.android.material.button.MaterialButton
@@ -659,11 +660,13 @@
                         android:textColor="@android:color/white"
                         android:textSize="12sp"
                         android:textStyle="bold"
+                        android:visibility="invisible"
                         app:backgroundTint="#0D3F6E"
                         app:cornerRadius="10dp"
                         app:icon="@drawable/ic_chevron_right"
                         app:iconGravity="textEnd"
                         app:iconPadding="4dp"
+
                         app:iconTint="@android:color/white" />
                 </LinearLayout>
             </LinearLayout>
