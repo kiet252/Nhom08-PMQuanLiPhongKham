@@ -116,9 +116,39 @@ public class TabPrescriptionFragment extends Fragment {
                 prefilledMedicines.add(item);
             }
 
-            doctorExDetailViewModel.initializeSelectedMedicines(prefilledMedicines);
-            selectedMedicines = doctorExDetailViewModel.getSelectedMedicines();
-            renderSelectedMedicines();
+            prescriptionRepository.getAllMedicines().enqueue(new retrofit2.Callback<List<MedicineItem>>() {
+                @Override
+                public void onResponse(@NonNull Call<List<MedicineItem>> call, @NonNull retrofit2.Response<List<MedicineItem>> response) {
+                    if (!isAdded()) return;
+                    
+                    if (response.isSuccessful() && response.body() != null) {
+                        List<MedicineItem> allMedicines = response.body();
+                        for (PrescriptionItem prefilled : prefilledMedicines) {
+                            if (prefilled.getMedicine() != null) {
+                                for (MedicineItem fullMedicine : allMedicines) {
+                                    if (prefilled.getMedicine().getId() == fullMedicine.getId()) {
+                                        prefilled.getMedicine().setTon_kho(fullMedicine.getTon_kho());
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    doctorExDetailViewModel.initializeSelectedMedicines(prefilledMedicines);
+                    selectedMedicines = doctorExDetailViewModel.getSelectedMedicines();
+                    renderSelectedMedicines();
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<List<MedicineItem>> call, @NonNull Throwable t) {
+                    if (!isAdded()) return;
+                    
+                    doctorExDetailViewModel.initializeSelectedMedicines(prefilledMedicines);
+                    selectedMedicines = doctorExDetailViewModel.getSelectedMedicines();
+                    renderSelectedMedicines();
+                }
+            });
         });
     }
 
@@ -440,7 +470,12 @@ public class TabPrescriptionFragment extends Fragment {
             return;
         }
 
-
+        for (PrescriptionItem item : doctorExDetailViewModel.getSelectedMedicines()) {
+            if (item.getSoLuong() > item.getMedicine().getTon_kho()) {
+                Toast.makeText(requireContext(), "Lỗi: Số lượng kê của thuốc " + item.getMedicine().getTen_thuoc() + " vượt quá tồn kho!", Toast.LENGTH_LONG).show();
+                return;
+            }
+        }
 
         SaveFullMedicalRecordRequest request = new SaveFullMedicalRecordRequest(
                 exFormId,
@@ -626,9 +661,17 @@ public class TabPrescriptionFragment extends Fragment {
                 ? "\u0111\u01a1n v\u1ecb"
                 : item.getMedicine().getDon_vi().trim();
 
-        tvQuantity.setText("So luong ke: " + quantity + " " + donVi);
+        tvQuantity.setText("Số lượng kê: " + quantity + " " + donVi);
 
-        int tonKhoConLai = Math.max(0, item.getMedicine().getTon_kho() - quantity);
-        tvStock.setText("TK: " + tonKhoConLai + " " + donVi);
+        int tonKhoConLai = item.getMedicine().getTon_kho() - quantity;
+        if (tonKhoConLai < 0) {
+            tvQuantity.setTextColor(0xFFDC2626); // Red
+            tvStock.setText("TK: " + item.getMedicine().getTon_kho() + " " + donVi + " (Thiếu " + Math.abs(tonKhoConLai) + ")");
+            tvStock.setTextColor(0xFFDC2626); // Red
+        } else {
+            tvQuantity.setTextColor(0xFF0D3F6E); // Default Blue
+            tvStock.setText("TK: " + tonKhoConLai + " " + donVi);
+            tvStock.setTextColor(0xFF0D3F6E); // Default Blue
+        }
     }
 }

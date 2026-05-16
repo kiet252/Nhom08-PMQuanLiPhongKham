@@ -36,6 +36,10 @@ public class MedicineItem {
         return ton_kho;
     }
 
+    public void setTon_kho(int ton_kho) {
+        this.ton_kho = ton_kho;
+    }
+
     public String getChuc_nang() {
         return chuc_nang;
     }
