@@ -229,17 +229,26 @@ public class TabPrescriptionFragment extends Fragment {
             List<PrescriptionItem> updatedMedicines = new ArrayList<>();
             for (MedicineItem item : adapter.getItems()) {
                 if (item.isSelected()) {
-                    updatedMedicines.add(new PrescriptionItem(item));
+                    PrescriptionItem existingItem = null;
+                    for (PrescriptionItem oldItem : selectedMedicines) {
+                        if (oldItem.getMedicine().getId() == item.getId()) {
+                            existingItem = oldItem;
+                            break;
+                        }
+                    }
+                    if (existingItem != null) {
+                        updatedMedicines.add(existingItem);
+                    } else {
+                        PrescriptionItem newItem = new PrescriptionItem(item);
+                        newItem.setLieuDung(1);
+                        updatedMedicines.add(newItem);
+                    }
                 }
             }
 
             doctorExDetailViewModel.replaceSelectedMedicines(updatedMedicines);
             selectedMedicines = doctorExDetailViewModel.getSelectedMedicines();
             renderSelectedMedicines();
-
-            Toast.makeText(requireContext(),
-                    "Da chon " + selectedMedicines.size() + " thuoc",
-                    Toast.LENGTH_SHORT).show();
 
             dialog.dismiss();
         });
