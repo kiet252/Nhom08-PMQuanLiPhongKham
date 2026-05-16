@@ -76,9 +76,7 @@
                             android:textStyle="bold"
                             android:drawablePadding="6dp"
                             android:drawableTint="#2E7D32"
-                            app:drawableStartCompat="@drawable/ic_calendar_month"
-                            app:drawableWidthCompat="14dp"
-                            app:drawableHeightCompat="14dp"/>
+                            app:drawableStartCompat="@drawable/ic_calendar_month"/>
 
                         <TextView
                             android:id="@+id/tvRecordStatus"
