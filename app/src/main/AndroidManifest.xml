@@ -62,7 +62,6 @@
         <activity
             android:name=".admin_manage_staff.create_staff"
             android:exported="false" />
-        <activity android:name="doctor_patient_list.doctor_patient_list" />
     </application>
 
 </manifest>
