@@ -163,34 +163,54 @@ public class TabPatientInfoFragment extends Fragment {
     private void updateExaminationFormInfo(ExaminationFormDetail_doctor activity, boolean formCompleted) {
         setStatusButtonsEnabled(false);
 
+        android.widget.ProgressBar progressBar = new android.widget.ProgressBar(requireContext());
+        progressBar.setPadding(0, 50, 0, 50);
+        androidx.appcompat.app.AlertDialog loadingDialog = new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Đang xử lý...")
+                .setView(progressBar)
+                .setCancelable(false)
+                .create();
+        loadingDialog.show();
+
         String currentStatus = currentExaminationStatus.getDisplayName();
         String currentSymptom = edtSymptoms.getText().toString();
 
         ExFormRepository.patchExaminationForm(currentFormId, currentStatus, currentSymptom).enqueue(new retrofit2.Callback<Void>() {
             @Override
             public void onResponse(@NonNull Call<Void> call, @NonNull retrofit2.Response<Void> response) {
-                setStatusButtonsEnabled(true);
-
-                if (response.isSuccessful()) {
-                    Toast.makeText(requireContext(), "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
-
-                    activity.requestListReload(formCompleted);
-
-                } else {
-                    try {
-                        String errorMsg = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
-                        Toast.makeText(requireContext(), "Lỗi cập nhật: " + response.code() + " " + errorMsg, Toast.LENGTH_LONG).show();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                    if (loadingDialog.isShowing()) {
+                        loadingDialog.dismiss();
                     }
-                }
+                    if (!isAdded()) return;
+                    
+                    setStatusButtonsEnabled(true);
+
+                    if (response.isSuccessful()) {
+                        Toast.makeText(requireContext(), "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
+                        activity.requestListReload(formCompleted);
+                    } else {
+                        try {
+                            String errorMsg = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
+                            Toast.makeText(requireContext(), "Lỗi cập nhật: " + response.code() + " " + errorMsg, Toast.LENGTH_LONG).show();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, 500);
             }
 
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
-                // 3. Đảm bảo luôn mở khóa lại nút kể cả khi gặp sự cố ngắt kết nối mạng mạng
-                setStatusButtonsEnabled(true);
-                Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                    if (loadingDialog.isShowing()) {
+                        loadingDialog.dismiss();
+                    }
+                    if (!isAdded()) return;
+                    
+                    setStatusButtonsEnabled(true);
+                    Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }, 500);
             }
         });
     }
