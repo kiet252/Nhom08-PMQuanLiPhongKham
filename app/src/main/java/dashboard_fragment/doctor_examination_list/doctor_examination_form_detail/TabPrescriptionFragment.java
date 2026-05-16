@@ -97,7 +97,7 @@ public class TabPrescriptionFragment extends Fragment {
 
                 PrescriptionItem item = new PrescriptionItem(wrapper.getMedicine());
 
-                int parsedDose = extractLeadingNumber(wrapper.getLieuDung());
+                int parsedDose = wrapper.getLieuDung();
                 if (parsedDose > 0) {
                     item.setLieuDung(parsedDose);
                 }

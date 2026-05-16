@@ -15,9 +15,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:background="@drawable/bg_clinical_circle_checked"
-            android:gravity="center">
-
-        </LinearLayout>
+            android:gravity="center" />
 
         <View
             android:id="@+id/doctorMedicalRecordHistoryItemConnector"
@@ -62,22 +60,21 @@
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
-
                         <androidx.appcompat.widget.AppCompatTextView
                             android:id="@+id/tvRecordDate"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:background="@drawable/bg_status_examined"
+                            android:drawablePadding="6dp"
+                            android:gravity="center_vertical"
                             android:paddingHorizontal="10dp"
                             android:paddingVertical="5dp"
-                            android:gravity="center_vertical"
                             android:text="05/02/2026"
                             android:textColor="#2E7D32"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:drawablePadding="6dp"
                             android:drawableTint="#2E7D32"
-                            app:drawableStartCompat="@drawable/ic_calendar_month"/>
+                            app:drawableStartCompat="@drawable/ic_calendar_month" />
 
                         <TextView
                             android:id="@+id/tvRecordStatus"
@@ -92,7 +89,6 @@
                             android:textColor="#2E7D32"
                             android:textSize="12sp"
                             android:textStyle="bold" />
-
                     </LinearLayout>
 
                     <TextView
@@ -100,7 +96,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="BS. Khánh bảnh · 3 (Mã phiếu khám nha)"
+                        android:text="BS. Khánh bệnh · 3"
                         android:textColor="#64748B"
                         android:textSize="12sp" />
 
@@ -205,14 +201,17 @@
                     android:textColor="#1E293B"
                     android:textSize="14sp" />
 
-                <TextView
+                <androidx.appcompat.widget.AppCompatTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
+                    android:drawablePadding="6dp"
                     android:text="CẬN LÂM SÀNG"
                     android:textColor="#F97316"
                     android:textSize="11sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    app:drawableStartCompat="@drawable/ic_doctor_tab_cls"
+                    app:drawableTint="#F97316" />
 
                 <LinearLayout
                     android:id="@+id/containerClinicalItems"
@@ -221,14 +220,17 @@
                     android:layout_marginTop="8dp"
                     android:orientation="vertical" />
 
-                <TextView
+                <androidx.appcompat.widget.AppCompatTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
+                    android:drawablePadding="6dp"
                     android:text="CHẨN ĐOÁN"
                     android:textColor="#3D7BE0"
                     android:textSize="11sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    app:drawableStartCompat="@drawable/ic_doctor_tab_diagnosis"
+                    app:drawableTint="#3D7BE0" />
 
                 <LinearLayout
                     android:id="@+id/containerDiagnosisItems"
@@ -237,14 +239,17 @@
                     android:layout_marginTop="8dp"
                     android:orientation="vertical" />
 
-                <TextView
+                <androidx.appcompat.widget.AppCompatTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
+                    android:drawablePadding="6dp"
                     android:text="ĐƠN THUỐC"
                     android:textColor="#2E7D32"
                     android:textSize="11sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    app:drawableStartCompat="@drawable/ic_doctor_tab_prescription"
+                    app:drawableTint="#2E7D32" />
 
                 <LinearLayout
                     android:id="@+id/containerMedicineItems"

@@ -1,6 +1,7 @@
 package dashboard_fragment.doctor_view_medical_record;
 
 import java.util.List;
+
 import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.medical_join_diagnosis_join_prescription.MedicalRecordClinicalWrapper;
 import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.medical_join_diagnosis_join_prescription.MedicalRecordMedicineWrapper;
 
@@ -10,14 +11,14 @@ public class ExaminationFormHistoryResponse {
     private String trang_thai;
     private String trieu_chung_ban_dau;
     private DoctorProfile profiles;
-    private List<MedicalRecordInner> medical_record;
+    private MedicalRecordInner medical_record;
 
     public Long getId() { return id; }
     public String getNgay_kham() { return ngay_kham; }
     public String getTrang_thai() { return trang_thai; }
     public String getTrieu_chung_ban_dau() { return trieu_chung_ban_dau; }
     public DoctorProfile getProfiles() { return profiles; }
-    public List<MedicalRecordInner> getMedical_record() { return medical_record; }
+    public MedicalRecordInner getMedical_record() { return medical_record; }
 
     public static class DoctorProfile {
         private String ho_ten;

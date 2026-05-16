@@ -16,6 +16,9 @@ public class FullMedicalRecordResponse {
     }
     // Getters
     public Long getId() { return id; }
+    public String getChan_doan_chinh() { return chan_doan_chinh; }
+    public String getChan_doan_bo_sung() { return chan_doan_bo_sung; }
+    public String getGhi_chu_lam_sang() { return ghi_chu_lam_sang; }
     public List<MedicalRecordClinicalWrapper> getClinicalData() { return medical_record_clinical; }
     public List<MedicalRecordMedicineWrapper> getMedicineData() { return medical_record_medicine; }
 
