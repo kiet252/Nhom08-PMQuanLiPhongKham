@@ -14,12 +14,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Nhom08QuanLyPhongKham">
         <activity
+            android:name="dashboard_fragment.doctor_create_appointment.CreateAppointment_doctor"
+            android:exported="false" />
+        <activity
             android:name="dashboard_fragment.doctor_view_medical_record.ViewMedicalRecord_doctor"
             android:exported="false" />
         <activity
             android:name="dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.ExaminationFormDetail_doctor"
-            android:parentActivityName="dashboard_fragment.doctor_examination_list.ExaminationList_doctor"
-            android:exported="false" />
+            android:exported="false"
+            android:parentActivityName="dashboard_fragment.doctor_examination_list.ExaminationList_doctor" />
         <activity
             android:name="dashboard_fragment.doctor_examination_list.ExaminationList_doctor"
             android:exported="false" />
