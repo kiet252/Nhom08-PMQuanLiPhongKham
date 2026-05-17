@@ -102,13 +102,13 @@ public class HomeFragment_doctor extends Fragment {
 
         // Kiểm tra thêm điều kiện getPatient() != null để tránh crash
         if (nextPatient != null && nextPatient.getPatient() != null) {
-            btn_KhamNgay.setVisibility(view.VISIBLE);
-            ic_ChoKham.setVisibility(view.VISIBLE);
+            btn_KhamNgay.setVisibility(View.VISIBLE);
+            ic_ChoKham.setVisibility(View.VISIBLE);
             Name.setText(nextPatient.getPatient().getHo_ten()); // Hiện tên thay vì ID
             Time.setText(nextPatient.getGio_du_kien());
         } else {
-            btn_KhamNgay.setVisibility(view.INVISIBLE);
-            ic_ChoKham.setVisibility(view.INVISIBLE);
+            btn_KhamNgay.setVisibility(View.INVISIBLE);
+            ic_ChoKham.setVisibility(View.INVISIBLE);
             Time.setText("");
             Name.setText("Chưa có bệnh nhân");
 
@@ -160,15 +160,25 @@ public class HomeFragment_doctor extends Fragment {
     }
     public void SetAvatar(View view, UserProfile userprofile)
     {
-        ImageView avatar;
-        avatar = view.findViewById(R.id.home_avatar_admin);
-        ImageRequest request = new ImageRequest.Builder(getContext())
-                .data(userprofile.getAnh_dai_dien())
-                .target(avatar)
-                .crossfade(true) // Hiệu ứng mờ dần khi hiện ảnh
-                .build();
+        if (userprofile == null) return;
+        ImageView avatar = view.findViewById(R.id.home_avatar_admin);
+        String avatarUrl = userprofile.getAnh_dai_dien();
 
-        Coil.imageLoader(getContext()).enqueue(request);
+        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+            if (!avatarUrl.startsWith("http")) {
+                avatarUrl = "https://waiuciilyysobnvcwshd.supabase.co/storage/v1/object/public/avatars/" + avatarUrl;
+            }
+
+            ImageRequest request = new ImageRequest.Builder(requireContext())
+                    .data(avatarUrl)
+                    .target(avatar)
+                    .crossfade(true)
+                    .placeholder(R.drawable.ic_launcher_background)
+                    .error(R.drawable.ic_launcher_background)
+                    .build();
+
+            Coil.imageLoader(requireContext()).enqueue(request);
+        }
     }
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {

@@ -97,7 +97,6 @@ public class admin_manage_staff extends AppCompatActivity {
     }
 
     private void loadData(ProfileRepository profileRepository) {
-        // Cập nhật: Lọc theo chức vụ và chỉ lấy nhân viên "Đang hoạt động"
         profileRepository.getListProfile("neq.Quản trị viên", "eq.Đang hoạt động").enqueue(new Callback<List<UserProfile>>() {
             @Override
             public void onResponse(Call<List<UserProfile>> call, Response<List<UserProfile>> response) {
@@ -114,7 +113,8 @@ public class admin_manage_staff extends AppCompatActivity {
                             StaffItem item = new StaffItem(
                                     profile.getID(),
                                     profile.getHo_ten(),
-                                    profile.getChuc_vu()
+                                    profile.getChuc_vu(),
+                                    profile.getAnh_dai_dien()
                             );
                             staffListOriginal.add(item);
                             staffList.add(item);

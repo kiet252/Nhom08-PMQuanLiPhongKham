@@ -75,15 +75,25 @@ public class HomeFragment_admin extends Fragment {
     }
     public void SetAvatar(View view, UserProfile userprofile)
     {
-        ImageView avatar;
-        avatar = view.findViewById(R.id.home_avatar_admin);
-        ImageRequest request = new ImageRequest.Builder(getContext())
-                .data(userprofile.getAnh_dai_dien())
-                .target(avatar)
-                .crossfade(true) // Hiệu ứng mờ dần khi hiện ảnh
-                .build();
+        if (userprofile == null) return;
+        ImageView avatar = view.findViewById(R.id.home_avatar_admin);
+        String avatarUrl = userprofile.getAnh_dai_dien();
 
-        Coil.imageLoader(getContext()).enqueue(request);
+        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+            if (!avatarUrl.startsWith("http")) {
+                avatarUrl = "https://waiuciilyysobnvcwshd.supabase.co/storage/v1/object/public/avatars/" + avatarUrl;
+            }
+
+            ImageRequest request = new ImageRequest.Builder(requireContext())
+                    .data(avatarUrl)
+                    .target(avatar)
+                    .crossfade(true)
+                    .placeholder(R.drawable.ic_launcher_background)
+                    .error(R.drawable.ic_launcher_background)
+                    .build();
+
+            Coil.imageLoader(requireContext()).enqueue(request);
+        }
     }
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {

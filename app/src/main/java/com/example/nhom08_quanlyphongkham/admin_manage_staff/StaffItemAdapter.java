@@ -13,6 +13,9 @@ import com.example.nhom08_quanlyphongkham.R;
 
 import java.util.List;
 
+import coil.Coil;
+import coil.request.ImageRequest;
+
 public class StaffItemAdapter extends RecyclerView.Adapter<StaffItemAdapter.StaffViewHolder> {
 
     private List<StaffItem> staffList;
@@ -43,14 +46,36 @@ public class StaffItemAdapter extends RecyclerView.Adapter<StaffItemAdapter.Staf
         holder.tvRole.setText(staff.getRole());
         holder.tvId.setText("#" + staff.getId());
 
-        // Nếu sau này dùng Glide để load ảnh:
-        // Glide.with(holder.itemView.getContext()).load(staff.getUrl()).into(holder.imgAvatar);
+        loadAvatar(holder.imgAvatar, staff.getAvatar());
+
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onItemClick(staff);
             }
         });
+    }
 
+
+    private void loadAvatar(ImageView imageView, String avatarPath) {
+        if (avatarPath == null || avatarPath.isEmpty()) {
+            imageView.setImageResource(R.drawable.ic_launcher_background);
+            return;
+        }
+
+        String fullUrl = avatarPath;
+        if (!avatarPath.startsWith("http")) {
+            fullUrl = "https://waiuciilyysobnvcwshd.supabase.co/storage/v1/object/public/avatars/" + avatarPath;
+        }
+
+        ImageRequest request = new ImageRequest.Builder(imageView.getContext())
+                .data(fullUrl)
+                .target(imageView)
+                .crossfade(true)
+                .placeholder(R.drawable.ic_launcher_background)
+                .error(R.drawable.ic_launcher_background)
+                .build();
+
+        Coil.imageLoader(imageView.getContext()).enqueue(request);
     }
 
     @Override
@@ -58,7 +83,6 @@ public class StaffItemAdapter extends RecyclerView.Adapter<StaffItemAdapter.Staf
         return staffList != null ? staffList.size() : 0;
     }
 
-    // Lớp ViewHolder để giữ các tham chiếu View
     public static class StaffViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvRole, tvId;
         ImageView imgAvatar;
@@ -68,7 +92,7 @@ public class StaffItemAdapter extends RecyclerView.Adapter<StaffItemAdapter.Staf
             tvName = itemView.findViewById(R.id.tvName);
             tvRole = itemView.findViewById(R.id.tvRole);
             tvId = itemView.findViewById(R.id.tvId);
-            imgAvatar = itemView.findViewById(R.id.imgAvatar);
+            imgAvatar = itemView.findViewById(R.id.staffImgAvatar);
         }
     }
 

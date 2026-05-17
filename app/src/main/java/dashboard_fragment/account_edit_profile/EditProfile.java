@@ -1,10 +1,16 @@
 package dashboard_fragment.account_edit_profile;
 
+import static com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider.SUPABASE_URL;
+
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
@@ -23,41 +29,44 @@ import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
-
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import coil.Coil;
 import coil.request.ImageRequest;
 import dashboard_fragment.account_edit_profile.update_profile_logic.UpdateProfileRequest;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import retrofit2.Call;
 import retrofit2.Callback;
-import retrofit2.Response;
 
 public class EditProfile extends AppCompatActivity {
 
     private ImageButton btnBackEditProfile;
     private MaterialButton btnSaveEditProfile;
-
     private TextInputEditText edtEditProfileFullName, edtEditProfileEmail, edtEditProfileBirthday, edtEditProfilePhone, edtEditProfileAddress;
-
-
     private RadioGroup rgEditProfileGender;
-
     private UserProfile userProfile;
+    private String SUPABASE_ANON_KEY;
     private String currentToken;
-
     ImageView avatar;
     private Uri selectedImageUri;
-
     private EditProfileRepository repository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SUPABASE_ANON_KEY = getString(R.string.abAIkey);
         EdgeToEdge.enable(this);
         setContentView(R.layout.user_edit_profile);
 
@@ -82,10 +91,8 @@ public class EditProfile extends AppCompatActivity {
         edtEditProfileBirthday = findViewById(R.id.edtEditProfileBirthday);
         edtEditProfilePhone = findViewById(R.id.edtEditProfilePhone);
         edtEditProfileAddress = findViewById(R.id.edtEditProfileAddress);
-
         rgEditProfileGender = findViewById(R.id.rgEditProfileGender);
-        avatar = findViewById(R.id.imgAvatar);
-
+        avatar = findViewById(R.id.imgEditProfileAvatar);
     }
 
     private void getIntentInfo() {
@@ -115,12 +122,12 @@ public class EditProfile extends AppCompatActivity {
         } else {
             rgEditProfileGender.check(R.id.rbGenderOther);
         }
+
         String avatarUrl = userProfile.getAnh_dai_dien();
         if (avatarUrl != null && !avatarUrl.isEmpty()) {
             if (!avatarUrl.startsWith("http")) {
-                avatarUrl = "https://waiuciilyysobnvcwshd.supabase.co/storage/v1/object/public/avatars/" + avatarUrl;
+                avatarUrl = SUPABASE_URL.replaceAll("/$", "") + "/storage/v1/object/public/avatars/" + avatarUrl;
             }
-
             ImageRequest request = new ImageRequest.Builder(this)
                     .data(avatarUrl)
                     .target(avatar)
@@ -128,9 +135,8 @@ public class EditProfile extends AppCompatActivity {
                     .placeholder(R.drawable.ic_launcher_background)
                     .error(R.drawable.ic_launcher_background)
                     .build();
-
             Coil.imageLoader(this).enqueue(request);
-    }
+        }
     }
 
     private void setupListeners() {
@@ -143,6 +149,7 @@ public class EditProfile extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         galleryLauncher.launch(intent);
     }
+
     private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -153,109 +160,130 @@ public class EditProfile extends AppCompatActivity {
             }
     );
 
+    private String UploadAvatarInStorage(Uri uri) throws IOException {
+        OkHttpClient client = new OkHttpClient();
+        InputStream inputStream = getContentResolver().openInputStream(uri);
+        if (inputStream == null) throw new IOException("Can't open image stream");
+
+        byte[] imageBytes;
+        try {
+            ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = inputStream.read(buffer)) != -1) {
+                byteBuffer.write(buffer, 0, len);
+            }
+            imageBytes = byteBuffer.toByteArray();
+        } finally {
+            inputStream.close();
+        }
+
+        String mimeType = getContentResolver().getType(uri);
+        String ext = (mimeType != null && mimeType.contains("png")) ? "png" : "jpg";
+        String fileName = "avatar_" + userProfile.getID() + "_" + System.currentTimeMillis() + "." + ext;
+        String uploadPath = "avatars/" + fileName;
+
+        Request uploadRequest = new Request.Builder()
+                .url(SUPABASE_URL.replaceAll("/$", "") + "/storage/v1/object/" + uploadPath)
+                .post(RequestBody.create(imageBytes, MediaType.parse(mimeType != null ? mimeType : "image/jpeg")))
+                .addHeader("apikey", SUPABASE_ANON_KEY)
+                .addHeader("Authorization", "Bearer " + SUPABASE_ANON_KEY)
+                .addHeader("x-upsert", "true")
+                .build();
+
+        try (Response response = client.newCall(uploadRequest).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Upload failed with code " + response.code() + ": " + response.body().string());
+            }
+            return fileName;
+        }
+    }
+
     private void saveProfile() {
-        if (userProfile == null) {
-            Toast.makeText(this, "Không có dữ liệu người dùng", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        if (userProfile == null || currentToken == null) return;
 
-        if (currentToken == null || currentToken.isEmpty()) {
-            Toast.makeText(this, "Không tìm thấy access token", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String hoTen = edtEditProfileFullName.getText() != null
-                ? edtEditProfileFullName.getText().toString().trim() : "";
-
-        String soDienThoai = edtEditProfilePhone.getText() != null
-                ? edtEditProfilePhone.getText().toString().trim() : "";
-
-        String diaChi = edtEditProfileAddress.getText() != null
-                ? edtEditProfileAddress.getText().toString().trim() : "";
-
+        String hoTen = edtEditProfileFullName.getText().toString().trim();
+        String soDienThoai = edtEditProfilePhone.getText().toString().trim();
+        String diaChi = edtEditProfileAddress.getText().toString().trim();
         String gioiTinh = getSelectedGender();
 
-        if (hoTen.isEmpty()) {
-            edtEditProfileFullName.setError("Vui lòng nhập họ tên");
-            edtEditProfileFullName.requestFocus();
+        if (hoTen.isEmpty() || soDienThoai.isEmpty() || diaChi.isEmpty()) {
+            Toast.makeText(this, "Vui lòng điền đủ thông tin", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (soDienThoai.isEmpty()) {
-            edtEditProfilePhone.setError("Vui lòng nhập số điện thoại");
-            edtEditProfilePhone.requestFocus();
-            return;
-        }
+        ProgressDialog pd = new ProgressDialog(this);
+        pd.setMessage("Đang lưu thông tin...");
+        pd.setCancelable(false);
+        pd.show();
 
-        if (!soDienThoai.matches("^0\\d{9}$")) {
-            edtEditProfilePhone.setError("Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0");
-            edtEditProfilePhone.requestFocus();
-            return;
-        }
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
 
+        executor.execute(() -> {
+            try {
+                String avatarToSubmit = userProfile.getAnh_dai_dien();
+                if (selectedImageUri != null) {
+                    avatarToSubmit = UploadAvatarInStorage(selectedImageUri);
+                }
 
+                String finalAvatar = avatarToSubmit;
+                handler.post(() -> {
+                    UpdateProfileRequest request = new UpdateProfileRequest(hoTen, soDienThoai, diaChi, gioiTinh, finalAvatar);
+                    repository.updateProfile(currentToken, userProfile.getID(), request)
+                            .enqueue(new Callback<java.util.List<UserProfile>>() {
+                                @Override
+                                public void onResponse(@NonNull Call<java.util.List<UserProfile>> call, @NonNull retrofit2.Response<java.util.List<UserProfile>> response) {
+                                    pd.dismiss();
+                                    if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                                        UserProfile updated = response.body().get(0);
+                                        SharedPrefManager.getInstance(EditProfile.this).saveProfile(updated);
+                                        
+                                        Intent res = new Intent();
+                                        res.putExtra("updated_ho_ten", updated.getHo_ten());
+                                        res.putExtra("updated_so_dien_thoai", updated.getSo_dien_thoai());
+                                        res.putExtra("updated_dia_chi", updated.getDia_chi());
+                                        res.putExtra("updated_gioitinh", updated.getGioitinh());
+                                        res.putExtra("updated_anh_dai_dien", updated.getAnh_dai_dien());
+                                        setResult(RESULT_OK, res);
+                                        
+                                        Toast.makeText(EditProfile.this, "Cập nhật thành công", Toast.LENGTH_SHORT).show();
+                                        finish();
+                                    } else {
+                                        String errorMsg = "Lỗi cập nhật hồ sơ";
+                                        if (response.errorBody() != null) {
+                                            try {
+                                                errorMsg += ": " + response.errorBody().string();
+                                            } catch (IOException e) { e.printStackTrace(); }
+                                        } else if (response.body() != null && response.body().isEmpty()) {
+                                            errorMsg += ": Không tìm thấy ID người dùng trong Database";
+                                        }
+                                        Log.e("EDIT_PROFILE", errorMsg);
+                                        Toast.makeText(EditProfile.this, errorMsg, Toast.LENGTH_LONG).show();
+                                    }
+                                }
 
-        if (diaChi.isEmpty()) {
-            edtEditProfileAddress.setError("Vui lòng nhập địa chỉ");
-            edtEditProfileAddress.requestFocus();
-            return;
-        }
-
-        if (gioiTinh.isEmpty()) {
-            Toast.makeText(this, "Vui lòng chọn giới tính", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        UpdateProfileRequest request = new UpdateProfileRequest(
-                hoTen,
-                soDienThoai,
-                diaChi,
-                gioiTinh
-        );
-
-        repository.updateProfile(currentToken, userProfile.getID(), request)
-                .enqueue(new Callback<java.util.List<UserProfile>>() {
-                    @Override
-                    public void onResponse(@NonNull Call<java.util.List<UserProfile>> call,
-                                           @NonNull Response<java.util.List<UserProfile>> response) {
-                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
-
-                            UserProfile updatedProfile = response.body().get(0);
-                            SharedPrefManager.getInstance(EditProfile.this).saveProfile(updatedProfile);
-
-                            Intent resultIntent = new Intent();
-                            resultIntent.putExtra("updated_ho_ten", updatedProfile.getHo_ten());
-                            resultIntent.putExtra("updated_so_dien_thoai", updatedProfile.getSo_dien_thoai());
-                            resultIntent.putExtra("updated_dia_chi", updatedProfile.getDia_chi());
-                            resultIntent.putExtra("updated_gioitinh", updatedProfile.getGioitinh());
-                            setResult(RESULT_OK, resultIntent);
-
-                            Toast.makeText(EditProfile.this, "Cập nhật hồ sơ thành công", Toast.LENGTH_SHORT).show();
-                            finish();
-                        } else {
-                            Toast.makeText(EditProfile.this, "Cập nhật thất bại hoặc không có dữ liệu trả về", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull Call<java.util.List<UserProfile>> call, @NonNull Throwable t) {
-                        Toast.makeText(EditProfile.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
+                                @Override
+                                public void onFailure(@NonNull Call<java.util.List<UserProfile>> call, @NonNull Throwable t) {
+                                    pd.dismiss();
+                                    Toast.makeText(EditProfile.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
                 });
-
+            } catch (Exception e) {
+                handler.post(() -> {
+                    pd.dismiss();
+                    Log.e("EDIT_PROFILE", "Lỗi xử lý", e);
+                    Toast.makeText(EditProfile.this, "Lỗi: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+            }
+        });
     }
 
     private String getSelectedGender() {
         int checkedId = rgEditProfileGender.getCheckedRadioButtonId();
-
-        if (checkedId == R.id.rbGenderMale) {
-            return "Nam";
-        } else if (checkedId == R.id.rbGenderFemale) {
-            return "Nữ";
-        } else if (checkedId == R.id.rbGenderOther) {
-            return "Khác";
-        }
-
-        return "";
+        if (checkedId == R.id.rbGenderMale) return "Nam";
+        if (checkedId == R.id.rbGenderFemale) return "Nữ";
+        return "Khác";
     }
 }

@@ -304,7 +304,6 @@ public class create_staff extends AppCompatActivity {
                     throw new IOException("Lỗi tạo profile: " + profileResponse.body().string());
                 }
 
-                // ── THÀNH CÔNG: Cập nhật UI trên main thread ─────────────────
                 handler.post(() -> {
                     progressDialog.dismiss();
                     Toast.makeText(this, "Tạo nhân viên thành công!", Toast.LENGTH_SHORT).show();
@@ -313,7 +312,6 @@ public class create_staff extends AppCompatActivity {
                 });
 
             } catch (Exception e) {
-                // ── LỖI: Hiển thị thông báo trên main thread ─────────────────
                 handler.post(() -> {
                     progressDialog.dismiss();
                     Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_LONG).show();

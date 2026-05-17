@@ -18,6 +18,8 @@ import com.google.android.material.imageview.ShapeableImageView;
 
 import java.util.List;
 
+import coil.Coil;
+import coil.request.ImageRequest;
 import dashboard_fragment.account_change_password_request.set_staff_detail;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -103,6 +105,9 @@ public class staff_detail extends AppCompatActivity {
                     address.setText(userProfile.getDia_chi());
                     role.setText(userProfile.getChuc_vu());
 
+                    // Gọi hàm load ảnh
+                    loadAvatar(userProfile.getAnh_dai_dien());
+
                     if (userProfile.getNgay_sinh() != null) {
                         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
                         String formattedDate = sdf.format(userProfile.getNgay_sinh());
@@ -121,6 +126,28 @@ public class staff_detail extends AppCompatActivity {
             }
         });
     }
+
+    private void loadAvatar(String avatarPath) {
+        if (avatarPath == null || avatarPath.isEmpty()) {
+            picture_link.setImageResource(R.drawable.ic_launcher_background);
+            return;
+        }
+
+        String fullUrl = avatarPath;
+        if (!avatarPath.startsWith("http")) {
+            fullUrl = "https://waiuciilyysobnvcwshd.supabase.co/storage/v1/object/public/avatars/" + avatarPath;
+        }
+
+        ImageRequest request = new ImageRequest.Builder(this)
+                .data(fullUrl)
+                .target(picture_link)
+                .crossfade(true)
+                .placeholder(R.drawable.ic_launcher_background)
+                .error(R.drawable.ic_launcher_background)
+                .build();
+        Coil.imageLoader(this).enqueue(request);
+    }
+
     private void showDeleteConfirmationDialog() {
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
         android.view.View view = getLayoutInflater().inflate(R.layout.admin_delete_staff_dialog, null);
