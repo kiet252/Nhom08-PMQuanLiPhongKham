@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.admin_manage_staff.admin_manage_staff;
+import com.example.nhom08_quanlyphongkham.admin_reports.ReportsActivity_Admin;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 
 import coil.Coil;
@@ -47,13 +48,9 @@ public class HomeFragment_admin extends Fragment {
         btnXemBaoCao.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Đang ở Home -> Tạo màn hình Báo Cáo mới để chuyển sang
-                ReportsFragment_Admin reportsFragment = new ReportsFragment_Admin();
-
-                getActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, reportsFragment)
-                        .addToBackStack(null)
-                        .commit();
+                // Đang ở Home -> Chuyển sang ReportsActivity_Admin
+                Intent intent = new Intent(getActivity(), ReportsActivity_Admin.class);
+                startActivity(intent);
             }
         });
         // II. Nút CÀI ĐẶT THÔNG BÁO CHUNG

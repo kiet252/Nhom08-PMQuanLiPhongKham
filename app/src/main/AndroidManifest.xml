@@ -66,6 +66,9 @@
         <activity
             android:name=".admin_manage_staff.create_staff"
             android:exported="false" />
+        <activity
+            android:name=".admin_reports.ReportsActivity_Admin"
+            android:exported="false"/>
     </application>
 
 </manifest>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="12dp"
+    android:background="?android:attr/selectableItemBackground"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:id="@+id/item_ngay"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1.2"
+        android:gravity="center"
+        android:singleLine="true"
+        android:textColor="#333333"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/item_benh_nhan"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1.3"
+        android:gravity="center"
+        android:textColor="#333333"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/item_trang_thai"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1.1"
+        android:gravity="center"
+        android:textColor="#333333"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/item_tong_tien"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1.4"
+        android:gravity="center"
+        android:singleLine="true"
+        android:textColor="#D32F2F"
+        android:textStyle="bold"
+        android:textSize="14sp" />
+
+</LinearLayout>

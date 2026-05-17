@@ -33,7 +33,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
-                android:text="TẠO NHÂN VIÊN MỚI"
+                android:text="Tạo nhân viên mới"
                 android:textColor="@android:color/white"
                 android:textSize="22sp"
                 android:textStyle="bold"
