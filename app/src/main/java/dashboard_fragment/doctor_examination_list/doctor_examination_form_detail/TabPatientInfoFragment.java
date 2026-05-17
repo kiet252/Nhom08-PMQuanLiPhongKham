@@ -128,8 +128,11 @@ public class TabPatientInfoFragment extends Fragment {
             return;
         }
         btnContinue.setOnClickListener(v -> {
-            updateExaminationFormInfo(activity, true);
-            activity.findViewById(R.id.tabCanLamSang).performClick();
+            boolean isDone = activity.isDoneLocked();
+            updateExaminationFormInfo(activity, isDone);
+            if (!isDone) {
+                activity.findViewById(R.id.tabCanLamSang).performClick();
+            }
         });
     }
 

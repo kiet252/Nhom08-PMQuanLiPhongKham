@@ -66,6 +66,13 @@ public class ViewMedicalRecord_doctor extends AppCompatActivity {
         initializeViews();
         setupBackButton();
         setupSearchButton();
+        loadRecentSearches();
+    }
+
+    private void loadRecentSearches() {
+        for (PatientProfile patient : SearchHistoryManager.getInstance().getRecentSearches()) {
+            addRecentSearchChip(patient);
+        }
     }
 
     private void initializeViews() {
@@ -99,6 +106,7 @@ public class ViewMedicalRecord_doctor extends AppCompatActivity {
             public void onResponse(Call<List<PatientProfile>> call, Response<List<PatientProfile>> response) {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                     PatientProfile patient = response.body().get(0);
+                    SearchHistoryManager.getInstance().addSearch(patient);
                     addRecentSearchChip(patient);
                     fetchMedicalRecords(patient);
                 } else {
