@@ -42,13 +42,18 @@ import retrofit2.Response;
 public class CreateAppointment_doctor extends AppCompatActivity {
 
     private ImageButton btnBack;
+    private com.google.android.material.card.MaterialCardView cardStep1Number, cardStep2Number, cardStep3Number;
+    private android.widget.TextView tvStep2Number, tvStep3Number;
+    private android.widget.ImageView imgStep1Checked, imgStep2Checked;
+    private android.widget.TextView tvStep1Label, tvStep2Label, tvStep3Label;
+
     private TextInputEditText edtSearchPatient;
     private MaterialButton btnSearchPatient, btnConfirmAppointment;
     private ChipGroup chipGroupRecentSearch;
     private LinearLayout bottomLayout;
     private MaterialCardView cardPatientFound, cardAppDate, cardAppNote, cardAppConfirm;
 
-    private LinearLayout layoutConfirmNoteContainer;
+    private LinearLayout layoutConfirmNoteContainer, layoutConfirmDateContainer;
     private TextView tvFoundName, tvFoundDetails, tvFoundPhone, tvFoundAddress;
     private TextView tvConfirmPatientName, tvConfirmDoctor, tvConfirmDate, tvConfirmNote;
     private TextInputEditText edtAppointmentDate, edtNote;
@@ -74,6 +79,7 @@ public class CreateAppointment_doctor extends AppCompatActivity {
         initViews();
         setupListeners();
         loadRecentSearches();
+        updateProgressSteps(1);
     }
     private void initViews() {
         btnBack = findViewById(R.id.btnBack);
@@ -83,6 +89,7 @@ public class CreateAppointment_doctor extends AppCompatActivity {
         chipGroupRecentSearch = findViewById(R.id.chipGroupRecentSearch);
         bottomLayout = findViewById(R.id.bottomLayout);
 
+        layoutConfirmDateContainer = findViewById(R.id.layoutConfirmDateContainer);
         layoutConfirmNoteContainer = findViewById(R.id.layoutConfirmNoteContainer);
 
         edtAppointmentDate = findViewById(R.id.edtAppointmentDate);
@@ -100,6 +107,18 @@ public class CreateAppointment_doctor extends AppCompatActivity {
         cardAppDate = findViewById(R.id.cardAppDate);
         cardAppNote = findViewById(R.id.cardAppNote);
         cardAppConfirm = findViewById(R.id.cardAppConfirm);
+
+        cardStep1Number = findViewById(R.id.cardStep1Number);
+        cardStep2Number = findViewById(R.id.cardStep2Number);
+        cardStep3Number = findViewById(R.id.cardStep3Number);
+        tvStep2Number = findViewById(R.id.tvStep2Number);
+        tvStep3Number = findViewById(R.id.tvStep3Number);
+        imgStep1Checked = findViewById(R.id.imgStep1Checked);
+        imgStep2Checked = findViewById(R.id.imgStep2Checked);
+        tvStep1Label = findViewById(R.id.tvStep1Label);
+        tvStep2Label = findViewById(R.id.tvStep2Label);
+        tvStep3Label = findViewById(R.id.tvStep3Label);
+
     }
     private void setupListeners(){
         btnBack.setOnClickListener(v -> finish());
@@ -201,10 +220,15 @@ public class CreateAppointment_doctor extends AppCompatActivity {
         cardAppNote.setVisibility(View.VISIBLE);
         cardAppConfirm.setVisibility(View.VISIBLE);
         bottomLayout.setVisibility(View.VISIBLE);
+
+        updateProgressSteps(2);
     }
+
 
     private void showDatePicker() {
         Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+
         DatePickerDialog dialog = new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
             calendar.set(year, month, dayOfMonth);
             SimpleDateFormat dbFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -215,9 +239,24 @@ public class CreateAppointment_doctor extends AppCompatActivity {
 
             edtAppointmentDate.setText(uiDate);
             tvConfirmDate.setText(uiDate);
+
+            layoutConfirmDateContainer.setVisibility(View.VISIBLE);
+
+            updateProgressSteps(3);
         }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+
+        Calendar minDateCal = Calendar.getInstance();
+        minDateCal.add(Calendar.DAY_OF_MONTH, 1);
+        minDateCal.set(Calendar.HOUR_OF_DAY, 0);
+        minDateCal.set(Calendar.MINUTE, 0);
+        minDateCal.set(Calendar.SECOND, 0);
+        minDateCal.set(Calendar.MILLISECOND, 0);
+
+        dialog.getDatePicker().setMinDate(minDateCal.getTimeInMillis());
+
         dialog.show();
     }
+
 
     private void submitAppointment() {
         if (selectedPatient == null || selectedDate.isEmpty()) {
@@ -251,5 +290,62 @@ public class CreateAppointment_doctor extends AppCompatActivity {
                 btnConfirmAppointment.setEnabled(true);
             }
         });
+    }
+    private void updateProgressSteps(int activeStep) {
+        if (activeStep == 1) {
+
+            cardStep1Number.setVisibility(View.VISIBLE);
+            imgStep1Checked.setVisibility(View.GONE);
+            tvStep1Label.setTextColor(android.graphics.Color.WHITE);
+            tvStep1Label.setTypeface(null, android.graphics.Typeface.BOLD);
+
+            cardStep2Number.setVisibility(View.VISIBLE);
+            imgStep2Checked.setVisibility(View.GONE);
+            cardStep2Number.setCardBackgroundColor(android.graphics.Color.parseColor("#40FFFFFF"));
+            tvStep2Number.setTextColor(android.graphics.Color.WHITE);
+            tvStep2Label.setTextColor(android.graphics.Color.parseColor("#B3FFFFFF"));
+            tvStep2Label.setTypeface(null, android.graphics.Typeface.NORMAL);
+
+            cardStep3Number.setCardBackgroundColor(android.graphics.Color.parseColor("#40FFFFFF"));
+            tvStep3Number.setTextColor(android.graphics.Color.WHITE);
+            tvStep3Label.setTextColor(android.graphics.Color.parseColor("#B3FFFFFF"));
+            tvStep3Label.setTypeface(null, android.graphics.Typeface.NORMAL);
+
+        } else if (activeStep == 2) {
+
+            cardStep1Number.setVisibility(View.GONE);
+            imgStep1Checked.setVisibility(View.VISIBLE);
+            tvStep1Label.setTextColor(android.graphics.Color.parseColor("#B3FFFFFF"));
+            tvStep1Label.setTypeface(null, android.graphics.Typeface.NORMAL);
+
+            cardStep2Number.setVisibility(View.VISIBLE);
+            imgStep2Checked.setVisibility(View.GONE);
+            cardStep2Number.setCardBackgroundColor(android.graphics.Color.WHITE);
+            tvStep2Number.setTextColor(android.graphics.Color.parseColor("#0D3F6E"));
+            tvStep2Label.setTextColor(android.graphics.Color.WHITE);
+            tvStep2Label.setTypeface(null, android.graphics.Typeface.BOLD);
+
+            cardStep3Number.setCardBackgroundColor(android.graphics.Color.parseColor("#40FFFFFF"));
+            tvStep3Number.setTextColor(android.graphics.Color.WHITE);
+            tvStep3Label.setTextColor(android.graphics.Color.parseColor("#B3FFFFFF"));
+            tvStep3Label.setTypeface(null, android.graphics.Typeface.NORMAL);
+
+        } else if (activeStep == 3) {
+
+            cardStep1Number.setVisibility(View.GONE);
+            imgStep1Checked.setVisibility(View.VISIBLE);
+            tvStep1Label.setTextColor(android.graphics.Color.parseColor("#B3FFFFFF"));
+            tvStep1Label.setTypeface(null, android.graphics.Typeface.NORMAL);
+
+            cardStep2Number.setVisibility(View.GONE);
+            imgStep2Checked.setVisibility(View.VISIBLE);
+            tvStep2Label.setTextColor(android.graphics.Color.parseColor("#B3FFFFFF"));
+            tvStep2Label.setTypeface(null, android.graphics.Typeface.NORMAL);
+
+            cardStep3Number.setCardBackgroundColor(android.graphics.Color.WHITE);
+            tvStep3Number.setTextColor(android.graphics.Color.parseColor("#0D3F6E"));
+            tvStep3Label.setTextColor(android.graphics.Color.WHITE);
+            tvStep3Label.setTypeface(null, android.graphics.Typeface.BOLD);
+        }
     }
 }
