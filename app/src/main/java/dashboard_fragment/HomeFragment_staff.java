@@ -82,7 +82,11 @@ public class HomeFragment_staff extends Fragment {
     public void SetAvatar(View view, UserProfile userprofile)
     {
         if (userprofile == null) return;
-        ImageView avatar = view.findViewById(R.id.home_avatar_admin);
+        ImageView avatar = view.findViewById(R.id.home_avatar_staff);
+        if (avatar == null) {
+            return;
+        }
+
         String avatarUrl = userprofile.getAnh_dai_dien();
 
         if (avatarUrl != null && !avatarUrl.isEmpty()) {
