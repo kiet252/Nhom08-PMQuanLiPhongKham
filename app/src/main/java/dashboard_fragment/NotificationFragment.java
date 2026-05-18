@@ -48,7 +48,7 @@ public class NotificationFragment extends Fragment {
     private View listView;
     private AuthRepository authRepository;
     private int soLuongThongBao = 0;
-    private TextView tvChon, tvXoa;
+//    private TextView tvChon, tvXoa;
     private boolean isSelectionMode = false;
     private final List<Integer> selectedIds = new ArrayList<>();
     private final List<CheckBox> listCheckBoxes = new ArrayList<>();
@@ -72,57 +72,13 @@ public class NotificationFragment extends Fragment {
     }
 
     private void cauHinhManHinhDanhSach(View view) {
-        btnThemThongBao = view.findViewById(R.id.btn_them_thong_bao);
+//        btnThemThongBao = view.findViewById(R.id.btn_them_thong_bao);
         layoutDanhSachThongBao = view.findViewById(R.id.layout_danh_sach_thong_bao);
-        tvChon = view.findViewById(R.id.tv_chon);
-        tvXoa = view.findViewById(R.id.tv_xoa);
-
+//        tvChon = view.findViewById(R.id.tv_chon);
+//        tvXoa = view.findViewById(R.id.tv_xoa);
         SharedPreferences prefs = requireActivity().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
         String roleSaved = prefs.getString("ROLE", UserRole.NHAN_VIEN.name());
-
-        UserRole userRole;
-        try {
-            userRole = UserRole.valueOf(roleSaved);
-        } catch (Exception e) {
-            userRole = UserRole.NHAN_VIEN;
-        }
-
-        if (userRole == UserRole.ADMIN) {
-            btnThemThongBao.setVisibility(View.VISIBLE);
-            tvChon.setVisibility(View.VISIBLE);
-            tvXoa.setVisibility(View.VISIBLE);
-        } else {
-            btnThemThongBao.setVisibility(View.GONE);
-            tvChon.setVisibility(View.GONE);
-            tvXoa.setVisibility(View.GONE);
-        }
-
-        if (tvChon != null) {
-            tvChon.setOnClickListener(v -> {
-                isSelectionMode = !isSelectionMode;
-                if (isSelectionMode) {
-                    tvChon.setText("Hủy");
-                    tvChon.setTextColor(Color.parseColor("#0D5FA8"));
-                    for (CheckBox cb : listCheckBoxes) {
-                        cb.setVisibility(View.VISIBLE);
-                    }
-                } else {
-                    tvChon.setText("Chọn");
-                    tvChon.setTextColor(Color.parseColor("#0D5FA8"));
-                    for (CheckBox cb : listCheckBoxes) {
-                        cb.setChecked(false);
-                        cb.setVisibility(View.GONE);
-                    }
-                    selectedIds.clear();
-                }
-            });
-        }
-
-        if (tvXoa != null) {
-            tvXoa.setOnClickListener(v -> thucHienXoaNhieu());
-        }
-
-        goiDuLieuRetrofit();
+                goiDuLieuRetrofit();
 
         if (btnThemThongBao != null) {
             btnThemThongBao.setOnClickListener(v -> hienThiHopThoaiThem());
@@ -141,10 +97,10 @@ public class NotificationFragment extends Fragment {
                     selectedIds.clear();
                     isSelectionMode = false;
 
-                    if (tvChon != null) {
-                        tvChon.setText("Chọn");
-                        tvChon.setTextColor(Color.parseColor("#0D5FA8"));
-                    }
+//                    if (tvChon != null) {
+//                        tvChon.setText("Chọn");
+//                        tvChon.setTextColor(Color.parseColor("#0D5FA8"));
+//                    }
 
                     Collections.reverse(ds);
                     soLuongThongBao = 0;
@@ -156,6 +112,7 @@ public class NotificationFragment extends Fragment {
 
             @Override
             public void onFailure(Call<List<ThongBao>> call, Throwable t) {
+                if (!isAdded() || getContext() == null) return;
                 Toast.makeText(getContext(), "Lỗi tải thông báo: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
@@ -353,7 +310,7 @@ public class NotificationFragment extends Fragment {
 
     private void themVaoKhungXam(Integer id, String tieuDe, String noiDung) {
         if (layoutDanhSachThongBao == null) return;
-
+        if (!isAdded() || getContext() == null) return;
         CheckBox checkBox = new CheckBox(getContext());
         checkBox.setButtonTintList(ColorStateList.valueOf(Color.parseColor("#14B8D4")));
         checkBox.setVisibility(isSelectionMode ? View.VISIBLE : View.GONE);

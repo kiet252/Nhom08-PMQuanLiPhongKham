@@ -17,6 +17,10 @@ import dashboard_fragment.NotificationFragment;
 
 public class dashboard extends AppCompatActivity {
     private UserProfile profile;
+    private Fragment homeFragment;
+    private Fragment notificationFragment;
+    private Fragment accountFragment;
+    private Fragment activeFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,13 +38,17 @@ public class dashboard extends AppCompatActivity {
         setContentView(R.layout.user_dashboard);
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
 
-        Fragment homeFragment = getHomeFragmentByRole(profile.getChuc_vu());
+        homeFragment = getHomeFragmentByRole(profile.getChuc_vu());
+        notificationFragment = new NotificationFragment();
+        accountFragment = AccountFragment.newInstance(profile);
 
-        // Initial fragment load
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, homeFragment)
+                    .add(R.id.fragment_container, notificationFragment).hide(notificationFragment)
+                    .add(R.id.fragment_container, accountFragment).hide(accountFragment)
+                    .add(R.id.fragment_container, homeFragment)
                     .commit();
+            activeFragment = homeFragment;
         }
 
         bottomNav.setOnItemSelectedListener(item -> {
@@ -50,19 +58,19 @@ public class dashboard extends AppCompatActivity {
             if (itemId == R.id.nav_home) {
                 selectedFragment = homeFragment;
             } else if (itemId == R.id.nav_notifications) {
-                selectedFragment = new NotificationFragment();
+                selectedFragment = notificationFragment;
             } else if (itemId == R.id.nav_account) {
                 UserProfile latestProfile = SharedPrefManager.getInstance(this).getProfile();
-                if (latestProfile != null) {
-                    profile = latestProfile;
-                }
-                selectedFragment = AccountFragment.newInstance(profile);
+                if (latestProfile != null) profile = latestProfile;
+                selectedFragment = accountFragment;
             }
 
-            if (selectedFragment != null) {
+            if (selectedFragment != null && selectedFragment != activeFragment) {
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, selectedFragment)
+                        .hide(activeFragment)
+                        .show(selectedFragment)
                         .commit();
+                activeFragment = selectedFragment;
             }
             return true;
         });
