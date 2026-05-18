@@ -14,7 +14,7 @@
         android:background="@drawable/bg_gradient_dark_blue_header"
         android:paddingBottom="20dp">
         <ImageView
-            android:id="@+id/btnBack"
+            android:id="@+id/btnStaffBillBack"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_marginStart="16dp"
@@ -23,6 +23,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:tint="@android:color/white" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -31,9 +32,9 @@
             android:textColor="@android:color/white"
             android:textSize="22sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="@+id/btnBack"
-            app:layout_constraintStart_toEndOf="@+id/btnBack"
-            app:layout_constraintTop_toTopOf="@+id/btnBack" />
+            app:layout_constraintBottom_toBottomOf="@+id/btnStaffBillBack"
+            app:layout_constraintStart_toEndOf="@+id/btnStaffBillBack"
+            app:layout_constraintTop_toTopOf="@+id/btnStaffBillBack" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ScrollView
