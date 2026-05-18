@@ -181,7 +181,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -235,7 +234,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Nhập mã bệnh nhân hoặc số CCCD"
+                            android:text="Nhập mã bệnh nhân hoặc số CCCD để tìm"
                             android:textColor="#64748B"
                             android:textSize="13sp" />
 
@@ -263,7 +262,7 @@
                                     android:drawableStart="@drawable/ic_search"
                                     android:drawablePadding="8dp"
                                     android:drawableTint="#94A3B8"
-                                    android:hint="1 - 000000000001"
+                                    android:hint="Ví dụ: 1 hoặc CCCD"
                                     android:padding="0dp"
                                     android:textColor="#1E293B"
                                     android:textSize="14sp" />
@@ -285,12 +284,11 @@
                                 app:iconTint="@android:color/white" />
                         </LinearLayout>
 
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
-                            android:text="Nhấn để tìm nhanh:"
+                            android:text="💡Nhấn để tìm nhanh:"
                             android:textColor="#64748B"
                             android:textSize="12sp" />
 
@@ -300,44 +298,65 @@
                             android:layout_marginTop="8dp"
                             android:scrollbars="none">
 
-                            <LinearLayout
+                            <com.google.android.material.chip.ChipGroup
+                                android:id="@+id/chipGroupRecentSearch"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal">
-
-                                <com.google.android.material.chip.Chip
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginEnd="8dp"
-                                    android:text="1 - David Khánh"
-                                    android:textColor="#0D3F6E"
-                                    app:chipBackgroundColor="#F1F5F9"
-                                    app:chipStrokeColor="#E2E8F0"
-                                    app:chipStrokeWidth="1dp" />
-
-                                <com.google.android.material.chip.Chip
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginEnd="8dp"
-                                    android:text="2 - Trần Tổng"
-                                    android:textColor="#0D3F6E"
-                                    app:chipBackgroundColor="#F1F5F9"
-                                    app:chipStrokeColor="#E2E8F0"
-                                    app:chipStrokeWidth="1dp" />
-
-                            </LinearLayout>
+                                app:singleLine="true" />
                         </HorizontalScrollView>
                     </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardPatientFound"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="@android:color/white"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="2dp"
+                app:strokeColor="#E2E8F0"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:id="@+id/layoutPatientFound"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
                     <LinearLayout
-                        android:id="@+id/layoutPatientFound"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="#ECEEF2"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="12dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_manage_patient"
+                            app:tint="#0D3F6E" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="BỆNH NHÂN TÌM THẤY"
+                            android:textColor="#0D3F6E"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="16dp"
-                        android:visibility="gone">
+                        android:padding="16dp">
 
+                        <!-- THÔNG TIN CHUNG -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -385,7 +404,6 @@
                             </LinearLayout>
                         </LinearLayout>
 
-
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -425,7 +443,6 @@
                                     android:textStyle="bold" />
                             </LinearLayout>
                         </LinearLayout>
-
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -470,8 +487,8 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardAppDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
@@ -544,6 +561,7 @@
 
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardAppNote"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
@@ -620,6 +638,7 @@
 
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardAppConfirm"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
@@ -729,9 +748,11 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/layoutConfirmNoteContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:visibility="gone">
 
                         <TextView
                             android:layout_width="85dp"
@@ -744,11 +765,11 @@
                             android:id="@+id/tvConfirmNote"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Tái khám"
                             android:textColor="#1E293B"
                             android:textSize="14sp"
                             android:textStyle="bold" />
                     </LinearLayout>
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
