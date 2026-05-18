@@ -32,6 +32,7 @@ import java.util.Locale;
 import coil.Coil;
 import coil.request.ImageRequest;
 
+import dashboard_fragment.doctor_create_appointment.CreateAppointment_doctor;
 import dashboard_fragment.doctor_examination_list.ExaminationList_doctor;
 import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.ExaminationFormDetail_doctor;
 import dashboard_fragment.staff_create_examination_form.ExaminationFormRepository;
@@ -208,10 +209,7 @@ public class HomeFragment_doctor extends Fragment {
         }
 
         if (btnCreateAppointment != null) {
-            btnCreateAppointment.setOnClickListener(v -> {
-                // TODO: Chuyển sang màn hình lịch hẹn tái khám
-                Toast.makeText(getContext(), "Mở lịch hẹn tái khám", Toast.LENGTH_SHORT).show();
-            });
+            btnCreateAppointment.setOnClickListener(v -> openCreateAppointment());
         }
 
         if (btnViewMedicalRecords != null) {
@@ -233,6 +231,10 @@ public class HomeFragment_doctor extends Fragment {
 
     private void openExFormsLists() {
         Intent intent = new Intent(getActivity(), ExaminationList_doctor.class);
+        startActivity(intent);
+    }
+    private void openCreateAppointment(){
+        Intent intent = new Intent(getActivity(), CreateAppointment_doctor.class);
         startActivity(intent);
     }
     private ExaminationFormWithPatientDto getPriorityPatient() {

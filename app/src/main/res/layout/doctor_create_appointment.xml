@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_appointment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F0F7FF">
@@ -54,6 +55,7 @@
                 app:cardBackgroundColor="@android:color/white"
                 app:cardCornerRadius="12dp"
                 app:strokeWidth="0dp">
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -86,6 +88,7 @@
                 app:cardBackgroundColor="#40FFFFFF"
                 app:cardCornerRadius="12dp"
                 app:strokeWidth="0dp">
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -117,6 +120,7 @@
                 app:cardBackgroundColor="#40FFFFFF"
                 app:cardCornerRadius="12dp"
                 app:strokeWidth="0dp">
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -346,6 +350,7 @@
                                 app:cardBackgroundColor="#E2E8F0"
                                 app:cardCornerRadius="16dp"
                                 app:cardElevation="0dp">
+
                                 <ImageView
                                     android:layout_width="32dp"
                                     android:layout_height="32dp"
@@ -470,11 +475,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
+                android:visibility="gone"
                 app:cardBackgroundColor="@android:color/white"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="2dp"
-                app:strokeWidth="0dp"
-                android:visibility="gone">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -542,11 +547,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
+                android:visibility="gone"
                 app:cardBackgroundColor="@android:color/white"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="2dp"
-                app:strokeWidth="0dp"
-                android:visibility="gone">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -618,12 +623,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
+                android:visibility="gone"
                 app:cardBackgroundColor="#F8FAFC"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
                 app:strokeColor="#CBD5E1"
-                app:strokeWidth="1dp"
-                android:visibility="gone">
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
