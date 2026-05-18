@@ -49,7 +49,7 @@ public class StaffInvoiceAdapter extends RecyclerView.Adapter<StaffInvoiceAdapte
         StaffInvoiceItem invoice = invoices.get(position);
 
         holder.tvPatientName.setText(invoice.getPatientName());
-        holder.tvInvoiceDetails.setText("#" + invoice.getId() + " - " + invoice.getDate());
+        holder.tvInvoiceDetails.setText(invoice.getId() + " - " + invoice.getDate());
         holder.tvAmount.setText(formatAmount(invoice.getAmount()));
 
         if (invoice.isPaid()) {
@@ -82,7 +82,7 @@ public class StaffInvoiceAdapter extends RecyclerView.Adapter<StaffInvoiceAdapte
 
     private void bindUnpaidState(InvoiceViewHolder holder) {
         holder.statusIconContainer.setCardBackgroundColor(0xFFFFF3E0);
-        holder.imgStatus.setImageResource(R.drawable.ic_timer);
+        holder.imgStatus.setImageResource(R.drawable.ic_clock);
         holder.imgStatus.setColorFilter(0xFFFF9800);
 
         holder.tvAmount.setTextColor(0xFFF97316);

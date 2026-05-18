@@ -6,11 +6,7 @@ import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 
-public interface BillApiService {
-  /**
-   * Loads bills for a patient via examination_form.patient_id (direct column filter).
-   * Chain: examination_form → medical_record → bill
-   */
+public interface ExamFormWithBillDtoApiService {
   @GET("rest/v1/examination_form")
   Call<List<ExamFormWithBillDto>> getBillsByPatientId(
       @Query("patient_id") String patientIdFilter,

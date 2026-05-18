@@ -187,7 +187,8 @@ public class ManageBill_staff extends AppCompatActivity {
                         item.getDate(),
                         item.getAmount(),
                         item.isPaid(),
-                        item.getPaymentMethod()
+                        item.getPaymentMethod(),
+                        item.getOriginalForm()
                 ));
             }
         }
@@ -219,8 +220,17 @@ public class ManageBill_staff extends AppCompatActivity {
     }
 
     private void openInvoiceDetail(StaffInvoiceItem invoice) {
+        if (invoice == null || invoice.getOriginalForm() == null) {
+            Toast.makeText(this, "Không thể hiển thị: Dữ liệu hóa đơn trống", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Intent intent = new Intent(this, BillDetail_staff.class);
-        intent.putExtra("invoiceId", invoice.getId());
+
+        intent.putExtra("EXTRA_EXAM_FORM_DATA", invoice.getOriginalForm());
+
+        intent.putExtra("EXTRA_SELECTED_BILL_ID", invoice.getId());
+
         startActivity(intent);
     }
 
