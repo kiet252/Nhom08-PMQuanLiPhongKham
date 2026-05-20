@@ -4,7 +4,10 @@ import android.content.Context;
 
 import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 
+import java.util.List;
+
 import dashboard_fragment.doctor_create_appointment.create_appointment_logic.AppointmentApiService;
+import dashboard_fragment.doctor_create_appointment.create_appointment_logic.AppointmentItem;
 import dashboard_fragment.doctor_create_appointment.create_appointment_logic.CreateAppointmentRequest;
 import retrofit2.Call;
 
@@ -15,5 +18,12 @@ public class AppointmentRepository {
     }
     public Call<Void> createAppointment(CreateAppointmentRequest request) {
         return apiService.createAppointment(request);
+    }
+    public Call<List<AppointmentItem>> getAppointmentsByPatientId(String patientId) {
+        return apiService.getAppointmentsByPatientId(
+                "eq." + patientId,
+                "id,patient_id,doctor_id,ngay_hen,ghi_chu",
+                "ngay_hen.desc"
+        );
     }
 }

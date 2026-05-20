@@ -11,4 +11,11 @@ import retrofit2.http.Query;
 public interface AppointmentApiService {
     @POST("rest/v1/appointment")
     Call<Void> createAppointment(@Body CreateAppointmentRequest request);
+
+    @GET("rest/v1/appointment")
+    Call<List<AppointmentItem>> getAppointmentsByPatientId(
+            @Query("patient_id") String patientId,
+            @Query("select") String select,
+            @Query("order") String order
+    );
 }

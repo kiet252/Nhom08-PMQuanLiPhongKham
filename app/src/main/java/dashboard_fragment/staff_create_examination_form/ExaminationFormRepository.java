@@ -12,6 +12,7 @@ import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail
 import dashboard_fragment.staff_create_examination_form.create_ex_form_logic.CreateExFormRequest;
 import dashboard_fragment.staff_create_examination_form.create_ex_form_logic.ExFormApiCreateService;
 import dashboard_fragment.staff_create_examination_form.get_ex_form_logic.ExFormApiGetByDateService;
+import dashboard_fragment.staff_create_examination_form.get_ex_form_logic.ExFormApiGetUsedAppointmentsService;
 import dashboard_fragment.staff_manage_examination_form.cancel_ex_form_logic.CancelExaminationFormRequest;
 import dashboard_fragment.staff_manage_examination_form.cancel_ex_form_logic.ExFormApiUpdateStatusService;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExFormApiGetFormsWithPatient;
@@ -26,7 +27,7 @@ public class ExaminationFormRepository {
     private final ExFormApiUpdateStatusService updateStatusService;
     private final ExFormApiGetAllExFormToday getAllExFormToday;
     private final ExFormUpdateSpecificExFormApiService updateSpecificExForm;
-
+    private final ExFormApiGetUsedAppointmentsService usedAppointmentsService;
     public ExaminationFormRepository(Context context) {
         Retrofit client = SupabaseClientProvider.getClient(context);
 
@@ -36,6 +37,7 @@ public class ExaminationFormRepository {
         this.updateStatusService = client.create(ExFormApiUpdateStatusService.class);
         this.getAllExFormToday = client.create(ExFormApiGetAllExFormToday.class);
         this.updateSpecificExForm = client.create(ExFormUpdateSpecificExFormApiService.class);
+        this.usedAppointmentsService = client.create(ExFormApiGetUsedAppointmentsService.class);
     }
 
     public Call<List<ExaminationForm>> createForm(CreateExFormRequest newForm) {
@@ -47,6 +49,14 @@ public class ExaminationFormRepository {
                 "eq." + ngayKham,
                 "so_tiep_nhan",
                 "so_tiep_nhan.desc"
+        );
+    }
+    public Call<List<ExaminationForm>> getUsedAppointmentsByPatientId(String patientId) {
+        return usedAppointmentsService.getFormsByPatientId(
+                "eq." + patientId,
+                "not.is.null",
+                "appointment_id",
+                "created_at.desc"
         );
     }
 
