@@ -1,4 +1,4 @@
-name: Android CI
+name: Android and Supabase CI
 
 on:
   push:
@@ -7,14 +7,13 @@ on:
     branches: ["main"]
 
 concurrency:
-  group: android-ci-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-android:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,3 +39,21 @@ jobs:
 
       - name: Run lint
         run: ./gradlew lintDebug
+
+  check-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Local Supabase
+        run: supabase start
+
+      - name: Verify Database Migrations
+        run: |
+          supabase db reset --local
