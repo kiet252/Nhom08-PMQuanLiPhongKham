@@ -1,11 +1,18 @@
 package dashboard_fragment.staff_create_examination_form;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.view.ContextThemeWrapper;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.DatePicker;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -169,27 +176,87 @@ public class CreateExaminationForm_staff extends AppCompatActivity {
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-        DatePickerDialog datePickerDialog = new DatePickerDialog(
-                this,
-                (view, selectedYear, selectedMonth, selectedDay) -> {
-                    String date = selectedDay + "/" + (selectedMonth + 1) + "/" + selectedYear;
-                    EdtDateExam.setText(date);
-                    updatePredictedReceptionNumber();
-                },
-                year, month, day
-        );
+
+        AlertDialog dialog = new AlertDialog.Builder(this).create();
+
+
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(dp(24), dp(22), dp(24), dp(18));
+        layout.setBackground(taoNenBoGoc("#FFFFFF", 24));
+
+
+        DatePicker datePicker = new DatePicker(new ContextThemeWrapper(this, R.style.ReportDatePickerTheme));
+        datePicker.init(year, month, day, null);
+
 
         long today = System.currentTimeMillis();
-
         Calendar maxDate = Calendar.getInstance();
         maxDate.add(Calendar.DAY_OF_MONTH, 30);
 
-        datePickerDialog.getDatePicker().setMinDate(today);
-        datePickerDialog.getDatePicker().setMaxDate(maxDate.getTimeInMillis());
+        datePicker.setMinDate(today);
+        datePicker.setMaxDate(maxDate.getTimeInMillis());
 
-        datePickerDialog.show();
+
+        layout.addView(datePicker);
+
+
+        LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        btnParams.topMargin = dp(12);
+
+
+        TextView btnApDung = taoNutLich("Áp dụng");
+        btnApDung.setLayoutParams(btnParams);
+        btnApDung.setOnClickListener(v -> {
+
+            int selectedYear = datePicker.getYear();
+            int selectedMonth = datePicker.getMonth();
+            int selectedDay = datePicker.getDayOfMonth();
+
+
+            String date = String.format(Locale.getDefault(), "%02d/%02d/%04d", selectedDay, selectedMonth + 1, selectedYear);
+
+            EdtDateExam.setText(date);
+            EdtDateExam.setTextColor(Color.parseColor("#1E293B")); // Đổi màu chữ sang xám tối thanh lịch
+
+
+            updatePredictedReceptionNumber();
+
+            dialog.dismiss();
+        });
+        layout.addView(btnApDung);
+
+
+        dialog.setView(layout);
+        dialog.show();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
     }
 
+    private TextView taoNutLich(String text) {
+        TextView button = new TextView(this);
+        button.setText(text);
+        button.setTextColor(Color.WHITE);
+        button.setGravity(Gravity.CENTER);
+        button.setMinHeight(dp(48));
+        button.setBackground(taoNenBoGoc("#0D3F6E", 12));
+        return button;
+    }
+
+    private GradientDrawable taoNenBoGoc(String color, int radius) {
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setColor(Color.parseColor(color));
+        drawable.setCornerRadius(dp(radius));
+        return drawable;
+    }
+
+    private int dp(int value) {
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round((float) value * density);
+    }
     private void showTimePicker(){
         Calendar now = Calendar.getInstance();
 

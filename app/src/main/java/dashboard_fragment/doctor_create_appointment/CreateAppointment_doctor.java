@@ -1,10 +1,17 @@
 package dashboard_fragment.doctor_create_appointment;
 
+
 import android.app.DatePickerDialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.ContextThemeWrapper;
+import android.view.Gravity;
 import android.view.View;
+import android.widget.DatePicker;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -12,6 +19,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -229,21 +237,18 @@ public class CreateAppointment_doctor extends AppCompatActivity {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH, 1);
 
-        DatePickerDialog dialog = new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
-            calendar.set(year, month, dayOfMonth);
-            SimpleDateFormat dbFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            selectedDate = dbFormat.format(calendar.getTime());
+        AlertDialog dialog = new AlertDialog.Builder(this).create();
 
-            SimpleDateFormat uiFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-            String uiDate = uiFormat.format(calendar.getTime());
 
-            edtAppointmentDate.setText(uiDate);
-            tvConfirmDate.setText(uiDate);
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(dp(24), dp(22), dp(24), dp(18));
+        layout.setBackground(taoNenBoGoc("#FFFFFF", 24));
 
-            layoutConfirmDateContainer.setVisibility(View.VISIBLE);
 
-            updateProgressSteps(3);
-        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+        DatePicker datePicker = new DatePicker(new ContextThemeWrapper(this, R.style.ReportDatePickerTheme));
+        datePicker.init(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), null);
+
 
         Calendar minDateCal = Calendar.getInstance();
         minDateCal.add(Calendar.DAY_OF_MONTH, 1);
@@ -251,12 +256,71 @@ public class CreateAppointment_doctor extends AppCompatActivity {
         minDateCal.set(Calendar.MINUTE, 0);
         minDateCal.set(Calendar.SECOND, 0);
         minDateCal.set(Calendar.MILLISECOND, 0);
+        datePicker.setMinDate(minDateCal.getTimeInMillis());
 
-        dialog.getDatePicker().setMinDate(minDateCal.getTimeInMillis());
+        layout.addView(datePicker);
 
+
+        LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        btnParams.topMargin = dp(12);
+
+
+        TextView btnApDung = taoNutLich("Áp dụng");
+        btnApDung.setLayoutParams(btnParams);
+        btnApDung.setOnClickListener(v -> {
+            calendar.set(datePicker.getYear(), datePicker.getMonth(), datePicker.getDayOfMonth());
+
+
+            SimpleDateFormat dbFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            selectedDate = dbFormat.format(calendar.getTime());
+
+
+            SimpleDateFormat uiFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            String uiDate = uiFormat.format(calendar.getTime());
+
+            edtAppointmentDate.setText(uiDate);
+            edtAppointmentDate.setTextColor(Color.parseColor("#1E293B"));
+            tvConfirmDate.setText(uiDate);
+
+            layoutConfirmDateContainer.setVisibility(View.VISIBLE);
+            updateProgressSteps(3);
+
+            dialog.dismiss();
+        });
+        layout.addView(btnApDung);
+
+
+        dialog.setView(layout);
         dialog.show();
+
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
     }
 
+    private TextView taoNutLich(String text) {
+        TextView button = new TextView(this);
+        button.setText(text);
+        button.setTextColor(Color.WHITE);
+        button.setGravity(Gravity.CENTER);
+        button.setMinHeight(dp(48));
+        button.setBackground(taoNenBoGoc("#0D3F6E", 12));
+        return button;
+    }
+
+    private GradientDrawable taoNenBoGoc(String color, int radius) {
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setColor(Color.parseColor(color));
+        drawable.setCornerRadius(dp(radius));
+        return drawable;
+    }
+
+    private int dp(int value) {
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round((float) value * density);
+    }
 
     private void submitAppointment() {
         if (selectedPatient == null || selectedDate.isEmpty()) {
