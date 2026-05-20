@@ -33,6 +33,12 @@ public interface AuthApiService {
             @Header("apikey") String apiKey,
             @Header("Authorization") String authorization
     );
+    @GET("rest/v1/thong_bao?select=*&order=id.asc")
+    Call<java.util.List<ThongBao>> layDanhSachThongBaoTheoRole(
+            @Header("apikey") String apiKey,
+            @Header("Authorization") String authorization,
+            @Query("or") String roleFilter
+    );
     @POST("rest/v1/thong_bao")
     @Headers({
             "Content-Type: application/json",
@@ -43,12 +49,12 @@ public interface AuthApiService {
             @Header("Authorization") String authorization,
             @Body ThongBao thongBao
     );
-    @GET("rest/v1/thong_bao_fragment_admin?select=*&order=id.asc")
+    @GET("rest/v1/thong_bao?select=*&order=id.asc")
     Call<java.util.List<ThongBao>> layDanhSachThongBaoAdmin(
             @Header("apikey") String apiKey,
             @Header("Authorization") String authorization
     );
-    @POST("rest/v1/thong_bao_fragment_admin")
+    @POST("rest/v1/thong_bao")
     @Headers({
             "Content-Type: application/json",
             "Prefer: return=representation"
@@ -64,11 +70,10 @@ public interface AuthApiService {
             @Header("Authorization") String authorization,
             @Query("id") String queryId // id=eq.1
     );
-    @DELETE("rest/v1/thong_bao_fragment_admin")
+    @DELETE("rest/v1/thong_bao")
     Call<Void> xoaThongBao(
             @Header("apikey") String apiKey,
             @Header("Authorization") String authorization,
             @Query("id") String queryId // id=eq.1
     );
-
 }

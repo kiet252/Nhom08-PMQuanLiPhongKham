@@ -35,8 +35,18 @@ public class AuthRepository {
         return authApiService.layDanhSachThongBao(apiKey, "Bearer " + apiKey);
     }
 
+    public Call<java.util.List<ThongBao>> layDanhSachThongBao(String role) {
+        String roleFilter = "(vai_tro.is.null,vai_tro.eq.TAT_CA,vai_tro.eq." + role + ",vai_tro.like.*" + role + "*)";
+        return authApiService.layDanhSachThongBaoTheoRole(apiKey, "Bearer " + apiKey, roleFilter);
+    }
+
     public Call<java.util.List<ThongBao>> themThongBao(String tieuDe, String noiDung) {
         ThongBao tb = new ThongBao(tieuDe, noiDung);
+        return authApiService.themThongBao(apiKey, "Bearer " + apiKey, tb);
+    }
+
+    public Call<java.util.List<ThongBao>> themThongBao(String tieuDe, String noiDung, String vaiTro) {
+        ThongBao tb = new ThongBao(tieuDe, noiDung, vaiTro);
         return authApiService.themThongBao(apiKey, "Bearer " + apiKey, tb);
     }
     public Call<java.util.List<ThongBao>> layDanhSachThongBaoAdmin() {
@@ -45,6 +55,11 @@ public class AuthRepository {
 
     public Call<java.util.List<ThongBao>> themThongBaoAdmin(String tieuDe, String noiDung) {
         ThongBao tb = new ThongBao(tieuDe, noiDung);
+        return authApiService.themThongBaoAdmin(apiKey, "Bearer " + apiKey, tb);
+    }
+
+    public Call<java.util.List<ThongBao>> themThongBaoAdmin(String tieuDe, String noiDung, String vaiTro) {
+        ThongBao tb = new ThongBao(tieuDe, noiDung, vaiTro);
         return authApiService.themThongBaoAdmin(apiKey, "Bearer " + apiKey, tb);
     }
     public Call<Void> xoaThongBaoAdmin(int id) {
