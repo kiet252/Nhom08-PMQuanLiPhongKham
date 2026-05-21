@@ -69,6 +69,7 @@ public class NotificationSettingsFragment_Admin extends Fragment {
     private final List<Integer> selectedIds = new ArrayList<>();
     private final List<CheckBox> listCheckBoxes = new ArrayList<>();
     private final List<ThongBao> danhSachBanNhap = new ArrayList<>();
+    private final List<ThongBao> danhSachDaGui = new ArrayList<>();
 
     private final Handler refreshHandler = new Handler(Looper.getMainLooper());
     private final Runnable autoRefreshRunnable = new Runnable() {
@@ -224,17 +225,10 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         tvTabNhap.setTypeface(null, xemNhap ? Typeface.BOLD : Typeface.NORMAL);
         lineTabDaGui.setVisibility(xemNhap ? View.INVISIBLE : View.VISIBLE);
         lineTabNhap.setVisibility(xemNhap ? View.VISIBLE : View.INVISIBLE);
-        tvChon.setVisibility(xemNhap ? View.GONE : View.VISIBLE);
-        tvXoa.setVisibility(xemNhap ? View.GONE : View.VISIBLE);
+        tvChon.setVisibility(View.VISIBLE);
+        tvXoa.setVisibility(View.VISIBLE);
 
-        if (xemNhap)
-        {
-            datLaiCheDoChon();
-            hienThiDanhSachBanNhap();
-        } else
-        {
-            goiDuLieuRetrofit();
-        }
+        goiDuLieuRetrofit(true);
     }
 
     private void duaVaoBanNhap() {
@@ -251,43 +245,52 @@ public class NotificationSettingsFragment_Admin extends Fragment {
             return;
         }
 
-        danhSachBanNhap.add(0, new ThongBao(tieuDe, noiDung, layVaiTroNhan()));
-        edtTieuDe.setText("");
-        edtNoiDung.setText("");
-        cbTatCa.setChecked(false);
-        cbAdmin.setChecked(false);
-        cbBacSi.setChecked(true);
-        cbLeTan.setChecked(false);
+        String targetRoles = layVaiTroNhan();
+        String encodedRole = encodeDraftRole(targetRoles);
 
-        manHinhTao.setVisibility(View.GONE);
-        manHinhDanhSach.setVisibility(View.VISIBLE);
-        doiTab(true);
-    }
+        btnVaoBanNhap.setEnabled(false);
+        btnVaoBanNhap.setText("Đang lưu...");
 
-    private void hienThiDanhSachBanNhap() {
-        if (layoutDanhSach == null) return;
+        authRepository.themThongBaoAdmin(tieuDe, noiDung, encodedRole).enqueue(new Callback<List<ThongBao>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<ThongBao>> call, @NonNull Response<List<ThongBao>> response) {
+                if (!isAdded()) return;
 
-        layoutDanhSach.removeAllViews();
-        tvLoading.setVisibility(View.GONE);
+                btnVaoBanNhap.setEnabled(true);
+                btnVaoBanNhap.setText("Vào bản nháp");
 
-        if (danhSachBanNhap.isEmpty()) {
-            hienThiRong("Chưa có bản nháp nào", "Nhấn + để tạo thông báo mới");
-            return;
-        }
+                if (response.isSuccessful()) {
+                    edtTieuDe.setText("");
+                    edtNoiDung.setText("");
+                    cbTatCa.setChecked(false);
+                    cbAdmin.setChecked(false);
+                    cbBacSi.setChecked(true);
+                    cbLeTan.setChecked(false);
 
-        layoutEmpty.setVisibility(View.GONE);
-        for (ThongBao thongBao : danhSachBanNhap) {
-            layoutDanhSach.addView(taoCardThongBao(thongBao));
-        }
+                    manHinhTao.setVisibility(View.GONE);
+                    manHinhDanhSach.setVisibility(View.VISIBLE);
+                    doiTab(true);
+                } else {
+                    Toast.makeText(requireContext(), layThongBaoLoi(response), Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<ThongBao>> call, @NonNull Throwable t) {
+                if (!isAdded()) return;
+                btnVaoBanNhap.setEnabled(true);
+                btnVaoBanNhap.setText("Vào bản nháp");
+                Toast.makeText(requireContext(), "Không thể kết nối máy chủ để lưu bản nháp", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void goiDuLieuRetrofit() {
         goiDuLieuRetrofit(true);
     }
 
-    private void goiDuLieuRetrofit(boolean showLoading)
-    {
-        if (dangXemNhap || layoutDanhSach == null) {
+    private void goiDuLieuRetrofit(boolean showLoading) {
+        if (layoutDanhSach == null) {
             return;
         }
 
@@ -307,7 +310,7 @@ public class NotificationSettingsFragment_Admin extends Fragment {
 
                 tvLoading.setVisibility(View.GONE);
                 if (response.isSuccessful() && response.body() != null) {
-                    hienThiDanhSach(response.body());
+                    phanLoaiVaHienThi(response.body());
                 }
             }
 
@@ -322,19 +325,44 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         });
     }
 
-    private void hienThiDanhSach(List<ThongBao> danhSach)
-    {
-        layoutDanhSach.removeAllViews();
-        datLaiCheDoChon();
+    private void phanLoaiVaHienThi(List<ThongBao> danhSach) {
+        danhSachBanNhap.clear();
+        danhSachDaGui.clear();
 
-        if (danhSach == null || danhSach.isEmpty())
-        {
+        if (danhSach != null) {
+            for (ThongBao tb : danhSach) {
+                if (tb.getVai_tro() != null && tb.getVai_tro().startsWith("DRAFT_")) {
+                    danhSachBanNhap.add(tb);
+                } else {
+                    danhSachDaGui.add(tb);
+                }
+            }
+        }
+
+        Collections.reverse(danhSachBanNhap);
+        Collections.reverse(danhSachDaGui);
+
+        datLaiCheDoChon();
+        capNhatGiaoDienTabHienTai();
+    }
+
+    private void capNhatGiaoDienTabHienTai() {
+        if (layoutDanhSach == null) return;
+        layoutDanhSach.removeAllViews();
+
+        List<ThongBao> targetList = dangXemNhap ? danhSachBanNhap : danhSachDaGui;
+
+        if (targetList.isEmpty()) {
+            if (dangXemNhap) {
+                hienThiRong("Chưa có bản nháp nào", "Nhấn + để tạo bản nháp mới");
+            } else {
+                hienThiRong("Chưa có thông báo nào", "Nhấn + để tạo thông báo mới");
+            }
             return;
         }
 
         layoutEmpty.setVisibility(View.GONE);
-        Collections.reverse(danhSach);
-        for (ThongBao thongBao : danhSach) {
+        for (ThongBao thongBao : targetList) {
             layoutDanhSach.addView(taoCardThongBao(thongBao));
         }
     }
@@ -407,6 +435,32 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         contentColumn.addView(tvRole);
         row.addView(checkBox);
         row.addView(contentColumn, contentParams);
+
+        if (dangXemNhap) {
+            MaterialButton btnChuyen = new MaterialButton(requireContext());
+            btnChuyen.setText("Gửi");
+            btnChuyen.setTextSize(12);
+            btnChuyen.setTextColor(Color.WHITE);
+            btnChuyen.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#10B981")));
+            btnChuyen.setCornerRadius(dp(8));
+            btnChuyen.setPadding(dp(8), dp(4), dp(8), dp(4));
+            btnChuyen.setFocusable(true);
+            btnChuyen.setClickable(true);
+
+            LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+            btnParams.setMarginStart(dp(8));
+            btnParams.gravity = Gravity.CENTER_VERTICAL;
+
+            row.addView(btnChuyen, btnParams);
+
+            btnChuyen.setOnClickListener(v -> {
+                chuyenNhapSangChinh(thongBao);
+            });
+        }
+
         card.addView(row);
         card.setOnClickListener(v -> {
             if (isSelectionMode) {
@@ -646,20 +700,66 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         contentParams.setMargins(0, dp(8), 0, 0);
         content.addView(tvContent, contentParams);
 
-        TextView btnDong = new TextView(requireContext());
-        btnDong.setText("Đóng");
-        btnDong.setTextColor(Color.WHITE);
-        btnDong.setTextSize(15);
-        btnDong.setTypeface(null, Typeface.BOLD);
-        btnDong.setGravity(Gravity.CENTER);
-        btnDong.setBackground(taoNenBoGoc(Color.parseColor("#0D5FA8"), dp(10)));
-        LinearLayout.LayoutParams closeParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                dp(46)
-        );
-        closeParams.setMargins(0, dp(24), 0, 0);
-        content.addView(btnDong, closeParams);
-        btnDong.setOnClickListener(v -> dialog.dismiss());
+        if (dangXemNhap) {
+            LinearLayout buttonLayout = new LinearLayout(requireContext());
+            buttonLayout.setOrientation(LinearLayout.HORIZONTAL);
+            LinearLayout.LayoutParams buttonLayoutParams = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+            buttonLayoutParams.setMargins(0, dp(24), 0, 0);
+
+            TextView btnChuyen = new TextView(requireContext());
+            btnChuyen.setText("Gửi thông báo");
+            btnChuyen.setTextColor(Color.WHITE);
+            btnChuyen.setTextSize(15);
+            btnChuyen.setTypeface(null, Typeface.BOLD);
+            btnChuyen.setGravity(Gravity.CENTER);
+            btnChuyen.setBackground(taoNenBoGoc(Color.parseColor("#10B981"), dp(10)));
+            LinearLayout.LayoutParams chuyenParams = new LinearLayout.LayoutParams(
+                    0,
+                    dp(46),
+                    1.2f
+            );
+            chuyenParams.setMarginEnd(dp(8));
+            buttonLayout.addView(btnChuyen, chuyenParams);
+            btnChuyen.setOnClickListener(v -> {
+                dialog.dismiss();
+                chuyenNhapSangChinh(thongBao);
+            });
+
+            TextView btnClose = new TextView(requireContext());
+            btnClose.setText("Đóng");
+            btnClose.setTextColor(Color.WHITE);
+            btnClose.setTextSize(15);
+            btnClose.setTypeface(null, Typeface.BOLD);
+            btnClose.setGravity(Gravity.CENTER);
+            btnClose.setBackground(taoNenBoGoc(Color.parseColor("#64748B"), dp(10)));
+            LinearLayout.LayoutParams closeParams = new LinearLayout.LayoutParams(
+                    0,
+                    dp(46),
+                    1f
+            );
+            buttonLayout.addView(btnClose, closeParams);
+            btnClose.setOnClickListener(v -> dialog.dismiss());
+
+            content.addView(buttonLayout, buttonLayoutParams);
+        } else {
+            TextView btnDong = new TextView(requireContext());
+            btnDong.setText("Đóng");
+            btnDong.setTextColor(Color.WHITE);
+            btnDong.setTextSize(15);
+            btnDong.setTypeface(null, Typeface.BOLD);
+            btnDong.setGravity(Gravity.CENTER);
+            btnDong.setBackground(taoNenBoGoc(Color.parseColor("#0D5FA8"), dp(10)));
+            LinearLayout.LayoutParams closeParams = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    dp(46)
+            );
+            closeParams.setMargins(0, dp(24), 0, 0);
+            content.addView(btnDong, closeParams);
+            btnDong.setOnClickListener(v -> dialog.dismiss());
+        }
 
         return card;
     }
@@ -720,9 +820,12 @@ public class NotificationSettingsFragment_Admin extends Fragment {
             return;
         }
 
+        String title = dangXemNhap ? "Xóa bản nháp" : "Xóa thông báo";
+        String message = dangXemNhap ? "Bạn có chắc muốn xoá các bản nháp đã chọn ?" : "Bạn có chắc muốn xoá các thông báo đã chọn ?";
+
         new AlertDialog.Builder(requireContext())
-                .setTitle("Xóa thông báo")
-                .setMessage("Bạn có chắc muốn xoá các thông báo đã chọn ?")
+                .setTitle(title)
+                .setMessage(message)
                 .setPositiveButton("Xóa", (dialog, which) -> {
                     final int[] count = {0};
                     final int total = selectedIds.size();
@@ -733,7 +836,8 @@ public class NotificationSettingsFragment_Admin extends Fragment {
                             public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                                 count[0]++;
                                 if (count[0] == total) {
-                                    goiDuLieuRetrofit();
+                                    Toast.makeText(requireContext(), "Đã xóa các mục đã chọn", Toast.LENGTH_SHORT).show();
+                                    goiDuLieuRetrofit(true);
                                 }
                             }
 
@@ -741,7 +845,8 @@ public class NotificationSettingsFragment_Admin extends Fragment {
                             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
                                 count[0]++;
                                 if (count[0] == total) {
-                                    goiDuLieuRetrofit();
+                                    Toast.makeText(requireContext(), "Đã xóa các mục đã chọn", Toast.LENGTH_SHORT).show();
+                                    goiDuLieuRetrofit(true);
                                 }
                             }
                         });
@@ -749,6 +854,49 @@ public class NotificationSettingsFragment_Admin extends Fragment {
                 })
                 .setNegativeButton("Hủy", null)
                 .show();
+    }
+
+    private void chuyenNhapSangChinh(ThongBao thongBao) {
+        if (thongBao == null) return;
+
+        String decodedRole = decodeDraftRole(thongBao.getVai_tro());
+
+        authRepository.themThongBaoAdmin(
+                thongBao.getTieu_de(),
+                thongBao.getNoi_dung(),
+                decodedRole
+        ).enqueue(new Callback<List<ThongBao>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<ThongBao>> call, @NonNull Response<List<ThongBao>> response) {
+                if (!isAdded()) return;
+
+                if (response.isSuccessful()) {
+                    authRepository.xoaThongBaoAdmin(thongBao.getId()).enqueue(new Callback<Void>() {
+                        @Override
+                        public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> deleteResponse)
+                        {
+                            if (!isAdded()) return;
+                            doiTab(false);
+                        }
+
+                        @Override
+                        public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                            if (!isAdded()) return;
+                            doiTab(false);
+                        }
+                    });
+                } else {
+                    Toast.makeText(requireContext(), layThongBaoLoi(response), Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<ThongBao>> call, @NonNull Throwable t)
+            {
+                if (!isAdded()) return;
+                Toast.makeText(requireContext(), "Không thể kết nối máy chủ để gửi thông báo", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void hienThiRong(String title, String subtitle) {
@@ -828,16 +976,58 @@ public class NotificationSettingsFragment_Admin extends Fragment {
 
     private String hienThiVaiTro(String vaiTro) {
         String value = layChuoi(vaiTro, "TAT_CA");
-        if ("TAT_CA".equals(value)) return "Tat ca";
+        if (value.startsWith("DRAFT_")) {
+            value = decodeDraftRole(value);
+        }
+        if ("TAT_CA".equals(value)) return "Tất cả";
 
         return value
                 .replace(UserRole.ADMIN.name(), "Admin")
-                .replace(UserRole.BAC_SI.name(), "Bac si")
-                .replace(UserRole.NHAN_VIEN.name(), "Nhan vien")
+                .replace(UserRole.BAC_SI.name(), "Bác sĩ")
+                .replace(UserRole.NHAN_VIEN.name(), "Nhân viên")
                 .replace(",", ", ");
     }
 
-    private String layChuoi(String value, String fallback) {
+    private String encodeDraftRole(String vaiTro) {
+        if (vaiTro == null) return "DRAFT_T";
+        if (vaiTro.equals("TAT_CA")) return "DRAFT_T";
+
+        List<String> encoded = new ArrayList<>();
+        if (vaiTro.contains(UserRole.ADMIN.name())) encoded.add("A");
+        if (vaiTro.contains(UserRole.BAC_SI.name())) encoded.add("B");
+        if (vaiTro.contains(UserRole.NHAN_VIEN.name())) encoded.add("N");
+
+        StringBuilder sb = new StringBuilder("DRAFT_");
+        for (int i = 0; i < encoded.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(encoded.get(i));
+        }
+        return sb.toString();
+    }
+
+    private String decodeDraftRole(String encodedVaiTro) {
+        if (encodedVaiTro == null || !encodedVaiTro.startsWith("DRAFT_")) {
+            return "TAT_CA";
+        }
+
+        String rolesPart = encodedVaiTro.substring(6); // Remove "DRAFT_"
+        if (rolesPart.equals("T")) return "TAT_CA";
+
+        List<String> decoded = new ArrayList<>();
+        if (rolesPart.contains("A")) decoded.add(UserRole.ADMIN.name());
+        if (rolesPart.contains("B")) decoded.add(UserRole.BAC_SI.name());
+        if (rolesPart.contains("N")) decoded.add(UserRole.NHAN_VIEN.name());
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < decoded.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(decoded.get(i));
+        }
+        return sb.toString();
+    }
+
+    private String layChuoi(String value, String fallback)
+    {
         return value == null || value.trim().isEmpty() ? fallback : value.trim();
     }
 
@@ -852,7 +1042,7 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         }
         return message;
     }
-
+    
     private int dp(int value)
     {
         return Math.round(value * getResources().getDisplayMetrics().density);
