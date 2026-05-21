@@ -2,15 +2,16 @@ package dashboard_fragment;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.app.AlertDialog;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -39,6 +40,7 @@ public class NotificationFragment extends Fragment {
     private View listView;
     private AuthRepository authRepository;
     private UserRole userRole = UserRole.NHAN_VIEN;
+    private AlertDialog dialogChiTietThongBao;
 
     public NotificationFragment() {
     }
@@ -94,7 +96,7 @@ public class NotificationFragment extends Fragment {
             @Override
             public void onFailure(Call<List<ThongBao>> call, Throwable t) {
                 if (isAdded()) {
-                    Toast.makeText(getContext(), "Loi tai thong bao: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Lỗi tải thông báo: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -147,104 +149,107 @@ public class NotificationFragment extends Fragment {
         layoutDanhSachThongBao.addView(cardMoi);
     }
 
-    private void hienThiChiTietThongBao(String tieuDe, String noiDung) {
-        if (rootContainer == null) return;
+    private void hienThiChiTietThongBao(String tieuDe, String noiDung)
+    {
+        if (!isAdded()) return;
 
-        rootContainer.removeAllViews();
-        rootContainer.addView(taoManHinhChiTietThongBao(tieuDe, noiDung));
+        dialogChiTietThongBao = new AlertDialog.Builder(requireContext()).create();
+        dialogChiTietThongBao.setView(taoCuaSoChiTietThongBao(tieuDe, noiDung));
+        dialogChiTietThongBao.setOnShowListener(dialogInterface -> {
+            if (dialogChiTietThongBao.getWindow() != null) {
+                dialogChiTietThongBao.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+                dialogChiTietThongBao.getWindow().setLayout(dpToPx(330), ViewGroup.LayoutParams.WRAP_CONTENT);
+            }
+        });
+        dialogChiTietThongBao.show();
     }
 
-    private View taoManHinhChiTietThongBao(String tieuDe, String noiDung) {
-        FrameLayout root = new FrameLayout(requireContext());
-        root.setBackgroundColor(Color.parseColor("#F0F7FF"));
-
-        LinearLayout page = new LinearLayout(requireContext());
-        page.setOrientation(LinearLayout.VERTICAL);
-        root.addView(page, new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-        ));
-
-        FrameLayout header = new FrameLayout(requireContext());
-        header.setBackgroundResource(R.drawable.bg_gradient_dark_blue);
-        page.addView(header, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                dpToPx(170)
-        ));
-
-        ImageButton btnBack = new ImageButton(requireContext());
-        btnBack.setImageResource(R.drawable.ic_back_white);
-        btnBack.setBackgroundColor(Color.TRANSPARENT);
-        btnBack.setContentDescription("Quay lai");
-        FrameLayout.LayoutParams backParams = new FrameLayout.LayoutParams(dpToPx(48), dpToPx(48));
-        backParams.gravity = Gravity.START | Gravity.CENTER_VERTICAL;
-        backParams.setMargins(dpToPx(20), 0, 0, 0);
-        header.addView(btnBack, backParams);
-
-        TextView tvHeaderTitle = new TextView(requireContext());
-        tvHeaderTitle.setText("Chi tiet thong bao");
-        tvHeaderTitle.setTextColor(Color.WHITE);
-        tvHeaderTitle.setTextSize(26);
-        tvHeaderTitle.setTypeface(null, Typeface.BOLD);
-        tvHeaderTitle.setGravity(Gravity.CENTER);
-        header.addView(tvHeaderTitle, new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-        ));
-
+    private View taoCuaSoChiTietThongBao(String tieuDe, String noiDung)
+    {
         CardView contentCard = new CardView(requireContext());
         contentCard.setCardBackgroundColor(Color.WHITE);
-        contentCard.setRadius(dpToPx(28));
-        contentCard.setCardElevation(0);
-        LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                0,
-                1f
-        );
-        cardParams.setMargins(0, -dpToPx(28), 0, 0);
-        page.addView(contentCard, cardParams);
+        contentCard.setRadius(dpToPx(24));
+        contentCard.setCardElevation(dpToPx(8));
 
-        ScrollView scrollView = new ScrollView(requireContext());
-        scrollView.setFillViewport(true);
-        contentCard.addView(scrollView, new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-        ));
-
-        LinearLayout content = new LinearLayout(requireContext());
-        content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(dpToPx(28), dpToPx(36), dpToPx(28), dpToPx(36));
-        scrollView.addView(content, new ScrollView.LayoutParams(
+        LinearLayout dialogRoot = new LinearLayout(requireContext());
+        dialogRoot.setOrientation(LinearLayout.VERTICAL);
+        contentCard.addView(dialogRoot, new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
         ));
 
-        LinearLayout titleRow = new LinearLayout(requireContext());
-        titleRow.setOrientation(LinearLayout.HORIZONTAL);
-        titleRow.setGravity(Gravity.TOP);
-        content.addView(titleRow);
+        LinearLayout header = new LinearLayout(requireContext());
+        header.setOrientation(LinearLayout.HORIZONTAL);
+        header.setGravity(Gravity.CENTER_VERTICAL);
+        header.setPadding(dpToPx(20), dpToPx(18), dpToPx(20), dpToPx(18));
+        header.setBackground(taoNenHeaderDialog());
+        dialogRoot.addView(header, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        ));
 
-        ImageView icon = new ImageView(requireContext());
-        icon.setImageResource(R.drawable.ic_notification);
-        icon.setColorFilter(Color.parseColor("#4F5BEA"));
-        LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(dpToPx(34), dpToPx(34));
-        iconParams.setMargins(0, dpToPx(2), dpToPx(16), 0);
-        titleRow.addView(icon, iconParams);
+        ImageView headerIcon = new ImageView(requireContext());
+        headerIcon.setImageResource(R.drawable.ic_notification_bell);
+        headerIcon.setColorFilter(Color.WHITE);
+        headerIcon.setPadding(dpToPx(8), dpToPx(8), dpToPx(8), dpToPx(8));
+        headerIcon.setBackground(taoNenBoGoc(Color.parseColor("#2B7BBB"), dpToPx(18)));
+        LinearLayout.LayoutParams headerIconParams = new LinearLayout.LayoutParams(dpToPx(42), dpToPx(42));
+        headerIconParams.setMargins(0, 0, dpToPx(14), 0);
+        header.addView(headerIcon, headerIconParams);
 
-        LinearLayout titleColumn = new LinearLayout(requireContext());
-        titleColumn.setOrientation(LinearLayout.VERTICAL);
-        titleRow.addView(titleColumn, new LinearLayout.LayoutParams(
+        LinearLayout headerText = new LinearLayout(requireContext());
+        headerText.setOrientation(LinearLayout.VERTICAL);
+        header.addView(headerText, new LinearLayout.LayoutParams(
                 0,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 1f
         ));
 
+        TextView tvHeader = new TextView(requireContext());
+        tvHeader.setText("Chi tiết thông báo");
+        tvHeader.setTextColor(Color.WHITE);
+        tvHeader.setTextSize(20);
+        tvHeader.setTypeface(null, Typeface.BOLD);
+        headerText.addView(tvHeader);
+
+        ScrollView scrollView = new ScrollView(requireContext());
+        dialogRoot.addView(scrollView, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        ));
+
+        LinearLayout content = new LinearLayout(requireContext());
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setPadding(dpToPx(22), dpToPx(20), dpToPx(22), dpToPx(18));
+        content.setBackgroundColor(Color.WHITE);
+        scrollView.addView(content, new ScrollView.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        ));
+
         TextView tvTitle = new TextView(requireContext());
         tvTitle.setText(tieuDe);
-        tvTitle.setTextColor(Color.parseColor("#4F5BEA"));
-        tvTitle.setTextSize(21);
+        tvTitle.setTextColor(Color.parseColor("#0D3F6E"));
+        tvTitle.setTextSize(20);
         tvTitle.setTypeface(null, Typeface.BOLD);
-        titleColumn.addView(tvTitle);
+        tvTitle.setLineSpacing(dpToPx(3), 1f);
+        content.addView(tvTitle);
+
+        View line = new View(requireContext());
+        line.setBackgroundColor(Color.parseColor("#E2E8F0"));
+        LinearLayout.LayoutParams lineParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dpToPx(1)
+        );
+        lineParams.setMargins(0, dpToPx(16), 0, dpToPx(16));
+        content.addView(line, lineParams);
+
+        TextView tvLabel = new TextView(requireContext());
+        tvLabel.setText("Nội dung");
+        tvLabel.setTextColor(Color.parseColor("#0D5FA8"));
+        tvLabel.setTextSize(13);
+        tvLabel.setTypeface(null, Typeface.BOLD);
+        content.addView(tvLabel);
 
         TextView tvContent = new TextView(requireContext());
         tvContent.setText(noiDung);
@@ -255,17 +260,54 @@ public class NotificationFragment extends Fragment {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
         );
-        contentParams.setMargins(0, dpToPx(24), 0, 0);
+        contentParams.setMargins(0, dpToPx(8), 0, 0);
         content.addView(tvContent, contentParams);
 
-        btnBack.setOnClickListener(v -> quayLaiDanhSachThongBao());
-        return root;
+        TextView btnDong = new TextView(requireContext());
+        btnDong.setText("Đóng");
+        btnDong.setTextColor(Color.WHITE);
+        btnDong.setTextSize(15);
+        btnDong.setTypeface(null, Typeface.BOLD);
+        btnDong.setGravity(Gravity.CENTER);
+        btnDong.setBackground(taoNenBoGoc(Color.parseColor("#0D5FA8"), dpToPx(10)));
+        LinearLayout.LayoutParams closeParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dpToPx(46)
+        );
+        closeParams.setMargins(0, dpToPx(24), 0, 0);
+        content.addView(btnDong, closeParams);
+        btnDong.setOnClickListener(v -> {
+            if (dialogChiTietThongBao != null && dialogChiTietThongBao.isShowing()) {
+                dialogChiTietThongBao.dismiss();
+            }
+        });
+
+        return contentCard;
     }
 
-    private void quayLaiDanhSachThongBao() {
-        if (rootContainer == null || listView == null) return;
+    private GradientDrawable taoNenHeaderDialog()
+    {
+        GradientDrawable drawable = new GradientDrawable(
+                GradientDrawable.Orientation.LEFT_RIGHT,
+                new int[]{
+                        Color.parseColor("#021B33"),
+                        Color.parseColor("#08335E"),
+                        Color.parseColor("#0D5FA8")
+                }
+        );
+        drawable.setCornerRadii(new float[]{
+                dpToPx(24), dpToPx(24),
+                dpToPx(24), dpToPx(24),
+                0, 0,
+                0, 0
+        });
+        return drawable;
+    }
 
-        rootContainer.removeAllViews();
-        rootContainer.addView(listView);
+    private GradientDrawable taoNenBoGoc(int color, int radius) {
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setColor(color);
+        drawable.setCornerRadius(radius);
+        return drawable;
     }
 }

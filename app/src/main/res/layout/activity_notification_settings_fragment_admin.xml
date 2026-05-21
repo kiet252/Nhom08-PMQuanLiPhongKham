@@ -145,7 +145,7 @@
                         android:focusable="true"
                         android:gravity="center"
                         android:paddingHorizontal="16dp"
-                        android:text="Chon"
+                        android:text="Chọn"
                         android:textColor="#0D5FA8"
                         android:textSize="14sp"
                         android:textStyle="bold" />
@@ -162,7 +162,7 @@
                         android:focusable="true"
                         android:gravity="center"
                         android:paddingHorizontal="16dp"
-                        android:text="Xoa"
+                        android:text="Xóa"
                         android:textColor="#DC2626"
                         android:textSize="14sp"
                         android:textStyle="bold" />
@@ -431,6 +431,21 @@
                                 android:textStyle="bold" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_admin_notification_draft"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:layout_marginBottom="12dp"
+                        android:text="Vào bản nháp"
+                        android:textAllCaps="false"
+                        android:textColor="#0D5FA8"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="#E0F2FE"
+                        app:cornerRadius="14dp"
+                        app:strokeColor="#B7DDF8"
+                        app:strokeWidth="1dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_admin_notification_send"

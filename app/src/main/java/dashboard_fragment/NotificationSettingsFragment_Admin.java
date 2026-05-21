@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -14,7 +15,9 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -59,11 +62,13 @@ public class NotificationSettingsFragment_Admin extends Fragment {
     private CheckBox cbBacSi;
     private CheckBox cbLeTan;
     private MaterialButton btnGuiThongBao;
+    private MaterialButton btnVaoBanNhap;
     private AuthRepository authRepository;
     private boolean dangXemNhap = false;
     private boolean isSelectionMode = false;
     private final List<Integer> selectedIds = new ArrayList<>();
     private final List<CheckBox> listCheckBoxes = new ArrayList<>();
+    private final List<ThongBao> danhSachBanNhap = new ArrayList<>();
 
     private final Handler refreshHandler = new Handler(Looper.getMainLooper());
     private final Runnable autoRefreshRunnable = new Runnable() {
@@ -103,6 +108,7 @@ public class NotificationSettingsFragment_Admin extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        datHienThiThanhDieuHuongDuoi(false);
         if (manHinhDanhSach != null && manHinhDanhSach.getVisibility() == View.VISIBLE && !dangXemNhap) {
             goiDuLieuRetrofit(false);
         }
@@ -118,12 +124,22 @@ public class NotificationSettingsFragment_Admin extends Fragment {
 
     @Override
     public void onDestroyView() {
-        super.onDestroyView();
+        datHienThiThanhDieuHuongDuoi(true);
         refreshHandler.removeCallbacks(autoRefreshRunnable);
         manHinhDanhSach = null;
         manHinhTao = null;
         layoutDanhSach = null;
         layoutEmpty = null;
+        super.onDestroyView();
+    }
+
+    private void datHienThiThanhDieuHuongDuoi(boolean hienThi) {
+        if (getActivity() == null) return;
+
+        View bottomNavigation = getActivity().findViewById(R.id.bottom_navigation);
+        if (bottomNavigation != null) {
+            bottomNavigation.setVisibility(hienThi ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void anhXa(View view) {
@@ -147,6 +163,7 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         cbBacSi = view.findViewById(R.id.cb_admin_notification_doctor);
         cbLeTan = view.findViewById(R.id.cb_admin_notification_receptionist);
         btnGuiThongBao = view.findViewById(R.id.btn_admin_notification_send);
+        btnVaoBanNhap = view.findViewById(R.id.btn_admin_notification_draft);
     }
 
     private void cauHinhSuKien() {
@@ -162,6 +179,7 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         tvChon.setOnClickListener(v -> doiCheDoChon());
         tvXoa.setOnClickListener(v -> thucHienXoaNhieu());
         btnGuiThongBao.setOnClickListener(v -> guiThongBao());
+        btnVaoBanNhap.setOnClickListener(v -> duaVaoBanNhap());
 
         cbTatCa.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
@@ -212,10 +230,54 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         if (xemNhap)
         {
             datLaiCheDoChon();
-            hienThiRong("Chưa có bản nháp nào", "Nhấn + để tạo thông báo mới");
+            hienThiDanhSachBanNhap();
         } else
         {
             goiDuLieuRetrofit();
+        }
+    }
+
+    private void duaVaoBanNhap() {
+        String tieuDe = edtTieuDe.getText().toString().trim();
+        String noiDung = edtNoiDung.getText().toString().trim();
+
+        if (tieuDe.isEmpty() || noiDung.isEmpty()) {
+            Toast.makeText(requireContext(), "Vui lòng nhập đầy đủ tiêu đề và nội dung", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!cbTatCa.isChecked() && !cbAdmin.isChecked() && !cbBacSi.isChecked() && !cbLeTan.isChecked()) {
+            Toast.makeText(requireContext(), "Vui lòng chọn vai trò nhận thông báo", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        danhSachBanNhap.add(0, new ThongBao(tieuDe, noiDung, layVaiTroNhan()));
+        edtTieuDe.setText("");
+        edtNoiDung.setText("");
+        cbTatCa.setChecked(false);
+        cbAdmin.setChecked(false);
+        cbBacSi.setChecked(true);
+        cbLeTan.setChecked(false);
+
+        manHinhTao.setVisibility(View.GONE);
+        manHinhDanhSach.setVisibility(View.VISIBLE);
+        doiTab(true);
+    }
+
+    private void hienThiDanhSachBanNhap() {
+        if (layoutDanhSach == null) return;
+
+        layoutDanhSach.removeAllViews();
+        tvLoading.setVisibility(View.GONE);
+
+        if (danhSachBanNhap.isEmpty()) {
+            hienThiRong("Chưa có bản nháp nào", "Nhấn + để tạo thông báo mới");
+            return;
+        }
+
+        layoutEmpty.setVisibility(View.GONE);
+        for (ThongBao thongBao : danhSachBanNhap) {
+            layoutDanhSach.addView(taoCardThongBao(thongBao));
         }
     }
 
@@ -334,7 +396,7 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         tvContent.setPadding(0, dp(6), 0, 0);
 
         TextView tvRole = new TextView(requireContext());
-        tvRole.setText("Gui den: " + hienThiVaiTro(thongBao.getVai_tro()));
+        tvRole.setText("Gửi đến: " + hienThiVaiTro(thongBao.getVai_tro()));
         tvRole.setTextColor(Color.parseColor("#0D5FA8"));
         tvRole.setTextSize(12);
         tvRole.setTypeface(null, Typeface.BOLD);
@@ -349,9 +411,282 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         card.setOnClickListener(v -> {
             if (isSelectionMode) {
                 checkBox.setChecked(!checkBox.isChecked());
+            } else {
+                hienThiChiTietThongBao(thongBao);
             }
         });
         return card;
+    }
+
+    private void hienThiChiTietThongBao(ThongBao thongBao) {
+        if (!isAdded()) return;
+
+        AlertDialog dialog = new AlertDialog.Builder(requireContext()).create();
+        dialog.setView(taoCuaSoChiTietThongBaoDep(thongBao, dialog));
+        dialog.setOnShowListener(dialogInterface -> {
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+                dialog.getWindow().setLayout(dp(330), ViewGroup.LayoutParams.WRAP_CONTENT);
+            }
+        });
+        dialog.show();
+    }
+
+    private View taoCuaSoChiTietThongBao(ThongBao thongBao, AlertDialog dialog) {
+        MaterialCardView card = new MaterialCardView(requireContext());
+        card.setCardBackgroundColor(Color.WHITE);
+        card.setRadius(dp(22));
+        card.setCardElevation(dp(8));
+        card.setStrokeWidth(0);
+
+        ScrollView scrollView = new ScrollView(requireContext());
+        card.addView(scrollView, new ViewGroup.LayoutParams(
+                dp(320),
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        ));
+
+        LinearLayout content = new LinearLayout(requireContext());
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setPadding(dp(22), dp(22), dp(22), dp(18));
+        scrollView.addView(content, new ScrollView.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        ));
+
+        LinearLayout titleRow = new LinearLayout(requireContext());
+        titleRow.setOrientation(LinearLayout.HORIZONTAL);
+        titleRow.setGravity(Gravity.TOP);
+        content.addView(titleRow);
+
+        ImageView icon = new ImageView(requireContext());
+        icon.setImageResource(R.drawable.ic_notification);
+        icon.setColorFilter(Color.parseColor("#0D5FA8"));
+        LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(dp(34), dp(34));
+        iconParams.setMargins(0, dp(2), dp(14), 0);
+        titleRow.addView(icon, iconParams);
+
+        LinearLayout titleColumn = new LinearLayout(requireContext());
+        titleColumn.setOrientation(LinearLayout.VERTICAL);
+        titleRow.addView(titleColumn, new LinearLayout.LayoutParams(
+                0,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                1f
+        ));
+
+        TextView tvHeader = new TextView(requireContext());
+        tvHeader.setText("Chi tiết thông báo");
+        tvHeader.setTextColor(Color.parseColor("#64748B"));
+        tvHeader.setTextSize(13);
+        tvHeader.setTypeface(null, Typeface.BOLD);
+        titleColumn.addView(tvHeader);
+
+        TextView tvTitle = new TextView(requireContext());
+        tvTitle.setText(layChuoi(thongBao.getTieu_de(), "Không có tiêu đề"));
+        tvTitle.setTextColor(Color.parseColor("#0D3F6E"));
+        tvTitle.setTextSize(20);
+        tvTitle.setTypeface(null, Typeface.BOLD);
+        tvTitle.setPadding(0, dp(4), 0, 0);
+        titleColumn.addView(tvTitle);
+
+        TextView tvRole = new TextView(requireContext());
+        tvRole.setText("Gửi đến: " + hienThiVaiTro(thongBao.getVai_tro()));
+        tvRole.setTextColor(Color.parseColor("#0D5FA8"));
+        tvRole.setTextSize(13);
+        tvRole.setTypeface(null, Typeface.BOLD);
+        LinearLayout.LayoutParams roleParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        roleParams.setMargins(0, dp(20), 0, 0);
+        content.addView(tvRole, roleParams);
+
+        TextView tvContent = new TextView(requireContext());
+        tvContent.setText(layChuoi(thongBao.getNoi_dung(), ""));
+        tvContent.setTextColor(Color.parseColor("#1E293B"));
+        tvContent.setTextSize(16);
+        tvContent.setLineSpacing(dp(5), 1f);
+        LinearLayout.LayoutParams contentParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        contentParams.setMargins(0, dp(16), 0, 0);
+        content.addView(tvContent, contentParams);
+
+        TextView btnDong = new TextView(requireContext());
+        btnDong.setText("Đóng");
+        btnDong.setTextColor(Color.WHITE);
+        btnDong.setTextSize(15);
+        btnDong.setTypeface(null, Typeface.BOLD);
+        btnDong.setGravity(Gravity.CENTER);
+        btnDong.setBackgroundColor(Color.parseColor("#0D5FA8"));
+        btnDong.setPadding(dp(18), dp(10), dp(18), dp(10));
+        LinearLayout.LayoutParams closeParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        closeParams.gravity = Gravity.END;
+        closeParams.setMargins(0, dp(24), 0, 0);
+        content.addView(btnDong, closeParams);
+        btnDong.setOnClickListener(v -> dialog.dismiss());
+
+        return card;
+    }
+
+    private View taoCuaSoChiTietThongBaoDep(ThongBao thongBao, AlertDialog dialog) {
+        MaterialCardView card = new MaterialCardView(requireContext());
+        card.setCardBackgroundColor(Color.WHITE);
+        card.setRadius(dp(24));
+        card.setCardElevation(dp(8));
+        card.setStrokeWidth(0);
+
+        LinearLayout dialogRoot = new LinearLayout(requireContext());
+        dialogRoot.setOrientation(LinearLayout.VERTICAL);
+        card.addView(dialogRoot, new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        ));
+
+        LinearLayout header = new LinearLayout(requireContext());
+        header.setOrientation(LinearLayout.HORIZONTAL);
+        header.setGravity(Gravity.CENTER_VERTICAL);
+        header.setPadding(dp(20), dp(18), dp(20), dp(18));
+        header.setBackground(taoNenHeaderDialog());
+        dialogRoot.addView(header, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        ));
+
+        ImageView headerIcon = new ImageView(requireContext());
+        headerIcon.setImageResource(R.drawable.ic_notification_bell);
+        headerIcon.setColorFilter(Color.WHITE);
+        headerIcon.setPadding(dp(8), dp(8), dp(8), dp(8));
+        headerIcon.setBackground(taoNenBoGoc(Color.parseColor("#2B7BBB"), dp(18)));
+        LinearLayout.LayoutParams headerIconParams = new LinearLayout.LayoutParams(dp(42), dp(42));
+        headerIconParams.setMargins(0, 0, dp(14), 0);
+        header.addView(headerIcon, headerIconParams);
+
+        LinearLayout headerText = new LinearLayout(requireContext());
+        headerText.setOrientation(LinearLayout.VERTICAL);
+        header.addView(headerText, new LinearLayout.LayoutParams(
+                0,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                1f
+        ));
+
+        TextView tvHeader = new TextView(requireContext());
+        tvHeader.setText("Chi tiết thông báo");
+        tvHeader.setTextColor(Color.WHITE);
+        tvHeader.setTextSize(20);
+        tvHeader.setTypeface(null, Typeface.BOLD);
+        headerText.addView(tvHeader);
+
+
+        ScrollView scrollView = new ScrollView(requireContext());
+        dialogRoot.addView(scrollView, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        ));
+
+        LinearLayout content = new LinearLayout(requireContext());
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setPadding(dp(22), dp(20), dp(22), dp(18));
+        content.setBackgroundColor(Color.WHITE);
+        scrollView.addView(content, new ScrollView.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        ));
+
+        TextView tvTitle = new TextView(requireContext());
+        tvTitle.setText(layChuoi(thongBao.getTieu_de(), "Không có tiêu đề"));
+        tvTitle.setTextColor(Color.parseColor("#0D3F6E"));
+        tvTitle.setTextSize(20);
+        tvTitle.setTypeface(null, Typeface.BOLD);
+        tvTitle.setLineSpacing(dp(3), 1f);
+        content.addView(tvTitle);
+
+        View line = new View(requireContext());
+        line.setBackgroundColor(Color.parseColor("#E2E8F0"));
+        LinearLayout.LayoutParams lineParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(1)
+        );
+        lineParams.setMargins(0, dp(16), 0, dp(16));
+        content.addView(line, lineParams);
+
+        TextView tvRole = new TextView(requireContext());
+        tvRole.setText("Gửi đến: " + hienThiVaiTro(thongBao.getVai_tro()));
+        tvRole.setTextColor(Color.parseColor("#0D5FA8"));
+        tvRole.setTextSize(13);
+        tvRole.setTypeface(null, Typeface.BOLD);
+        tvRole.setPadding(dp(12), dp(7), dp(12), dp(7));
+        tvRole.setBackground(taoNenBoGoc(Color.parseColor("#E0F2FE"), dp(12)));
+        content.addView(tvRole);
+
+        TextView tvLabel = new TextView(requireContext());
+        tvLabel.setText("Nội dung");
+        tvLabel.setTextColor(Color.parseColor("#0D5FA8"));
+        tvLabel.setTextSize(13);
+        tvLabel.setTypeface(null, Typeface.BOLD);
+        LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        labelParams.setMargins(0, dp(18), 0, 0);
+        content.addView(tvLabel, labelParams);
+
+        TextView tvContent = new TextView(requireContext());
+        tvContent.setText(layChuoi(thongBao.getNoi_dung(), ""));
+        tvContent.setTextColor(Color.parseColor("#1E293B"));
+        tvContent.setTextSize(16);
+        tvContent.setLineSpacing(dp(5), 1f);
+        LinearLayout.LayoutParams contentParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        contentParams.setMargins(0, dp(8), 0, 0);
+        content.addView(tvContent, contentParams);
+
+        TextView btnDong = new TextView(requireContext());
+        btnDong.setText("Đóng");
+        btnDong.setTextColor(Color.WHITE);
+        btnDong.setTextSize(15);
+        btnDong.setTypeface(null, Typeface.BOLD);
+        btnDong.setGravity(Gravity.CENTER);
+        btnDong.setBackground(taoNenBoGoc(Color.parseColor("#0D5FA8"), dp(10)));
+        LinearLayout.LayoutParams closeParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(46)
+        );
+        closeParams.setMargins(0, dp(24), 0, 0);
+        content.addView(btnDong, closeParams);
+        btnDong.setOnClickListener(v -> dialog.dismiss());
+
+        return card;
+    }
+
+    private GradientDrawable taoNenHeaderDialog() {
+        GradientDrawable drawable = new GradientDrawable(
+                GradientDrawable.Orientation.LEFT_RIGHT,
+                new int[]{
+                        Color.parseColor("#021B33"),
+                        Color.parseColor("#08335E"),
+                        Color.parseColor("#0D5FA8")
+                }
+        );
+        drawable.setCornerRadii(new float[]{
+                dp(24), dp(24),
+                dp(24), dp(24),
+                0, 0,
+                0, 0
+        });
+        return drawable;
+    }
+
+    private GradientDrawable taoNenBoGoc(int color, int radius) {
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setColor(color);
+        drawable.setCornerRadius(radius);
+        return drawable;
     }
 
     private void doiCheDoChon() {
@@ -388,7 +723,7 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Xóa thông báo")
                 .setMessage("Bạn có chắc muốn xoá các thông báo đã chọn ?")
-                .setPositiveButton("Xoa", (dialog, which) -> {
+                .setPositiveButton("Xóa", (dialog, which) -> {
                     final int[] count = {0};
                     final int total = selectedIds.size();
 
@@ -440,7 +775,7 @@ public class NotificationSettingsFragment_Admin extends Fragment {
 
         String vaiTroNhan = layVaiTroNhan();
         btnGuiThongBao.setEnabled(false);
-        btnGuiThongBao.setText("Dang gui...");
+        btnGuiThongBao.setText("Đang gửi...");
 
         authRepository.themThongBaoAdmin(tieuDe, noiDung, vaiTroNhan).enqueue(new Callback<List<ThongBao>>() {
             @Override
@@ -518,7 +853,8 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         return message;
     }
 
-    private int dp(int value) {
+    private int dp(int value)
+    {
         return Math.round(value * getResources().getDisplayMetrics().density);
     }
 }
