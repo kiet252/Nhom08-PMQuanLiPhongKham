@@ -70,7 +70,7 @@ public class ReportsActivity_Admin extends BaseActivity {
         apiService = SupabaseClientProvider.getClient(this).create(ReportApiService.class);
 
         ImageButton btnBackCreate    = findViewById(R.id.btnBackCreate);
-        EditText    etTenBN          = findViewById(R.id.et_ten_benh_nhan);
+        EditText    etSearchInput    = findViewById(R.id.et_ten_benh_nhan); 
         TextView    tvNgayBD         = findViewById(R.id.tv_tu_ngay);
         TextView    tvNgayKT         = findViewById(R.id.tv_den_ngay);
         Button      btnTimKiem       = findViewById(R.id.btn_tim_kiem);
@@ -90,8 +90,6 @@ public class ReportsActivity_Admin extends BaseActivity {
             rvDanhSach.setAdapter(adapter);
         }
 
-        // ĐÃ XOÁ: Không gọi fetchDataFromServer() ở đây nữa để tránh tải trước
-
         btnBackCreate.setOnClickListener(v -> finish());
         tvNgayBD.setOnClickListener(v -> hienThiLich(tvNgayBD));
         tvNgayKT.setOnClickListener(v -> hienThiLich(tvNgayKT));
@@ -103,22 +101,19 @@ public class ReportsActivity_Admin extends BaseActivity {
 
         if (btnTimKiem != null) {
             btnTimKiem.setOnClickListener(v -> {
-                String tenBN = etTenBN.getText().toString().trim();
+                String input = etSearchInput.getText().toString().trim();
                 String tuNgay = tvNgayBD.getText().toString().trim();
                 String denNgay = tvNgayKT.getText().toString().trim();
 
-                // Bấm nút mới bắt đầu tải và lọc
-                fetchDataAndFilter(tenBN, tuNgay, denNgay);
+                // Chỉ thực hiện tải dữ liệu và lọc khi người dùng nhấn nút Tìm
+                fetchDataAndFilter(input, tuNgay, denNgay);
             });
         }
     }
 
-    /**
-     * Hàm thực hiện tải dữ liệu mới từ Server và áp dụng bộ lọc ngay sau đó
-     */
-    private void fetchDataAndFilter(String tenBN, String tuNgay, String denNgay) {
+    private void fetchDataAndFilter(String input, String tuNgay, String denNgay) {
         ProgressDialog pd = new ProgressDialog(this);
-        pd.setMessage("Đang tải dữ liệu...");
+        pd.setMessage("Đang truy xuất dữ liệu từ máy chủ...");
         pd.setCancelable(false);
         pd.show();
 
@@ -141,59 +136,74 @@ public class ReportsActivity_Admin extends BaseActivity {
                         danhSachGoc.add(new DonKham(
                                 item.getId(),
                                 item.getPatientName(),
+                                item.getPatientId(),
+                                item.getPatientCccd(),
                                 dateStr,
                                 item.getTrang_thai(),
                                 item.getPhi_kham()
                         ));
                     }
                     
-                    // Sau khi tải xong dữ liệu gốc, thực hiện lọc tại máy local
-                    thucHienLocDuLieu(tenBN, tuNgay, denNgay);
+                    // Thực hiện lọc dữ liệu vừa tải về
+                    thucHienLocDuLieu(input, tuNgay, denNgay);
                 } else {
-                    Toast.makeText(ReportsActivity_Admin.this, "Lỗi tải dữ liệu từ máy chủ", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ReportsActivity_Admin.this, "Không thể lấy dữ liệu mới nhất", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<List<ReportItem>> call, @NonNull Throwable t) {
                 pd.dismiss();
-                Log.e("API_ERROR", "Error: " + t.getMessage());
-                Toast.makeText(ReportsActivity_Admin.this, "Không thể kết nối máy chủ", Toast.LENGTH_SHORT).show();
+                Log.e("REPORTS_API", "Error: " + t.getMessage());
+                Toast.makeText(ReportsActivity_Admin.this, "Lỗi kết nối mạng", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void thucHienLocDuLieu(String tenBN, String tuNgay, String denNgay) {
-        // Kiểm tra logic ngày tháng cơ bản
+    private void thucHienLocDuLieu(String input, String tuNgay, String denNgay) {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         Date dateBD = null, dateKT = null;
 
         try {
-            if (!tuNgay.contains("ngày") && !tuNgay.isEmpty()) dateBD = sdf.parse(tuNgay);
-            if (!denNgay.contains("ngày") && !denNgay.isEmpty()) dateKT = sdf.parse(denNgay);
+            if (!tuNgay.contains("ngày") && !tuNgay.isEmpty() && !tuNgay.equals("Từ ngày")) dateBD = sdf.parse(tuNgay);
+            if (!denNgay.contains("ngày") && !denNgay.isEmpty() && !denNgay.equals("Đến ngày")) dateKT = sdf.parse(denNgay);
             
             if (dateBD != null && dateKT != null && dateBD.after(dateKT)) {
                 Toast.makeText(this, "Ngày bắt đầu không được sau ngày kết thúc!", Toast.LENGTH_LONG).show();
                 return;
             }
         } catch (Exception e) {
-            Toast.makeText(this, "Ngày không đúng định dạng!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Định dạng ngày chưa chuẩn!", Toast.LENGTH_SHORT).show();
             return;
         }
 
         danhSachKetQua.clear();
-        String query = tenBN.toLowerCase();
+        String queryLower = input.toLowerCase();
 
         for (DonKham dk : danhSachGoc) {
-            String nameInList = dk.getTenBN().toLowerCase();
+            boolean matchInput = false;
+
+            if (input.isEmpty()) {
+                matchInput = true;
+            } else {
+                // Logic tìm kiếm theo yêu cầu:
+                // 1. Khớp chính xác Mã bệnh nhân hoặc CCCD (Phải giống y hệt - Equal)
+                if (input.equalsIgnoreCase(dk.getPatientId()) || input.equals(dk.getPatientCccd())) {
+                    matchInput = true;
+                } 
+                // 2. Nếu không khớp ID/CCCD tuyệt đối, thì kiểm tra khớp một phần với Tên bệnh nhân (Like)
+                else if (dk.getTenBN().toLowerCase().contains(queryLower)) {
+                    matchInput = true;
+                }
+            }
+
             Date dateInList = null;
             try { dateInList = sdf.parse(dk.getNgayKham()); } catch (Exception ignored) {}
 
-            boolean matchTen = query.isEmpty() || nameInList.contains(query);
             boolean matchBD = dateBD == null || (dateInList != null && !dateInList.before(dateBD));
             boolean matchKT = dateKT == null || (dateInList != null && !dateInList.after(dateKT));
 
-            if (matchTen && matchBD && matchKT) {
+            if (matchInput && matchBD && matchKT) {
                 danhSachKetQua.add(dk);
             }
         }
@@ -257,15 +267,23 @@ public class ReportsActivity_Admin extends BaseActivity {
     }
 
     public static class DonKham {
-        private final String MaDonKham, TenBN, NgayKham, TrangThai;
+        private final String MaDonKham, TenBN, PatientId, PatientCccd, NgayKham, TrangThai;
         private final long TongTien;
 
-        public DonKham(String maHoaDon, String tenBenhNhan, String ngayKham, String trangThai, long tongTien) {
-            this.MaDonKham = maHoaDon; this.TenBN = tenBenhNhan; this.NgayKham = ngayKham; this.TrangThai = trangThai; this.TongTien = tongTien;
+        public DonKham(String maHoaDon, String tenBenhNhan, String patientId, String patientCccd, String ngayKham, String trangThai, long tongTien) {
+            this.MaDonKham = maHoaDon;
+            this.TenBN = tenBenhNhan;
+            this.PatientId = patientId;
+            this.PatientCccd = patientCccd;
+            this.NgayKham = ngayKham;
+            this.TrangThai = trangThai;
+            this.TongTien = tongTien;
         }
 
         public String getMaDonKham() { return MaDonKham; }
         public String getTenBN()     { return TenBN; }
+        public String getPatientId() { return PatientId; }
+        public String getPatientCccd() { return PatientCccd; }
         public String getNgayKham()  { return NgayKham; }
         public String getTrangThai() { return TrangThai; }
         public long   getTongTien()  { return TongTien; }

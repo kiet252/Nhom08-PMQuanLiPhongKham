@@ -7,9 +7,8 @@ import retrofit2.http.GET;
 public interface ReportApiService {
     /**
      * Lấy danh sách phiếu khám từ Supabase.
-     * select: Lấy các cột id, ngay_kham, trang_thai, phi_kham và join bảng patient để lấy ho_ten gán vào patient_name.
-     * order: Sắp xếp theo ngày khám giảm dần (mới nhất lên đầu).
+     * Join bảng patient để lấy id, cccd và ho_ten phục vụ tìm kiếm.
      */
-    @GET("rest/v1/examination_form?select=id,ngay_kham,trang_thai,phi_kham,patient_name:patient(ho_ten)&order=ngay_kham.desc")
+    @GET("rest/v1/examination_form?select=id,ngay_kham,trang_thai,phi_kham,patient_name:patient(id,cccd,ho_ten)&order=ngay_kham.desc")
     Call<List<ReportItem>> getDanhSachDonKham();
 }
