@@ -89,13 +89,6 @@ public class BillDetail_staff extends AppCompatActivity {
     private void setupListeners() {
         btnBack.setOnClickListener(v -> finish());
 
-        // Dynamic checks on Status Changes
-        actvInvoiceStatus.setOnItemClickListener((parent, view, position, id) -> {
-            String selectedStatus = parent.getItemAtPosition(position).toString();
-            checkSaveButtonVisibility(selectedStatus);
-        });
-
-        // Dynamic checks on Payment Method Changes
         actvPaymentMethod.setOnItemClickListener((parent, view, position, id) -> {
             String selectedMethod = parent.getItemAtPosition(position).toString();
             toggleQrCodeDisplay(selectedMethod);
@@ -124,7 +117,6 @@ public class BillDetail_staff extends AppCompatActivity {
     }
 
     private void bindDataToViews() {
-        // 1. Map patient node directly
         if (examFormData.getPatient() != null) {
             ExamFormWithBillDto.PatientWrapper patient = examFormData.getPatient();
             tvDetailPatientName.setText(patient.getHo_ten());
@@ -136,25 +128,35 @@ public class BillDetail_staff extends AppCompatActivity {
             tvTransferContent.setText(String.format("Nội dung: HD%d BN%s %s", selectedBillId, patientIdStr, patient.getHo_ten()));
         }
 
-        // 2. Populate Dynamic Item Tables
         populateTablesData();
 
-        // 3. Local Client-Side Calculation Engine
         computedGrandTotal = BillRowBinder.calculateGrandTotal(examFormData);
         tvGrandTotal.setText(String.format("%,.0fđ", computedGrandTotal));
 
-        // 4. Map billing state elements
         if (examFormData.getMedical_record() != null && examFormData.getMedical_record().getBill() != null) {
             for (ExamFormWithBillDto.BillSummaryDto bill : examFormData.getMedical_record().getBill()) {
                 if (bill != null && bill.getId() != null && bill.getId() == selectedBillId) {
 
-                    actvInvoiceStatus.setText(bill.getTrang_thai_thanh_toan(), false);
-                    actvPaymentMethod.setText(bill.getPhuong_thuc_thanh_toan(), false);
+                    String status = bill.getTrang_thai_thanh_toan();
+                    if ("chưa thanh toán".equalsIgnoreCase(status)) {
+                        status = "Chưa thanh toán";
+                    } else if ("đã thanh toán".equalsIgnoreCase(status)) {
+                        status = "Đã thanh toán";
+                    }
 
-                    toggleQrCodeDisplay(bill.getPhuong_thuc_thanh_toan());
+                    String method = bill.getPhuong_thuc_thanh_toan();
+                    if ("tiền mặt".equalsIgnoreCase(method)) {
+                        method = "Tiền mặt";
+                    } else if ("chuyển khoản".equalsIgnoreCase(method)) {
+                        method = "Chuyển khoản";
+                    }
 
-                    // Initial load state processing boundary
-                    checkSaveButtonVisibility(bill.getTrang_thai_thanh_toan());
+                    actvInvoiceStatus.setText(status, false);
+                    actvPaymentMethod.setText(method, false);
+
+                    toggleQrCodeDisplay(method);
+
+                    checkSaveButtonVisibility(status);
                     break;
                 }
             }
@@ -179,13 +181,14 @@ public class BillDetail_staff extends AppCompatActivity {
             layoutQRCode.setVisibility(View.GONE);
         }
     }
-
-    // Handles absolute structural visibility evaluations for user execution mutations
     private void checkSaveButtonVisibility(String status) {
         if ("Đã thanh toán".equals(status)) {
             btnSaveBillDetail.setVisibility(View.GONE);
+            actvInvoiceStatus.setEnabled(false);
         } else {
             btnSaveBillDetail.setVisibility(View.VISIBLE);
+            btnSaveBillDetail.setEnabled(true);
+            actvInvoiceStatus.setEnabled(true);
         }
     }
 

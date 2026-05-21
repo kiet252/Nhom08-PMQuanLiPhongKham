@@ -13,6 +13,7 @@ public class ExaminationForm {
     private int phi_kham;
     private String trang_thai;
     private String phuong_thuc_thanh_toan;
+    private Long appointment_id;
 
     public String getId() { return id; }
     public Date getCreated_at() { return created_at; }
@@ -25,4 +26,5 @@ public class ExaminationForm {
     public int getPhi_kham() { return phi_kham; }
     public String getTrang_thai() { return trang_thai; }
     public String getPhuong_thuc_thanh_toan() { return phuong_thuc_thanh_toan; }
+    public Long getAppointment_id() { return appointment_id; }
 }

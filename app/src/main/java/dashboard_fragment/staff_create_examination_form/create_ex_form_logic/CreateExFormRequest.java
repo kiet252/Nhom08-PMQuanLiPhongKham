@@ -12,8 +12,9 @@ public class CreateExFormRequest {
     private String phuong_thuc_thanh_toan;
     private String patient_id;
     private String doctor_id;
+    private Long appointment_id;
 
-    public CreateExFormRequest(Date ngayKham, String gioDuKien, int soTiepNhan, String trieuChungBanDau, int phiKham, String trangThai, String phuongThucThanhToan, String patientId, String doctorId) {
+    public CreateExFormRequest(Date ngayKham, String gioDuKien, int soTiepNhan, String trieuChungBanDau, int phiKham, String trangThai, String phuongThucThanhToan, String patientId, String doctorId, Long appointmentId) {
         this.ngay_kham = ngayKham;
         this.gio_du_kien = gioDuKien;
         this.so_tiep_nhan = soTiepNhan;
@@ -23,6 +24,6 @@ public class CreateExFormRequest {
         this.phuong_thuc_thanh_toan = phuongThucThanhToan;
         this.patient_id = patientId;
         this.doctor_id = doctorId;
-
+        this.appointment_id = appointmentId;
     }
 }

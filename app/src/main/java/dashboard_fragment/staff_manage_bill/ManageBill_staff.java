@@ -1,6 +1,10 @@
 package dashboard_fragment.staff_manage_bill;
 
+import android.app.DatePickerDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -22,8 +26,13 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import dashboard_fragment.staff_add_update_patient.PatientProfile;
 import dashboard_fragment.staff_add_update_patient.PatientRepository;
@@ -44,6 +53,16 @@ public class ManageBill_staff extends AppCompatActivity {
     private PatientRepository patientRepository;
     private BillRepository billRepository;
 
+    private TextInputEditText edtFromDate;
+    private TextInputEditText edtToDate;
+    private com.google.android.material.button.MaterialButton btnFilterAll;
+    private com.google.android.material.button.MaterialButton btnFilterPaid;
+    private com.google.android.material.button.MaterialButton btnFilterUnpaid;
+
+    private final List<StaffInvoiceItem> allInvoices = new ArrayList<>();
+    private enum FilterStatus { ALL, PAID, UNPAID }
+    private FilterStatus currentFilterStatus = FilterStatus.ALL;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,12 +82,32 @@ public class ManageBill_staff extends AppCompatActivity {
         setupListeners();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (edtSearchPatient != null && edtSearchPatient.getText() != null) {
+            String keyword = edtSearchPatient.getText().toString().trim();
+            if (!keyword.isEmpty()) {
+                searchInvoicesByPatient();
+            }
+        }
+    }
+
     private void initializeViews() {
         btnBack = findViewById(R.id.btnBack);
         tilSearchPatient = findViewById(R.id.tilSearchPatient);
         edtSearchPatient = findViewById(R.id.edtSearchPatient);
         txtSearchError = findViewById(R.id.txtSearchError);
         rvInvoices = findViewById(R.id.rvInvoices);
+
+        edtFromDate = findViewById(R.id.edtFromDate);
+        edtToDate = findViewById(R.id.edtToDate);
+        btnFilterAll = findViewById(R.id.btnFilterAll);
+        btnFilterPaid = findViewById(R.id.btnFilterPaid);
+        btnFilterUnpaid = findViewById(R.id.btnFilterUnpaid);
+
+        edtFromDate.setText("");
+        edtToDate.setText("");
 
         edtSearchPatient.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
         edtSearchPatient.setOnEditorActionListener((v, actionId, event) -> {
@@ -92,6 +131,29 @@ public class ManageBill_staff extends AppCompatActivity {
         btnBack.setOnClickListener(v -> backToPreviousActivity());
 
         tilSearchPatient.setStartIconOnClickListener(v -> searchInvoicesByPatient());
+
+        edtFromDate.setOnClickListener(v -> showDatePickerDialog(edtFromDate, true));
+        edtToDate.setOnClickListener(v -> showDatePickerDialog(edtToDate, false));
+
+        btnFilterAll.setOnClickListener(v -> {
+            currentFilterStatus = FilterStatus.ALL;
+            updateFilterButtonsVisuals();
+            applyFilter();
+        });
+
+        btnFilterPaid.setOnClickListener(v -> {
+            currentFilterStatus = FilterStatus.PAID;
+            updateFilterButtonsVisuals();
+            applyFilter();
+        });
+
+        btnFilterUnpaid.setOnClickListener(v -> {
+            currentFilterStatus = FilterStatus.UNPAID;
+            updateFilterButtonsVisuals();
+            applyFilter();
+        });
+
+        updateFilterButtonsVisuals();
     }
 
     private void searchInvoicesByPatient() {
@@ -105,7 +167,8 @@ public class ManageBill_staff extends AppCompatActivity {
         if (keyword.isEmpty()) {
             edtSearchPatient.setError("Vui lòng nhập mã bệnh nhân hoặc CCCD");
             edtSearchPatient.requestFocus();
-            updateInvoiceList(new ArrayList<>());
+            allInvoices.clear();
+            applyFilter();
             return;
         }
 
@@ -116,12 +179,15 @@ public class ManageBill_staff extends AppCompatActivity {
                 if (!response.isSuccessful()) {
                     showSearchError();
                     showApiError(response);
+                    allInvoices.clear();
+                    applyFilter();
                     return;
                 }
 
                 if (response.body() == null || response.body().isEmpty()) {
                     showSearchError();
-                    updateInvoiceList(new ArrayList<>());
+                    allInvoices.clear();
+                    applyFilter();
                     return;
                 }
 
@@ -144,6 +210,8 @@ public class ManageBill_staff extends AppCompatActivity {
                                    @NonNull Response<List<ExamFormWithBillDto>> response) {
                 if (!response.isSuccessful()) {
                     showApiError(response);
+                    allInvoices.clear();
+                    applyFilter();
                     return;
                 }
 
@@ -156,13 +224,16 @@ public class ManageBill_staff extends AppCompatActivity {
                 if (items.isEmpty()) {
                     Toast.makeText(ManageBill_staff.this,
                             "Bệnh nhân chưa có hóa đơn nào", Toast.LENGTH_SHORT).show();
-                    updateInvoiceList(new ArrayList<>());
+                    allInvoices.clear();
+                    applyFilter();
                     return;
                 }
 
                 hideSearchError();
                 fillMissingPatientNames(items, patient.getHo_ten());
-                updateInvoiceList(items);
+                allInvoices.clear();
+                allInvoices.addAll(items);
+                applyFilter();
             }
 
             @Override
@@ -236,5 +307,184 @@ public class ManageBill_staff extends AppCompatActivity {
 
     private void backToPreviousActivity() {
         finish();
+    }
+
+    private void showDatePickerDialog(TextInputEditText editText, boolean isFromDate) {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
+
+        // Determine min and max bounds for this field
+        Date minDate = null;
+        Date maxDate = null;
+
+        try {
+            if (isFromDate) {
+                // From date has no min date restriction (can go into the past), max is To date if set
+                String toDateStr = edtToDate.getText().toString().trim();
+                if (!toDateStr.isEmpty()) {
+                    maxDate = sdf.parse(toDateStr);
+                }
+            } else {
+                // To date min is From date if set, no max date restriction
+                String fromDateStr = edtFromDate.getText().toString().trim();
+                if (!fromDateStr.isEmpty()) {
+                    minDate = sdf.parse(fromDateStr);
+                }
+            }
+        } catch (ParseException ignored) {}
+
+        // Parse currently selected date in the field
+        String currentText = editText.getText().toString().trim();
+        Date targetDate = null;
+        if (!currentText.isEmpty()) {
+            try {
+                targetDate = sdf.parse(currentText);
+            } catch (ParseException ignored) {}
+        }
+
+        if (targetDate == null) {
+            if (minDate != null) {
+                targetDate = minDate;
+            } else if (maxDate != null) {
+                targetDate = maxDate;
+            } else {
+                targetDate = new Date(); // default to today if no selections and bounds
+            }
+        } else {
+            if (minDate != null && targetDate.before(minDate)) {
+                targetDate = minDate;
+            }
+            if (maxDate != null && targetDate.after(maxDate)) {
+                targetDate = maxDate;
+            }
+        }
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(targetDate);
+
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, selectedYear, selectedMonth, selectedDay) -> {
+            Calendar selectedCal = Calendar.getInstance();
+            selectedCal.set(selectedYear, selectedMonth, selectedDay);
+            String selectedDateStr = sdf.format(selectedCal.getTime());
+
+            if (isFromDate) {
+                edtFromDate.setText(selectedDateStr);
+            } else {
+                edtToDate.setText(selectedDateStr);
+            }
+            
+            applyFilter();
+        }, year, month, day);
+
+        datePickerDialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Xóa", (dialog, which) -> {
+            editText.setText("");
+            applyFilter();
+        });
+
+        // Apply the min and max date restrictions on the picker
+        if (minDate != null) {
+            datePickerDialog.getDatePicker().setMinDate(minDate.getTime());
+        }
+        if (maxDate != null) {
+            datePickerDialog.getDatePicker().setMaxDate(maxDate.getTime());
+        }
+
+        datePickerDialog.show();
+    }
+
+    private void applyFilter() {
+        String fromDateStr = edtFromDate.getText().toString().trim();
+        String toDateStr = edtToDate.getText().toString().trim();
+        
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
+        Date fromDate = null;
+        Date toDate = null;
+        
+        try {
+            if (!fromDateStr.isEmpty()) fromDate = sdf.parse(fromDateStr);
+        } catch (ParseException ignored) {}
+        
+        try {
+            if (!toDateStr.isEmpty()) toDate = sdf.parse(toDateStr);
+        } catch (ParseException ignored) {}
+
+        List<StaffInvoiceItem> filteredList = new ArrayList<>();
+        
+        for (StaffInvoiceItem item : allInvoices) {
+            boolean matchesStatus = false;
+            switch (currentFilterStatus) {
+                case ALL:
+                    matchesStatus = true;
+                    break;
+                case PAID:
+                    matchesStatus = item.isPaid();
+                    break;
+                case UNPAID:
+                    matchesStatus = !item.isPaid();
+                    break;
+            }
+            
+            if (!matchesStatus) {
+                continue;
+            }
+
+            String itemDateStr = item.getDate();
+            if (itemDateStr != null && !itemDateStr.equals("--")) {
+                try {
+                    Date itemDate = sdf.parse(itemDateStr);
+                    if (itemDate != null) {
+                        if (fromDate != null && itemDate.before(fromDate)) {
+                            continue;
+                        }
+                        if (toDate != null && itemDate.after(toDate)) {
+                            continue;
+                        }
+                    }
+                } catch (ParseException ignored) {}
+            }
+            
+            filteredList.add(item);
+        }
+        
+        updateInvoiceList(filteredList);
+    }
+
+    private void updateFilterButtonsVisuals() {
+        int selectedBgColor = Color.parseColor("#0D3F6E");
+        int selectedTextColor = Color.WHITE;
+        
+        int unselectedBgColor = Color.TRANSPARENT;
+        int unselectedTextColor = Color.parseColor("#64748B");
+        int unselectedStrokeColor = Color.parseColor("#7B92AD");
+        
+        updateButtonState(btnFilterAll, currentFilterStatus == FilterStatus.ALL, selectedBgColor, selectedTextColor, unselectedBgColor, unselectedTextColor, unselectedStrokeColor);
+        updateButtonState(btnFilterPaid, currentFilterStatus == FilterStatus.PAID, selectedBgColor, selectedTextColor, unselectedBgColor, unselectedTextColor, unselectedStrokeColor);
+        updateButtonState(btnFilterUnpaid, currentFilterStatus == FilterStatus.UNPAID, selectedBgColor, selectedTextColor, unselectedBgColor, unselectedTextColor, unselectedStrokeColor);
+    }
+    
+    private void updateButtonState(com.google.android.material.button.MaterialButton button, boolean isSelected, 
+                                   int selectedBg, int selectedText, int unselectedBg, int unselectedText, int unselectedStroke) {
+        if (isSelected) {
+            button.setBackgroundTintList(ColorStateList.valueOf(selectedBg));
+            button.setTextColor(selectedText);
+            button.setStrokeColor(ColorStateList.valueOf(selectedBg));
+            if (button.getId() == R.id.btnFilterPaid) {
+                button.setIconTint(ColorStateList.valueOf(Color.WHITE));
+            } else if (button.getId() == R.id.btnFilterUnpaid) {
+                button.setIconTint(ColorStateList.valueOf(Color.WHITE));
+            }
+        } else {
+            button.setBackgroundTintList(ColorStateList.valueOf(unselectedBg));
+            button.setTextColor(unselectedText);
+            button.setStrokeColor(ColorStateList.valueOf(unselectedStroke));
+            if (button.getId() == R.id.btnFilterPaid) {
+                button.setIconTint(ColorStateList.valueOf(Color.parseColor("#4CAF50")));
+            } else if (button.getId() == R.id.btnFilterUnpaid) {
+                button.setIconTint(ColorStateList.valueOf(Color.parseColor("#FF9800")));
+            }
+        }
     }
 }
