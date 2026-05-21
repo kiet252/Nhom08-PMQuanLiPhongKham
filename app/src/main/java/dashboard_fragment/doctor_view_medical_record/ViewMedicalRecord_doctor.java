@@ -19,6 +19,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.nhom08_quanlyphongkham.BaseActivity;
 import com.example.nhom08_quanlyphongkham.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
@@ -40,7 +41,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ViewMedicalRecord_doctor extends AppCompatActivity {
+public class ViewMedicalRecord_doctor extends BaseActivity {
     private static final String TAG = "MED_RECORD_DEBUG";
     private static final int ITEM_STYLE_CLINICAL = 1;
     private static final int ITEM_STYLE_DIAGNOSIS = 2;

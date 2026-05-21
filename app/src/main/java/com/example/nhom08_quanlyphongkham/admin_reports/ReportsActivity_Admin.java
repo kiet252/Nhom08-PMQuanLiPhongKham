@@ -25,6 +25,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.nhom08_quanlyphongkham.BaseActivity;
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 
@@ -41,7 +42,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ReportsActivity_Admin extends AppCompatActivity {
+public class ReportsActivity_Admin extends BaseActivity {
 
     private List<DonKham> danhSachGoc = new ArrayList<>(); 
     private List<DonKham> danhSachKetQua = new ArrayList<>();

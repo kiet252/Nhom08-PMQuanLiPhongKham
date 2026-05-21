@@ -21,6 +21,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.nhom08_quanlyphongkham.BaseActivity;
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.google.android.material.button.MaterialButton;
@@ -44,7 +45,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class create_staff extends AppCompatActivity {
+public class create_staff extends BaseActivity {
 
     private ShapeableImageView ivAvatar;
     private String currentToken;

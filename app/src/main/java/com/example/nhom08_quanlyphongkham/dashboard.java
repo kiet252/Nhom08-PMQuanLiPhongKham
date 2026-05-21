@@ -15,7 +15,7 @@ import dashboard_fragment.HomeFragment_doctor;
 import dashboard_fragment.HomeFragment_staff;
 import dashboard_fragment.NotificationFragment;
 
-public class dashboard extends AppCompatActivity {
+public class dashboard extends BaseActivity {
     private UserProfile profile;
     private Fragment homeFragment;
     private Fragment notificationFragment;

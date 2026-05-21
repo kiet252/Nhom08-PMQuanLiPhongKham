@@ -26,7 +26,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class login extends AppCompatActivity {
+public class login extends BaseActivity {
 
     private TextInputEditText editTextEmail, editTextPassword;
     private MaterialButton buttonLogin;

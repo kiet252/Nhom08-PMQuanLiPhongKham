@@ -25,6 +25,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.nhom08_quanlyphongkham.BaseActivity;
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
@@ -48,7 +49,7 @@ import dashboard_fragment.staff_create_examination_form.ExaminationFormRepositor
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import retrofit2.Call;
 
-public class ExaminationList_doctor extends AppCompatActivity {
+public class ExaminationList_doctor extends BaseActivity {
     private enum FilterTab { ALL, WAITING, IN_PROGRESS, DONE }
 
     private ImageButton btnBack;
