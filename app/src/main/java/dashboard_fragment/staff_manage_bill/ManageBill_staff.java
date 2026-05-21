@@ -1,6 +1,7 @@
 package dashboard_fragment.staff_manage_bill;
 
 import android.app.DatePickerDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
@@ -81,6 +82,17 @@ public class ManageBill_staff extends AppCompatActivity {
         setupListeners();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (edtSearchPatient != null && edtSearchPatient.getText() != null) {
+            String keyword = edtSearchPatient.getText().toString().trim();
+            if (!keyword.isEmpty()) {
+                searchInvoicesByPatient();
+            }
+        }
+    }
+
     private void initializeViews() {
         btnBack = findViewById(R.id.btnBack);
         tilSearchPatient = findViewById(R.id.tilSearchPatient);
@@ -94,12 +106,8 @@ public class ManageBill_staff extends AppCompatActivity {
         btnFilterPaid = findViewById(R.id.btnFilterPaid);
         btnFilterUnpaid = findViewById(R.id.btnFilterUnpaid);
 
-        // Set default dates to today
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        String todayStr = sdf.format(calendar.getTime());
-        edtFromDate.setText(todayStr);
-        edtToDate.setText(todayStr);
+        edtFromDate.setText("");
+        edtToDate.setText("");
 
         edtSearchPatient.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
         edtSearchPatient.setOnEditorActionListener((v, actionId, event) -> {
@@ -302,17 +310,56 @@ public class ManageBill_staff extends AppCompatActivity {
     }
 
     private void showDatePickerDialog(TextInputEditText editText, boolean isFromDate) {
-        String currentText = editText.getText().toString().trim();
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
+
+        // Determine min and max bounds for this field
+        Date minDate = null;
+        Date maxDate = null;
+
         try {
-            Date date = sdf.parse(currentText);
-            if (date != null) {
-                calendar.setTime(date);
+            if (isFromDate) {
+                // From date has no min date restriction (can go into the past), max is To date if set
+                String toDateStr = edtToDate.getText().toString().trim();
+                if (!toDateStr.isEmpty()) {
+                    maxDate = sdf.parse(toDateStr);
+                }
+            } else {
+                // To date min is From date if set, no max date restriction
+                String fromDateStr = edtFromDate.getText().toString().trim();
+                if (!fromDateStr.isEmpty()) {
+                    minDate = sdf.parse(fromDateStr);
+                }
             }
-        } catch (ParseException e) {
-            // Use current date if parsing fails
+        } catch (ParseException ignored) {}
+
+        // Parse currently selected date in the field
+        String currentText = editText.getText().toString().trim();
+        Date targetDate = null;
+        if (!currentText.isEmpty()) {
+            try {
+                targetDate = sdf.parse(currentText);
+            } catch (ParseException ignored) {}
         }
+
+        if (targetDate == null) {
+            if (minDate != null) {
+                targetDate = minDate;
+            } else if (maxDate != null) {
+                targetDate = maxDate;
+            } else {
+                targetDate = new Date(); // default to today if no selections and bounds
+            }
+        } else {
+            if (minDate != null && targetDate.before(minDate)) {
+                targetDate = minDate;
+            }
+            if (maxDate != null && targetDate.after(maxDate)) {
+                targetDate = maxDate;
+            }
+        }
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(targetDate);
 
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
@@ -332,28 +379,18 @@ public class ManageBill_staff extends AppCompatActivity {
             applyFilter();
         }, year, month, day);
 
-        // Apply min/max constraints to the DatePicker inside the dialog
-        try {
-            if (isFromDate) {
-                // edtFromDate cannot be after edtToDate
-                String toDateStr = edtToDate.getText().toString().trim();
-                if (!toDateStr.isEmpty()) {
-                    Date toDate = sdf.parse(toDateStr);
-                    if (toDate != null) {
-                        datePickerDialog.getDatePicker().setMaxDate(toDate.getTime());
-                    }
-                }
-            } else {
-                // edtToDate cannot be before edtFromDate
-                String fromDateStr = edtFromDate.getText().toString().trim();
-                if (!fromDateStr.isEmpty()) {
-                    Date fromDate = sdf.parse(fromDateStr);
-                    if (fromDate != null) {
-                        datePickerDialog.getDatePicker().setMinDate(fromDate.getTime());
-                    }
-                }
-            }
-        } catch (ParseException ignored) {}
+        datePickerDialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Xóa", (dialog, which) -> {
+            editText.setText("");
+            applyFilter();
+        });
+
+        // Apply the min and max date restrictions on the picker
+        if (minDate != null) {
+            datePickerDialog.getDatePicker().setMinDate(minDate.getTime());
+        }
+        if (maxDate != null) {
+            datePickerDialog.getDatePicker().setMaxDate(maxDate.getTime());
+        }
 
         datePickerDialog.show();
     }
@@ -362,7 +399,7 @@ public class ManageBill_staff extends AppCompatActivity {
         String fromDateStr = edtFromDate.getText().toString().trim();
         String toDateStr = edtToDate.getText().toString().trim();
         
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
         Date fromDate = null;
         Date toDate = null;
         
@@ -377,7 +414,6 @@ public class ManageBill_staff extends AppCompatActivity {
         List<StaffInvoiceItem> filteredList = new ArrayList<>();
         
         for (StaffInvoiceItem item : allInvoices) {
-            // 1. Filter by status
             boolean matchesStatus = false;
             switch (currentFilterStatus) {
                 case ALL:
@@ -394,8 +430,7 @@ public class ManageBill_staff extends AppCompatActivity {
             if (!matchesStatus) {
                 continue;
             }
-            
-            // 2. Filter by date
+
             String itemDateStr = item.getDate();
             if (itemDateStr != null && !itemDateStr.equals("--")) {
                 try {
