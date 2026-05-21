@@ -25,6 +25,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.nhom08_quanlyphongkham.BaseActivity;
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
@@ -47,7 +48,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class CreateAppointment_doctor extends AppCompatActivity {
+public class CreateAppointment_doctor extends BaseActivity {
 
     private ImageButton btnBack;
     private com.google.android.material.card.MaterialCardView cardStep1Number, cardStep2Number, cardStep3Number;

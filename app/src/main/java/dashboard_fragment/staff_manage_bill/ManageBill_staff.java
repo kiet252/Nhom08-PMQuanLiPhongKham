@@ -21,6 +21,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.nhom08_quanlyphongkham.BaseActivity;
 import com.example.nhom08_quanlyphongkham.R;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -41,7 +42,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ManageBill_staff extends AppCompatActivity {
+public class ManageBill_staff extends BaseActivity {
 
     private ImageView btnBack;
     private TextInputLayout tilSearchPatient;

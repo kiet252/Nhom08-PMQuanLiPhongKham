@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.nhom08_quanlyphongkham.BaseActivity;
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.uilogin.ProfileRepository;
@@ -31,7 +32,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class admin_manage_staff extends AppCompatActivity {
+public class admin_manage_staff extends BaseActivity {
 
     private RecyclerView recyclerView;
     private LinearLayout layoutEmpty;

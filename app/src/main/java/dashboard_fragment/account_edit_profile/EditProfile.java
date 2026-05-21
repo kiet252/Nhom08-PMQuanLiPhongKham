@@ -25,6 +25,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.nhom08_quanlyphongkham.BaseActivity;
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
@@ -50,7 +51,7 @@ import okhttp3.Response;
 import retrofit2.Call;
 import retrofit2.Callback;
 
-public class EditProfile extends AppCompatActivity {
+public class EditProfile extends BaseActivity {
 
     private ImageButton btnBackEditProfile;
     private MaterialButton btnSaveEditProfile;

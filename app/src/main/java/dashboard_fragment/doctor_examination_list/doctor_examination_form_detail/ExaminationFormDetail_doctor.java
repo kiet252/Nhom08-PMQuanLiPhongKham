@@ -23,6 +23,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.example.nhom08_quanlyphongkham.BaseActivity;
 import com.example.nhom08_quanlyphongkham.R;
 
 import java.io.IOException;
@@ -35,7 +36,7 @@ import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.Ex
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.PatientBriefDto;
 import retrofit2.Call;
 
-public class ExaminationFormDetail_doctor extends AppCompatActivity {
+public class ExaminationFormDetail_doctor extends BaseActivity {
     private enum DetailTab {
         PATIENT_INFO(0),
         CLINICAL(1),

@@ -11,13 +11,14 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
+import com.example.nhom08_quanlyphongkham.BaseActivity;
 import com.example.nhom08_quanlyphongkham.R;
 import com.google.android.material.button.MaterialButton;
 
 import dashboard_fragment.staff_add_update_patient.add_patient_logic.CreatePatientFragment;
 import dashboard_fragment.staff_add_update_patient.update_patient_logic.UpdatePatientFragment;
 
-public class AddUpdatePatientInfo_staff extends AppCompatActivity {
+public class AddUpdatePatientInfo_staff extends BaseActivity {
 
     private MaterialButton BtnCreatePatient, BtnUpdatePatient, BtnSavePatientInfo, BtnDeleteCurrentFormAddCreatePatient;
     private ImageButton BtnBackAddUpdatePatient;

@@ -16,12 +16,13 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.nhom08_quanlyphongkham.BaseActivity;
 import com.example.nhom08_quanlyphongkham.R;
 import com.google.android.material.button.MaterialButton;
 
 import dashboard_fragment.staff_manage_bill.get_bills_logic.ExamFormWithBillDto;
 
-public class BillDetail_staff extends AppCompatActivity {
+public class BillDetail_staff extends BaseActivity {
 
     private ImageView btnBack;
 
