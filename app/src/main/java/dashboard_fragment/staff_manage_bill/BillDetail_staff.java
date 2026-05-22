@@ -37,6 +37,7 @@ public class BillDetail_staff extends BaseActivity {
     private ExamFormWithBillDto examFormData;
     private long selectedBillId;
     private double computedGrandTotal = 0.0;
+    private boolean isPaidLocked = false;
     private BillRepository billRepository;
 
     @Override
@@ -90,9 +91,12 @@ public class BillDetail_staff extends BaseActivity {
     private void setupListeners() {
         btnBack.setOnClickListener(v -> finish());
 
+        actvInvoiceStatus.setOnItemClickListener((parent, view, position, id) -> {
+            updateEditableState();
+        });
+
         actvPaymentMethod.setOnItemClickListener((parent, view, position, id) -> {
-            String selectedMethod = parent.getItemAtPosition(position).toString();
-            toggleQrCodeDisplay(selectedMethod);
+            updateEditableState();
         });
 
         btnSaveBillDetail.setOnClickListener(v -> saveInvoiceChanges());
@@ -126,7 +130,7 @@ public class BillDetail_staff extends BaseActivity {
             tvDetailAddress.setText(patient.getDia_chi() != null ? patient.getDia_chi() : "--");
 
             String patientIdStr = patient.getId() != null ? String.valueOf(patient.getId()) : "0";
-            tvTransferContent.setText(String.format("Nội dung: HD%d BN%s %s", selectedBillId, patientIdStr, patient.getHo_ten()));
+            tvTransferContent.setText(String.format("Nội dung: %s %s", patientIdStr, patient.getHo_ten()));
         }
 
         populateTablesData();
@@ -155,9 +159,9 @@ public class BillDetail_staff extends BaseActivity {
                     actvInvoiceStatus.setText(status, false);
                     actvPaymentMethod.setText(method, false);
 
-                    toggleQrCodeDisplay(method);
+                    isPaidLocked = "Đã thanh toán".equalsIgnoreCase(status);
+                    updateEditableState();
 
-                    checkSaveButtonVisibility(status);
                     break;
                 }
             }
@@ -175,27 +179,81 @@ public class BillDetail_staff extends BaseActivity {
         BillRowBinder.bindMedicines(containerMedicineRows, examFormData.getMedical_record().getMedical_record_medicine());
     }
 
-    private void toggleQrCodeDisplay(String method) {
-        if ("Chuyển khoản".equals(method)) {
-            layoutQRCode.setVisibility(View.VISIBLE);
-        } else {
-            layoutQRCode.setVisibility(View.GONE);
-        }
+    private boolean isPaidStatus(String status) {
+        return "Đã thanh toán".equalsIgnoreCase(status != null ? status.trim() : "");
     }
-    private void checkSaveButtonVisibility(String status) {
-        if ("Đã thanh toán".equals(status)) {
+
+    private boolean isTransferMethod(String method) {
+        return "Chuyển khoản".equalsIgnoreCase(method != null ? method.trim() : "");
+    }
+    private void setFieldEnabled(AutoCompleteTextView view, boolean enabled) {
+        view.setEnabled(enabled);
+        view.setFocusable(enabled);
+        view.setFocusableInTouchMode(enabled);
+        view.setClickable(enabled);
+        view.setLongClickable(enabled);
+        view.setCursorVisible(enabled);
+        view.setAlpha(enabled ? 1f : 0.5f);
+    }
+
+    private void updateEditableState() {
+        String currentStatus = actvInvoiceStatus.getText() != null
+                ? actvInvoiceStatus.getText().toString().trim()
+                : "";
+        String currentMethod = actvPaymentMethod.getText() != null
+                ? actvPaymentMethod.getText().toString().trim()
+                : "";
+
+        boolean isPaid = isPaidStatus(currentStatus);
+        boolean shouldShowQrCode = !isPaid && isTransferMethod(currentMethod);
+
+        if (isPaidLocked) {
             btnSaveBillDetail.setVisibility(View.GONE);
-            actvInvoiceStatus.setEnabled(false);
+            setFieldEnabled(actvInvoiceStatus, false);
+            setFieldEnabled(actvPaymentMethod, false);
         } else {
             btnSaveBillDetail.setVisibility(View.VISIBLE);
             btnSaveBillDetail.setEnabled(true);
-            actvInvoiceStatus.setEnabled(true);
+            setFieldEnabled(actvInvoiceStatus, true);
+
+            setFieldEnabled(actvPaymentMethod, !isPaid);
         }
+
+        layoutQRCode.setVisibility(shouldShowQrCode ? View.VISIBLE : View.GONE);
     }
 
     private void saveInvoiceChanges() {
-        String finalStatus = actvInvoiceStatus.getText().toString();
-        String finalMethod = actvPaymentMethod.getText().toString();
+        String finalStatus = actvInvoiceStatus.getText() != null
+                ? actvInvoiceStatus.getText().toString().trim()
+                : "";
+        String finalMethod = actvPaymentMethod.getText() != null
+                ? actvPaymentMethod.getText().toString().trim()
+                : "";
+
+
+        if (isPaidLocked) {
+            Toast.makeText(this, "Hóa đơn đã thanh toán, không thể chỉnh sửa", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (finalStatus.isEmpty()) {
+            actvInvoiceStatus.setError("Vui lòng chọn trạng thái");
+            actvInvoiceStatus.requestFocus();
+            return;
+        }
+
+        if (isPaidStatus(finalStatus)) {
+
+            finalMethod = actvPaymentMethod.getText() != null
+                    ? actvPaymentMethod.getText().toString().trim()
+                    : "";
+        } else {
+            if (finalMethod.isEmpty()) {
+                actvPaymentMethod.setError("Vui lòng chọn phương thức thanh toán");
+                actvPaymentMethod.requestFocus();
+                return;
+            }
+        }
 
         Toast.makeText(this, "Đang xử lý cập nhật...", Toast.LENGTH_SHORT).show();
 
@@ -204,20 +262,34 @@ public class BillDetail_staff extends BaseActivity {
                     @Override
                     public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
                         if (response.isSuccessful()) {
-                            Toast.makeText(BillDetail_staff.this,
+                            Toast.makeText(
+                                    BillDetail_staff.this,
                                     "Cập nhật hóa đơn " + String.format("%,.0fđ", computedGrandTotal) + " thành công!",
-                                    Toast.LENGTH_SHORT).show();
+                                    Toast.LENGTH_SHORT
+                            ).show();
 
-                            checkSaveButtonVisibility(finalStatus);
+                            if (isPaidStatus(finalStatus)) {
+                                isPaidLocked = true;
+                            }
+
+                            updateEditableState();
                             finish();
                         } else {
-                            Toast.makeText(BillDetail_staff.this, "Lỗi hệ thống: " + response.code(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(
+                                    BillDetail_staff.this,
+                                    "Lỗi hệ thống: " + response.code(),
+                                    Toast.LENGTH_SHORT
+                            ).show();
                         }
                     }
 
                     @Override
                     public void onFailure(retrofit2.Call<Void> call, Throwable t) {
-                        Toast.makeText(BillDetail_staff.this, "Lỗi kết nối mạng: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(
+                                BillDetail_staff.this,
+                                "Lỗi kết nối mạng: " + t.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show();
                     }
                 });
     }

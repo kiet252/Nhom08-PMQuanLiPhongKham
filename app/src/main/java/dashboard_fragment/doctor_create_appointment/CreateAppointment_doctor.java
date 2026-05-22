@@ -240,16 +240,13 @@ public class CreateAppointment_doctor extends BaseActivity {
 
         AlertDialog dialog = new AlertDialog.Builder(this).create();
 
-
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(dp(24), dp(22), dp(24), dp(18));
         layout.setBackground(taoNenBoGoc("#FFFFFF", 24));
 
-
         DatePicker datePicker = new DatePicker(new ContextThemeWrapper(this, R.style.ReportDatePickerTheme));
         datePicker.init(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), null);
-
 
         Calendar minDateCal = Calendar.getInstance();
         minDateCal.add(Calendar.DAY_OF_MONTH, 1);
@@ -261,21 +258,46 @@ public class CreateAppointment_doctor extends BaseActivity {
 
         layout.addView(datePicker);
 
+        LinearLayout buttonRow = new LinearLayout(this);
+        buttonRow.setOrientation(LinearLayout.HORIZONTAL);
+        buttonRow.setWeightSum(3);
+        buttonRow.setPadding(0, dp(12), 0, 0);
 
-        LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        btnParams.topMargin = dp(12);
+        LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
+        );
+        buttonParams.setMarginEnd(dp(8));
 
+        LinearLayout.LayoutParams lastButtonParams = new LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
+        );
 
-        TextView btnApDung = taoNutLich("Áp dụng");
-        btnApDung.setLayoutParams(btnParams);
-        btnApDung.setOnClickListener(v -> {
+        TextView btnCancel = taoNutLich("Hủy", "#64748B");
+        btnCancel.setLayoutParams(buttonParams);
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+        TextView btnClear = taoNutLich("Xóa", "#F44336");
+        btnClear.setLayoutParams(buttonParams);
+        btnClear.setOnClickListener(v -> {
+            selectedDate = "";
+            edtAppointmentDate.setText("");
+            tvConfirmDate.setText("--");
+            layoutConfirmDateContainer.setVisibility(View.GONE);
+            updateProgressSteps(2);
+            dialog.dismiss();
+        });
+
+        TextView btnApply = taoNutLich("Áp dụng", "#0D3F6E");
+        btnApply.setLayoutParams(lastButtonParams);
+        btnApply.setOnClickListener(v -> {
             calendar.set(datePicker.getYear(), datePicker.getMonth(), datePicker.getDayOfMonth());
-
 
             SimpleDateFormat dbFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             selectedDate = dbFormat.format(calendar.getTime());
-
 
             SimpleDateFormat uiFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
             String uiDate = uiFormat.format(calendar.getTime());
@@ -289,25 +311,27 @@ public class CreateAppointment_doctor extends BaseActivity {
 
             dialog.dismiss();
         });
-        layout.addView(btnApDung);
 
+        buttonRow.addView(btnCancel);
+        buttonRow.addView(btnClear);
+        buttonRow.addView(btnApply);
+        layout.addView(buttonRow);
 
         dialog.setView(layout);
         dialog.show();
-
 
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
     }
 
-    private TextView taoNutLich(String text) {
+    private TextView taoNutLich(String text, String backgroundColor) {
         TextView button = new TextView(this);
         button.setText(text);
         button.setTextColor(Color.WHITE);
         button.setGravity(Gravity.CENTER);
         button.setMinHeight(dp(48));
-        button.setBackground(taoNenBoGoc("#0D3F6E", 12));
+        button.setBackground(taoNenBoGoc(backgroundColor, 12));
         return button;
     }
 

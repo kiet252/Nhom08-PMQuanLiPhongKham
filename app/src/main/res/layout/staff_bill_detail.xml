@@ -439,6 +439,7 @@
                     android:inputType="none"
                     android:paddingVertical="12dp"
                     android:text="Chưa thanh toán"
+                    android:textColor="#1E293B"
                     android:textSize="15sp" />
             </com.google.android.material.textfield.TextInputLayout>
 

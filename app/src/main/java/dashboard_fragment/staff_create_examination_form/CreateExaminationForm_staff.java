@@ -419,14 +419,44 @@ public class CreateExaminationForm_staff extends BaseActivity {
 
         layout.addView(datePicker);
 
-        LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        btnParams.topMargin = dp(12);
+        LinearLayout buttonRow = new LinearLayout(this);
+        buttonRow.setOrientation(LinearLayout.HORIZONTAL);
+        buttonRow.setWeightSum(3);
+        buttonRow.setPadding(0, dp(12), 0, 0);
 
-        TextView btnApply = createPickerButton("Áp dụng");
-        btnApply.setLayoutParams(btnParams);
+        LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
+        );
+        buttonParams.setMarginEnd(dp(8));
+
+        LinearLayout.LayoutParams lastButtonParams = new LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
+        );
+
+        TextView btnCancel = createPickerButton("Hủy", "#64748B");
+        btnCancel.setLayoutParams(buttonParams);
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+        TextView btnClear = createPickerButton("Xóa", "#F44336");
+        btnClear.setLayoutParams(buttonParams);
+        btnClear.setOnClickListener(v -> {
+            EdtDateExam.setText("");
+            EdtDateExam.setError(null);
+            TvSTN.setText("Số tiếp nhận: --");
+
+            if (selectedAppointment != null) {
+                clearSelectedAppointmentState();
+            }
+
+            dialog.dismiss();
+        });
+
+        TextView btnApply = createPickerButton("Áp dụng", "#0D3F6E");
+        btnApply.setLayoutParams(lastButtonParams);
         btnApply.setOnClickListener(v -> {
             int selectedYear = datePicker.getYear();
             int selectedMonth = datePicker.getMonth();
@@ -446,7 +476,11 @@ public class CreateExaminationForm_staff extends BaseActivity {
 
             dialog.dismiss();
         });
-        layout.addView(btnApply);
+
+        buttonRow.addView(btnCancel);
+        buttonRow.addView(btnClear);
+        buttonRow.addView(btnApply);
+        layout.addView(buttonRow);
 
         dialog.setView(layout);
         dialog.show();
@@ -455,6 +489,7 @@ public class CreateExaminationForm_staff extends BaseActivity {
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
     }
+
 
     private void showTimePicker() {
         Calendar now = Calendar.getInstance();
@@ -738,13 +773,13 @@ public class CreateExaminationForm_staff extends BaseActivity {
         return value == null || value.trim().isEmpty() ? "--" : value;
     }
 
-    private TextView createPickerButton(String text) {
+    private TextView createPickerButton(String text, String backgroundColor) {
         TextView button = new TextView(this);
         button.setText(text);
         button.setTextColor(Color.WHITE);
         button.setGravity(Gravity.CENTER);
         button.setMinHeight(dp(48));
-        button.setBackground(createRoundedBackground("#0D3F6E", 12));
+        button.setBackground(createRoundedBackground(backgroundColor, 12));
         return button;
     }
 

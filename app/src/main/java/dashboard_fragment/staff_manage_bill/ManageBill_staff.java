@@ -1,14 +1,22 @@
 package dashboard_fragment.staff_manage_bill;
 
+
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.view.ContextThemeWrapper;
+import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.DatePicker;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -311,91 +319,196 @@ public class ManageBill_staff extends BaseActivity {
     }
 
     private void showDatePickerDialog(TextInputEditText editText, boolean isFromDate) {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
-        // Determine min and max bounds for this field
+        Calendar todayCal = Calendar.getInstance();
+        todayCal.set(Calendar.HOUR_OF_DAY, 23);
+        todayCal.set(Calendar.MINUTE, 59);
+        todayCal.set(Calendar.SECOND, 59);
+        todayCal.set(Calendar.MILLISECOND, 999);
+        Date today = todayCal.getTime();
+
         Date minDate = null;
-        Date maxDate = null;
+        Date maxDate = today;
 
         try {
             if (isFromDate) {
-                // From date has no min date restriction (can go into the past), max is To date if set
-                String toDateStr = edtToDate.getText().toString().trim();
+                String toDateStr = edtToDate.getText() != null
+                        ? edtToDate.getText().toString().trim()
+                        : "";
                 if (!toDateStr.isEmpty()) {
-                    maxDate = sdf.parse(toDateStr);
+                    Date toDate = sdf.parse(toDateStr);
+                    if (toDate != null && toDate.before(maxDate)) {
+                        maxDate = toDate;
+                    }
                 }
             } else {
-                // To date min is From date if set, no max date restriction
-                String fromDateStr = edtFromDate.getText().toString().trim();
+                String fromDateStr = edtFromDate.getText() != null
+                        ? edtFromDate.getText().toString().trim()
+                        : "";
                 if (!fromDateStr.isEmpty()) {
                     minDate = sdf.parse(fromDateStr);
                 }
             }
-        } catch (ParseException ignored) {}
+        } catch (ParseException ignored) {
+        }
 
-        // Parse currently selected date in the field
-        String currentText = editText.getText().toString().trim();
+        String currentText = editText.getText() != null
+                ? editText.getText().toString().trim()
+                : "";
         Date targetDate = null;
+
         if (!currentText.isEmpty()) {
             try {
                 targetDate = sdf.parse(currentText);
-            } catch (ParseException ignored) {}
+            } catch (ParseException ignored) {
+            }
         }
 
         if (targetDate == null) {
-            if (minDate != null) {
+            if (!isFromDate && minDate != null) {
                 targetDate = minDate;
-            } else if (maxDate != null) {
-                targetDate = maxDate;
             } else {
-                targetDate = new Date(); // default to today if no selections and bounds
-            }
-        } else {
-            if (minDate != null && targetDate.before(minDate)) {
-                targetDate = minDate;
-            }
-            if (maxDate != null && targetDate.after(maxDate)) {
                 targetDate = maxDate;
             }
+        }
+
+        if (minDate != null && targetDate.before(minDate)) {
+            targetDate = minDate;
+        }
+        if (maxDate != null && targetDate.after(maxDate)) {
+            targetDate = maxDate;
         }
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(targetDate);
 
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        AlertDialog dialog = new AlertDialog.Builder(this).create();
 
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, selectedYear, selectedMonth, selectedDay) -> {
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(dp(24), dp(22), dp(24), dp(18));
+        layout.setBackground(createRoundedBackground("#FFFFFF", 24));
+
+        DatePicker datePicker = new DatePicker(new ContextThemeWrapper(this, R.style.ReportDatePickerTheme));
+        datePicker.init(
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH),
+                null
+        );
+
+        if (minDate != null) {
+            datePicker.setMinDate(minDate.getTime());
+        }
+        if (maxDate != null) {
+            datePicker.setMaxDate(maxDate.getTime());
+        }
+
+        layout.addView(datePicker);
+
+        LinearLayout buttonRow = new LinearLayout(this);
+        buttonRow.setOrientation(LinearLayout.HORIZONTAL);
+        buttonRow.setWeightSum(3);
+        buttonRow.setPadding(0, dp(12), 0, 0);
+
+        LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
+        );
+        buttonParams.setMarginEnd(dp(8));
+
+        LinearLayout.LayoutParams lastButtonParams = new LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
+        );
+
+        TextView btnCancel = createPickerButton("Hủy", "#64748B");
+        btnCancel.setLayoutParams(buttonParams);
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+        TextView btnClear = createPickerButton("Xóa", "#F44336");
+        btnClear.setLayoutParams(buttonParams);
+        btnClear.setOnClickListener(v -> {
+            editText.setText("");
+            applyFilter();
+            dialog.dismiss();
+        });
+
+        TextView btnApply = createPickerButton("Áp dụng", "#0D3F6E");
+        btnApply.setLayoutParams(lastButtonParams);
+        btnApply.setOnClickListener(v -> {
             Calendar selectedCal = Calendar.getInstance();
-            selectedCal.set(selectedYear, selectedMonth, selectedDay);
+            selectedCal.set(
+                    datePicker.getYear(),
+                    datePicker.getMonth(),
+                    datePicker.getDayOfMonth(),
+                    0,
+                    0,
+                    0
+            );
+            selectedCal.set(Calendar.MILLISECOND, 0);
+
             String selectedDateStr = sdf.format(selectedCal.getTime());
 
             if (isFromDate) {
                 edtFromDate.setText(selectedDateStr);
+
+                String toDateStr = edtToDate.getText() != null
+                        ? edtToDate.getText().toString().trim()
+                        : "";
+                if (!toDateStr.isEmpty()) {
+                    try {
+                        Date currentToDate = sdf.parse(toDateStr);
+                        if (currentToDate != null && currentToDate.before(selectedCal.getTime())) {
+                            edtToDate.setText(selectedDateStr);
+                        }
+                    } catch (ParseException ignored) {
+                    }
+                }
             } else {
                 edtToDate.setText(selectedDateStr);
             }
-            
-            applyFilter();
-        }, year, month, day);
 
-        datePickerDialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Xóa", (dialog, which) -> {
-            editText.setText("");
             applyFilter();
+            dialog.dismiss();
         });
 
-        // Apply the min and max date restrictions on the picker
-        if (minDate != null) {
-            datePickerDialog.getDatePicker().setMinDate(minDate.getTime());
-        }
-        if (maxDate != null) {
-            datePickerDialog.getDatePicker().setMaxDate(maxDate.getTime());
-        }
+        buttonRow.addView(btnCancel);
+        buttonRow.addView(btnClear);
+        buttonRow.addView(btnApply);
+        layout.addView(buttonRow);
 
-        datePickerDialog.show();
+        dialog.setView(layout);
+        dialog.show();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+    }
+    private TextView createPickerButton(String text, String backgroundColor) {
+        TextView button = new TextView(this);
+        button.setText(text);
+        button.setTextColor(Color.WHITE);
+        button.setGravity(Gravity.CENTER);
+        button.setMinHeight(dp(48));
+        button.setBackground(createRoundedBackground(backgroundColor, 12));
+        return button;
     }
 
+    private GradientDrawable createRoundedBackground(String color, int radius) {
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setColor(Color.parseColor(color));
+        drawable.setCornerRadius(dp(radius));
+        return drawable;
+    }
+
+    private int dp(int value) {
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round(value * density);
+    }
     private void applyFilter() {
         String fromDateStr = edtFromDate.getText().toString().trim();
         String toDateStr = edtToDate.getText().toString().trim();
