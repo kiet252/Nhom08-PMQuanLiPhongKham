@@ -198,7 +198,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="80dp"
                                 android:gravity="center_vertical|start"
-                                android:text="QUẢN LÍ PHIẾU KHÁM"
+                                android:text="QUẢN LÍ THÔNG BÁO"
                                 android:textColor="#1E293B"
                                 android:textSize="15sp"
                                 android:textStyle="bold"
