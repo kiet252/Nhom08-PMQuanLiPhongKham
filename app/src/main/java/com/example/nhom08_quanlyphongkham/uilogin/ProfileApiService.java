@@ -26,7 +26,11 @@ public interface ProfileApiService {
             @Query("trang_thai_hoat_dong") String status,
             @Query("select") String select
     );
-
+    @GET("rest/v1/profiles")
+    Call<List<UserProfile>> getProfileByEmail(
+            @Query("email") String email,
+            @Query("select") String select
+    );
     @PATCH("rest/v1/profiles")
     Call<ResponseBody> updateProfile(
             @Header("Authorization") String token,

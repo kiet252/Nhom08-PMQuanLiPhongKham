@@ -5,6 +5,7 @@ import android.util.Patterns;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -15,12 +16,16 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.nhom08_quanlyphongkham.R;
+import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.uilogin.AuthRepository;
 import com.example.nhom08_quanlyphongkham.uilogin.LoginResponse;
+import com.example.nhom08_quanlyphongkham.uilogin.ProfileRepository;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+
+import java.util.List;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -33,7 +38,8 @@ public class ForgotPassword_account extends AppCompatActivity {
     private MaterialButton btnSendOtp;
     private MaterialButton btnVerifyOtp;
     private MaterialButton btnResetPassword;
-
+    private ProgressBar progressSendOtp;
+    private LinearLayout layoutResetAction;
     private TextInputEditText edtEmail;
     private TextInputEditText edtOtp;
     private TextInputEditText edtNewPassword;
@@ -48,6 +54,7 @@ public class ForgotPassword_account extends AppCompatActivity {
     private LinearLayout layoutResetPasswordSection;
 
     private AuthRepository authRepository;
+    private ProfileRepository profileRepository;
 
     private boolean isOtpVerified = false;
     private String verifiedEmail = null;
@@ -65,6 +72,7 @@ public class ForgotPassword_account extends AppCompatActivity {
         });
 
         authRepository = new AuthRepository(this);
+        profileRepository = new ProfileRepository(this);
 
         initializeViews();
         setupListeners();
@@ -75,6 +83,8 @@ public class ForgotPassword_account extends AppCompatActivity {
         btnSendOtp = findViewById(R.id.btnSendOtp);
         btnVerifyOtp = findViewById(R.id.btnVerifyOtp);
         btnResetPassword = findViewById(R.id.btnResetPassword);
+        progressSendOtp = findViewById(R.id.progressSendOtp);
+        layoutResetAction = findViewById(R.id.layoutResetAction);
 
         edtEmail = findViewById(R.id.edtForgotPasswordEmail);
         edtOtp = findViewById(R.id.edtForgotPasswordOtp);
@@ -112,18 +122,54 @@ public class ForgotPassword_account extends AppCompatActivity {
             return;
         }
 
+        setSendOtpLoading(true);
+
+        profileRepository.getProfileByEmail(email).enqueue(new Callback<List<UserProfile>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<UserProfile>> call, @NonNull Response<List<UserProfile>> response) {
+                if (!response.isSuccessful()) {
+                    setSendOtpLoading(false);
+                    Toast.makeText(ForgotPassword_account.this,
+                            "Không kiểm tra được email trong dữ liệu",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (response.body() == null || response.body().isEmpty()) {
+                    setSendOtpLoading(false);
+                    tilEmail.setError("Email không tồn tại trong dữ liệu");
+                    return;
+                }
+
+                sendRecoveryOtp(email);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<UserProfile>> call, @NonNull Throwable t) {
+                setSendOtpLoading(false);
+                Toast.makeText(ForgotPassword_account.this,
+                        "Lỗi kết nối: " + t.getMessage(),
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void sendRecoveryOtp(String email) {
         authRepository.recoverPassword(email).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+                setSendOtpLoading(false);
+
                 if (!response.isSuccessful()) {
                     Toast.makeText(ForgotPassword_account.this,
-                            "Không gửi được mã OTP. Hãy kiểm tra email team Supabase.",
+                            "Không gửi được mã OTP tới email này",
                             Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 layoutOtpSection.setVisibility(View.VISIBLE);
                 layoutResetPasswordSection.setVisibility(View.GONE);
+                layoutResetAction.setVisibility(View.GONE);
                 isOtpVerified = false;
                 verifiedEmail = null;
 
@@ -134,6 +180,7 @@ public class ForgotPassword_account extends AppCompatActivity {
 
             @Override
             public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                setSendOtpLoading(false);
                 Toast.makeText(ForgotPassword_account.this,
                         "Lỗi kết nối: " + t.getMessage(),
                         Toast.LENGTH_SHORT).show();
@@ -162,7 +209,7 @@ public class ForgotPassword_account extends AppCompatActivity {
             return;
         }
 
-        if (otp.length() < 6 || otp.length() > 8) {
+        if (!otp.matches("\\d{6,8}")) {
             tilOtp.setError("Mã OTP không hợp lệ");
             return;
         }
@@ -192,6 +239,7 @@ public class ForgotPassword_account extends AppCompatActivity {
                 isOtpVerified = true;
                 verifiedEmail = email;
                 layoutResetPasswordSection.setVisibility(View.VISIBLE);
+                layoutResetAction.setVisibility(View.VISIBLE);
 
                 Toast.makeText(ForgotPassword_account.this,
                         "Xác nhận OTP thành công",
@@ -263,6 +311,13 @@ public class ForgotPassword_account extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void setSendOtpLoading(boolean isLoading) {
+        btnSendOtp.setEnabled(!isLoading);
+        edtEmail.setEnabled(!isLoading);
+        progressSendOtp.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        btnSendOtp.setText(isLoading ? "" : "Gửi mã");
     }
 
     private void clearAllErrors() {

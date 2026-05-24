@@ -36,7 +36,12 @@ public class ProfileRepository {
                 "id,ho_ten,chuc_vu,anh_dai_dien"
         );
     }
-
+    public Call<List<UserProfile>> getProfileByEmail(String email) {
+        return profileApiService.getProfileByEmail(
+                "eq." + email,
+                "id,email,ho_ten,trang_thai_hoat_dong"
+        );
+    }
     public Call<List<UserProfile>> getDoctors() {
         return profileApiService.getDoctors(
                 "eq.Bác sĩ",
