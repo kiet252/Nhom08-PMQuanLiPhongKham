@@ -1,6 +1,7 @@
 package com.example.nhom08_quanlyphongkham.uilogin;
 
 import dashboard_fragment.account_change_password_request.UpdatePasswordRequest;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.Header;
@@ -19,7 +20,11 @@ public interface AuthApiService {
     );
     @POST("auth/v1/token?grant_type=password")
     Call<LoginResponse> login(@Body LoginRequest request);
+    @POST("auth/v1/recover")
+    Call<ResponseBody> recoverPassword(@Body RecoverPasswordRequest request);
 
+    @POST("auth/v1/verify")
+    Call<LoginResponse> verifyOtp(@Body VerifyOtpRequest request);
     @PUT("auth/v1/user")
     Call<LoginResponse> updatePassword(@Body UpdatePasswordRequest request);
     

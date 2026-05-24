@@ -14,6 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Nhom08QuanLyPhongKham">
         <activity
+            android:name=".account_forgot_password.ForgotPassword_account"
+            android:exported="false" />
+        <activity
             android:name="dashboard_fragment.doctor_create_appointment.CreateAppointment_doctor"
             android:exported="false" />
         <activity
@@ -68,7 +71,7 @@
             android:exported="false" />
         <activity
             android:name=".admin_reports.ReportsActivity_Admin"
-            android:exported="false"/>
+            android:exported="false" />
     </application>
 
 </manifest>

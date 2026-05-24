@@ -5,6 +5,7 @@ import android.content.Context;
 import com.example.nhom08_quanlyphongkham.R;
 
 import dashboard_fragment.account_change_password_request.UpdatePasswordRequest;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 
 public class AuthRepository {
@@ -23,7 +24,13 @@ public class AuthRepository {
     public Call<LoginResponse> login(String email, String password) {
         return authApiService.login(new LoginRequest(email, password));
     }
+    public Call<ResponseBody> recoverPassword(String email) {
+        return authApiService.recoverPassword(new RecoverPasswordRequest(email));
+    }
 
+    public Call<LoginResponse> verifyRecoveryOtp(String email, String otp) {
+        return authApiService.verifyOtp(new VerifyOtpRequest(email, otp, "recovery"));
+    }
     public Call<LoginResponse> refreshToken(String refreshToken) {
         return authApiService.refreshToken(
                 context.getString(R.string.abAIkey),

@@ -2,6 +2,7 @@ package com.example.nhom08_quanlyphongkham;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -17,6 +18,7 @@ import com.example.nhom08_quanlyphongkham.uilogin.ProfileRepository;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.example.nhom08_quanlyphongkham.account_forgot_password.ForgotPassword_account;
 
 import java.util.List;
 import java.util.Objects;
@@ -30,7 +32,7 @@ public class login extends BaseActivity {
 
     private TextInputEditText editTextEmail, editTextPassword;
     private MaterialButton buttonLogin;
-
+    private TextView tvForgotPassword;
     private AuthRepository authRepository;
     private ProfileRepository profileRepository;
     private String currentToken;
@@ -73,10 +75,14 @@ public class login extends BaseActivity {
         editTextEmail = findViewById(R.id.edtEmail);
         editTextPassword = findViewById(R.id.edtPassword);
         buttonLogin = findViewById(R.id.btnLogin);
+        tvForgotPassword = findViewById(R.id.tvForgotPassword);
     }
 
     private void setupListeners() {
         buttonLogin.setOnClickListener(v -> attemptLogin());
+        tvForgotPassword.setOnClickListener(v ->
+                startActivity(new Intent(login.this, ForgotPassword_account.class))
+        );
     }
 
     private void attemptLogin() {
