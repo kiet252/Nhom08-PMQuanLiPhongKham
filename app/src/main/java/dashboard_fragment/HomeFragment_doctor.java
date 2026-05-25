@@ -1,8 +1,9 @@
 package dashboard_fragment;
 
-import android.app.TaskStackBuilder;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,13 +19,10 @@ import android.widget.Toast;
 
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
-import com.example.nhom08_quanlyphongkham.dashboard;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -34,7 +32,6 @@ import coil.request.ImageRequest;
 
 import dashboard_fragment.doctor_create_appointment.CreateAppointment_doctor;
 import dashboard_fragment.doctor_examination_list.ExaminationList_doctor;
-import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.ExaminationFormDetail_doctor;
 import dashboard_fragment.staff_create_examination_form.ExaminationFormRepository;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import retrofit2.Call;
@@ -43,15 +40,20 @@ import retrofit2.Call;
 public class HomeFragment_doctor extends Fragment {
 
     private TextView tvName;
-    TextView btn_KhamNgay;
-    TextView ic_ChoKham;
-    UserProfile profile;
+    private TextView btn_KhamNgay;
+    private TextView ic_ChoKham;
+    private UserProfile profile;
+    private View rootView;
 
     private List<ExaminationFormWithPatientDto> allForms = new ArrayList<>();
     private ExaminationFormRepository repository;
     private CardView btnExaminationList, btnCreateAppointment, btnViewMedicalRecords;
 
     private ExaminationFormWithPatientDto nextPatient;
+
+    // Handler để tự động làm mới dữ liệu
+    private final Handler refreshHandler = new Handler(Looper.getMainLooper());
+    private Runnable refreshRunnable;
 
     public HomeFragment_doctor() {
         // Required empty public constructor
@@ -65,35 +67,85 @@ public class HomeFragment_doctor extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         profile = SharedPrefManager.getInstance(requireContext()).getProfile();
-        View view = inflater.inflate(R.layout.fragment_home_doctor, container, false);
+        rootView = inflater.inflate(R.layout.fragment_home_doctor, container, false);
         repository = new ExaminationFormRepository(requireContext());
-        SetAvatar(view, SharedPrefManager.getInstance(requireContext()).getProfile());
-        loadAllFormsAndPatientDto(view);
-        SetNumber(view);
-        return view;
+        
+        initializeViews(rootView);
+        setupListeners();
+        SetAvatar(rootView, profile);
+        
+        return rootView;
     }
 
-    private void loadAllFormsAndPatientDto(View headerView) {
+    private void initializeViews(View view) {
+        tvName = view.findViewById(R.id.doctor_home_name);
+        btnExaminationList = view.findViewById(R.id.btnExaminationList);
+        btnCreateAppointment = view.findViewById(R.id.btnCreateAppointment);
+        btnViewMedicalRecords = view.findViewById(R.id.btnViewMedicalRecords);
+        btn_KhamNgay = view.findViewById(R.id.btnKhamNgay);
+        ic_ChoKham = view.findViewById(R.id.txtChoKham);
+    }
 
-        if(profile.getID() == null) return;
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        if (profile != null && profile.getHo_ten() != null) {
+            tvName.setText(profile.getHo_ten());
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        startAutoRefresh();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        stopAutoRefresh();
+    }
+
+    private void startAutoRefresh() {
+        if (refreshRunnable == null) {
+            refreshRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    loadAllFormsAndPatientDto();
+                    // Tự động làm mới sau mỗi 10 giây
+                    refreshHandler.postDelayed(this, 10000);
+                }
+            };
+        }
+        refreshHandler.removeCallbacks(refreshRunnable);
+        refreshHandler.post(refreshRunnable);
+    }
+
+    private void stopAutoRefresh() {
+        if (refreshRunnable != null) {
+            refreshHandler.removeCallbacks(refreshRunnable);
+        }
+    }
+
+    private void loadAllFormsAndPatientDto() {
+        if (profile == null || profile.getID() == null || rootView == null) return;
+
         repository.getAllFormsToday(profile.getID()).enqueue(new retrofit2.Callback<List<ExaminationFormWithPatientDto>>() {
             @Override
             public void onResponse(@NonNull Call<List<ExaminationFormWithPatientDto>> call, @NonNull retrofit2.Response<List<ExaminationFormWithPatientDto>> response) {
+                if (!isAdded()) return;
                 if (response.isSuccessful() && response.body() != null) {
-                    // Lưu dữ liệu vào biến toàn cục để dùng chung
                     allForms = response.body();
-                    // Sau khi có dữ liệu, mới gọi hàm cập nhật các con số
-                    SetNumber(headerView);
+                    SetNumber(rootView);
                     nextPatient = getPriorityPatient();
-                    loadPatient(nextPatient, headerView);
+                    loadPatient(nextPatient, rootView);
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<List<ExaminationFormWithPatientDto>> call, @NonNull Throwable t) {
-                if (isAdded() && getActivity() != null) {
-                    Toast.makeText(getActivity(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }            }
+                // Không hiển thị Toast ở đây để tránh làm phiền người dùng khi tự động làm mới gặp lỗi mạng tạm thời
+            }
         });
     }
 
@@ -101,20 +153,19 @@ public class HomeFragment_doctor extends Fragment {
         TextView Name = view.findViewById(R.id.nameNextPatient);
         TextView Time = view.findViewById(R.id.timeNextPatient);
 
-        // Kiểm tra thêm điều kiện getPatient() != null để tránh crash
         if (nextPatient != null && nextPatient.getPatient() != null) {
             btn_KhamNgay.setVisibility(View.VISIBLE);
             ic_ChoKham.setVisibility(View.VISIBLE);
-            Name.setText(nextPatient.getPatient().getHo_ten()); // Hiện tên thay vì ID
+            Name.setText(nextPatient.getPatient().getHo_ten());
             Time.setText(nextPatient.getGio_du_kien());
         } else {
             btn_KhamNgay.setVisibility(View.INVISIBLE);
             ic_ChoKham.setVisibility(View.INVISIBLE);
             Time.setText("");
             Name.setText("Chưa có bệnh nhân");
-
         }
     }
+
     private void SetNumber(View view) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         String today = sdf.format(new Date());
@@ -144,23 +195,19 @@ public class HomeFragment_doctor extends Fragment {
                 total++;
             }
         }
-
-        // Cập nhật UI
         updateUI(view, total, waitCount, checkingCount, doneCount);
     }
+
     private void updateUI(View v, int total, int wait, int checking, int done) {
         ((TextView) v.findViewById(R.id.PatientTotal)).setText(String.valueOf(total));
-
         ((TextView) v.findViewById(R.id.PatientWaiting)).setText(String.valueOf(wait));
         ((TextView) v.findViewById(R.id.num_cho_kham)).setText(wait + " chờ khám");
-
         ((TextView) v.findViewById(R.id.PatientChecking)).setText(String.valueOf(checking));
         ((TextView) v.findViewById(R.id.num_dang_kham)).setText(checking + " đang khám");
-
         ((TextView) v.findViewById(R.id.PatientDone)).setText(String.valueOf(done));
     }
-    public void SetAvatar(View view, UserProfile userprofile)
-    {
+
+    private void SetAvatar(View view, UserProfile userprofile) {
         if (userprofile == null) return;
         ImageView avatar = view.findViewById(R.id.home_avatar_admin);
         String avatarUrl = userprofile.getAnh_dai_dien();
@@ -181,79 +228,43 @@ public class HomeFragment_doctor extends Fragment {
             Coil.imageLoader(requireContext()).enqueue(request);
         }
     }
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        initializeViews(view);
-        setupListeners();
-
-    if (profile != null && profile.getHo_ten() != null) {
-            tvName.setText(profile.getHo_ten());
-        }
-    }
-
-    private void initializeViews(View view) {
-        tvName = view.findViewById(R.id.doctor_home_name);
-        btnExaminationList = view.findViewById(R.id.btnExaminationList);
-        btnCreateAppointment = view.findViewById(R.id.btnCreateAppointment);
-        btnViewMedicalRecords = view.findViewById(R.id.btnViewMedicalRecords);
-        btn_KhamNgay = view.findViewById(R.id.btnKhamNgay);
-        ic_ChoKham = view.findViewById(R.id.txtChoKham);
-    }
 
     private void setupListeners() {
-        if (btnExaminationList != null) {
-            btnExaminationList.setOnClickListener(v -> openExFormsLists());
-
-        }
-
-        if (btnCreateAppointment != null) {
-            btnCreateAppointment.setOnClickListener(v -> openCreateAppointment());
-        }
-
-        if (btnViewMedicalRecords != null) {
-            btnViewMedicalRecords.setOnClickListener(v -> {
-                Intent intent = new Intent(getActivity(), dashboard_fragment.doctor_view_medical_record.ViewMedicalRecord_doctor.class);
-                startActivity(intent);});
-        }
-        if(btn_KhamNgay != null)
-        {
-            btn_KhamNgay.setOnClickListener(v -> {
-                if (nextPatient == null || nextPatient.getPatient() == null) return;
-
-                Intent intent = new Intent(getActivity(), ExaminationList_doctor.class);
-                intent.putExtra("auto_open_form_id", nextPatient.getId());
-                startActivity(intent);
-            });
-        }
+        btnExaminationList.setOnClickListener(v -> openExFormsLists());
+        btnCreateAppointment.setOnClickListener(v -> openCreateAppointment());
+        btnViewMedicalRecords.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), dashboard_fragment.doctor_view_medical_record.ViewMedicalRecord_doctor.class);
+            startActivity(intent);
+        });
+        btn_KhamNgay.setOnClickListener(v -> {
+            if (nextPatient == null || nextPatient.getPatient() == null) return;
+            Intent intent = new Intent(getActivity(), ExaminationList_doctor.class);
+            intent.putExtra("auto_open_form_id", nextPatient.getId());
+            startActivity(intent);
+        });
     }
 
     private void openExFormsLists() {
-        Intent intent = new Intent(getActivity(), ExaminationList_doctor.class);
-        startActivity(intent);
+        startActivity(new Intent(getActivity(), ExaminationList_doctor.class));
     }
-    private void openCreateAppointment(){
-        Intent intent = new Intent(getActivity(), CreateAppointment_doctor.class);
-        startActivity(intent);
+
+    private void openCreateAppointment() {
+        startActivity(new Intent(getActivity(), CreateAppointment_doctor.class));
     }
+
     private ExaminationFormWithPatientDto getPriorityPatient() {
         if (allForms == null || allForms.isEmpty()) return null;
 
         SimpleDateFormat dateSdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         String today = dateSdf.format(new Date());
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
-        String now = sdf.format(new Date());
 
         for (ExaminationFormWithPatientDto form : allForms) {
             String formDate = (form.getNgay_kham() != null) ? dateSdf.format(form.getNgay_kham()) : "";
-            String formTime = (form.getGio_du_kien() != null) ? form.getGio_du_kien() : "";
-
-            if (today.equals(formDate) && "Chờ khám".equals(form.getTrang_thai()) && formTime.compareTo(now) > 0) {
+            // Ưu tiên lấy bệnh nhân "Chờ khám" sớm nhất trong ngày hôm nay
+            if (today.equals(formDate) && "Chờ khám".equals(form.getTrang_thai())) {
                 return form;
             }
         }
-
         return null;
     }
 }
