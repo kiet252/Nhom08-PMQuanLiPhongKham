@@ -255,7 +255,7 @@ public class ReportsActivity_Admin extends BaseActivity {
         int soHoaDon = danhSach.size();
         long tongDoanhThu = 0;
         for (DonKham dk : danhSach) {
-            if (!"Đã huỷ".equalsIgnoreCase(dk.getTrangThai())) {
+            if (!"Đã hủy".equalsIgnoreCase(dk.getTrangThai())) {
                 tongDoanhThu += dk.getTongTien();
             }
         }
