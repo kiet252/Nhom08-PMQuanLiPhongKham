@@ -37,6 +37,8 @@ import com.google.android.material.textfield.TextInputLayout;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -51,6 +53,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class ManageBill_staff extends BaseActivity {
+    private static final DateTimeFormatter DISPLAY_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter API_DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
 
     private ImageView btnBack;
     private TextInputLayout tilSearchPatient;
@@ -98,6 +102,8 @@ public class ManageBill_staff extends BaseActivity {
             String keyword = edtSearchPatient.getText().toString().trim();
             if (!keyword.isEmpty()) {
                 searchInvoicesByPatient();
+            } else {
+                loadDefaultBillsForToday();
             }
         }
     }
@@ -115,8 +121,10 @@ public class ManageBill_staff extends BaseActivity {
         btnFilterPaid = findViewById(R.id.btnFilterPaid);
         btnFilterUnpaid = findViewById(R.id.btnFilterUnpaid);
 
-        edtFromDate.setText("");
-        edtToDate.setText("");
+        String formattedDate = LocalDate.now().format(DISPLAY_DATE_FORMATTER);
+
+        edtFromDate.setText(formattedDate);
+        edtToDate.setText(formattedDate);
 
         edtSearchPatient.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
         edtSearchPatient.setOnEditorActionListener((v, actionId, event) -> {
@@ -175,9 +183,7 @@ public class ManageBill_staff extends BaseActivity {
 
         if (keyword.isEmpty()) {
             edtSearchPatient.setError("Vui lòng nhập mã bệnh nhân hoặc CCCD");
-            edtSearchPatient.requestFocus();
-            allInvoices.clear();
-            applyFilter();
+            loadDefaultBillsForToday();
             return;
         }
 
@@ -249,6 +255,45 @@ public class ManageBill_staff extends BaseActivity {
             public void onFailure(@NonNull Call<List<ExamFormWithBillDto>> call, @NonNull Throwable t) {
                 Toast.makeText(ManageBill_staff.this,
                         "Lỗi tải hóa đơn: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void loadDefaultBillsForToday() {
+        hideSearchError();
+        edtSearchPatient.setError(null);
+
+        LocalDate today = LocalDate.now();
+        String todayDisplay = today.format(DISPLAY_DATE_FORMATTER);
+        String todayIso = today.format(API_DATE_FORMATTER);
+
+        edtFromDate.setText(todayDisplay);
+        edtToDate.setText(todayDisplay);
+
+        billRepository.getBillsByDateRange(todayIso, todayIso).enqueue(new Callback<List<ExamFormWithBillDto>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<ExamFormWithBillDto>> call,
+                                   @NonNull Response<List<ExamFormWithBillDto>> response) {
+                if (!response.isSuccessful()) {
+                    showApiError(response);
+                    allInvoices.clear();
+                    applyFilter();
+                    return;
+                }
+
+                List<ExamFormWithBillDto> forms = response.body() != null
+                        ? response.body()
+                        : new ArrayList<>();
+
+                allInvoices.clear();
+                allInvoices.addAll(BillMapper.fromExamForms(forms));
+                applyFilter();
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<ExamFormWithBillDto>> call, @NonNull Throwable t) {
+                Toast.makeText(ManageBill_staff.this,
+                        "Lá»—i táº£i hÃ³a Ä‘Æ¡n: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

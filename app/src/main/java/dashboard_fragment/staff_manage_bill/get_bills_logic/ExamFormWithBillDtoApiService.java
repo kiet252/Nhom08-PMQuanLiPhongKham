@@ -12,4 +12,10 @@ public interface ExamFormWithBillDtoApiService {
       @Query("patient_id") String patientIdFilter,
       @Query(value = "select", encoded = true) String select,
       @Query("order") String order);
+
+  @GET("rest/v1/examination_form")
+  Call<List<ExamFormWithBillDto>> getBillsByDateRange(
+      @Query("and") String dateRangeFilter,
+      @Query(value = "select", encoded = true) String select,
+      @Query("order") String order);
 }
