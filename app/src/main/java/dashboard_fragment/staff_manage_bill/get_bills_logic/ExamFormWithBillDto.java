@@ -32,11 +32,11 @@ public class ExamFormWithBillDto implements Serializable {
     }
 
     public static class MedicalRecordWrapper implements Serializable {
-        private List<BillSummaryDto> bill;
+        private BillSummaryDto bill;
         private List<MedicalRecordClinicalDto> medical_record_clinical;
         private List<MedicalRecordMedicineDto> medical_record_medicine;
 
-        public List<BillSummaryDto> getBill() { return bill; }
+        public BillSummaryDto getBill() { return bill; }
         public List<MedicalRecordClinicalDto> getMedical_record_clinical() { return medical_record_clinical; }
         public List<MedicalRecordMedicineDto> getMedical_record_medicine() { return medical_record_medicine; }
     }
@@ -54,9 +54,6 @@ public class ExamFormWithBillDto implements Serializable {
         public String getTrang_thai_thanh_toan() { return trang_thai_thanh_toan; }
         public Double getTong_thanh_toan() { return tong_thanh_toan; }
     }
-
-    // --- JUNCTION DTOS ALIGNED WITH YOUR DDL DEFINITIONS ---
-
     public static class MedicalRecordClinicalDto implements Serializable {
         private Long id;
         private ClinicalDetails clinical;

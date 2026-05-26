@@ -139,8 +139,8 @@ public class BillDetail_staff extends BaseActivity {
         tvGrandTotal.setText(String.format("%,.0fđ", computedGrandTotal));
 
         if (examFormData.getMedical_record() != null && examFormData.getMedical_record().getBill() != null) {
-            for (ExamFormWithBillDto.BillSummaryDto bill : examFormData.getMedical_record().getBill()) {
-                if (bill != null && bill.getId() != null && bill.getId() == selectedBillId) {
+            ExamFormWithBillDto.BillSummaryDto bill = examFormData.getMedical_record().getBill();
+            if (bill.getId() != null && bill.getId() == selectedBillId) {
 
                     String status = bill.getTrang_thai_thanh_toan();
                     if ("chưa thanh toán".equalsIgnoreCase(status)) {
@@ -162,8 +162,6 @@ public class BillDetail_staff extends BaseActivity {
                     isPaidLocked = "Đã thanh toán".equalsIgnoreCase(status);
                     updateEditableState();
 
-                    break;
-                }
             }
         }
     }

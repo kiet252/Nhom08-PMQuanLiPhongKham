@@ -30,30 +30,28 @@ public final class BillMapper {
 
             String patientName = resolvePatientName(form);
             String displayDate = formatDateString(form.getNgay_kham());
+            BillSummaryDto bill = form.getMedical_record().getBill();
 
-            for (BillSummaryDto bill : form.getMedical_record().getBill()) {
-                if (bill == null || bill.getId() == null) {
-                    continue;
-                }
-
-                boolean paid = PAID_STATUS.equals(bill.getTrang_thai_thanh_toan());
-                long amount =
-                        bill.getTong_thanh_toan() != null ? Math.round(bill.getTong_thanh_toan()) : 0L;
-                String date =
-                        displayDate != null ? displayDate : formatDateString(bill.getCreated_at());
-
-                // Fixed: Passing 'form' as the 7th argument matching the new constructor signatures
-                items.add(
-                        new StaffInvoiceItem(
-                                String.valueOf(bill.getId()),
-                                patientName,
-                                date != null ? date : "--",
-                                amount,
-                                paid,
-                                bill.getPhuong_thuc_thanh_toan(),
-                                form
-                        ));
+            if (bill == null || bill.getId() == null) {
+                continue;
             }
+
+            boolean paid = PAID_STATUS.equals(bill.getTrang_thai_thanh_toan());
+            long amount =
+                    bill.getTong_thanh_toan() != null ? Math.round(bill.getTong_thanh_toan()) : 0L;
+            String date =
+                    displayDate != null ? displayDate : formatDateString(bill.getCreated_at());
+
+            items.add(
+                    new StaffInvoiceItem(
+                            String.valueOf(bill.getId()),
+                            patientName,
+                            date != null ? date : "--",
+                            amount,
+                            paid,
+                            bill.getPhuong_thuc_thanh_toan(),
+                            form
+                    ));
         }
 
         return items;
