@@ -104,7 +104,7 @@
                                 android:layout_marginEnd="8dp"
                                 android:layout_weight="1"
                                 android:background="@drawable/bg_border_rounded"
-                                android:hint="Tên bệnh nhân"
+                                android:hint="Mã BN/Tên BN/CCCD"
                                 android:paddingHorizontal="12dp"
                                 android:singleLine="true"
                                 android:textColor="#1E293B"
