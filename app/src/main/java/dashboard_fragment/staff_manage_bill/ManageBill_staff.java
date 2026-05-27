@@ -1,9 +1,6 @@
 package dashboard_fragment.staff_manage_bill;
 
-
 import android.app.AlertDialog;
-import android.app.DatePickerDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
@@ -22,7 +19,6 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -37,7 +33,6 @@ import com.google.android.material.textfield.TextInputLayout;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -54,7 +49,6 @@ import retrofit2.Response;
 
 public class ManageBill_staff extends BaseActivity {
     private static final DateTimeFormatter DISPLAY_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private static final DateTimeFormatter API_DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
 
     private ImageView btnBack;
     private TextInputLayout tilSearchPatient;
@@ -73,7 +67,10 @@ public class ManageBill_staff extends BaseActivity {
     private com.google.android.material.button.MaterialButton btnFilterUnpaid;
 
     private final List<StaffInvoiceItem> allInvoices = new ArrayList<>();
+    private final List<StaffInvoiceItem> defaultInvoices = new ArrayList<>();
+
     private enum FilterStatus { ALL, PAID, UNPAID }
+
     private FilterStatus currentFilterStatus = FilterStatus.ALL;
 
     @Override
@@ -93,6 +90,7 @@ public class ManageBill_staff extends BaseActivity {
         initializeViews();
         setupRecycler();
         setupListeners();
+        loadAllBills();
     }
 
     @Override
@@ -103,7 +101,7 @@ public class ManageBill_staff extends BaseActivity {
             if (!keyword.isEmpty()) {
                 searchInvoicesByPatient();
             } else {
-                loadDefaultBillsForToday();
+                restoreDefaultInvoices();
             }
         }
     }
@@ -121,10 +119,8 @@ public class ManageBill_staff extends BaseActivity {
         btnFilterPaid = findViewById(R.id.btnFilterPaid);
         btnFilterUnpaid = findViewById(R.id.btnFilterUnpaid);
 
-        String formattedDate = LocalDate.now().format(DISPLAY_DATE_FORMATTER);
-
-        edtFromDate.setText(formattedDate);
-        edtToDate.setText(formattedDate);
+        edtFromDate.setText("");
+        edtToDate.setText("");
 
         edtSearchPatient.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
         edtSearchPatient.setOnEditorActionListener((v, actionId, event) -> {
@@ -182,8 +178,7 @@ public class ManageBill_staff extends BaseActivity {
         edtSearchPatient.setError(null);
 
         if (keyword.isEmpty()) {
-            edtSearchPatient.setError("Vui lòng nhập mã bệnh nhân hoặc CCCD");
-            loadDefaultBillsForToday();
+            restoreDefaultInvoices();
             return;
         }
 
@@ -259,23 +254,17 @@ public class ManageBill_staff extends BaseActivity {
         });
     }
 
-    private void loadDefaultBillsForToday() {
+    private void loadAllBills() {
         hideSearchError();
         edtSearchPatient.setError(null);
 
-        LocalDate today = LocalDate.now();
-        String todayDisplay = today.format(DISPLAY_DATE_FORMATTER);
-        String todayIso = today.format(API_DATE_FORMATTER);
-
-        edtFromDate.setText(todayDisplay);
-        edtToDate.setText(todayDisplay);
-
-        billRepository.getBillsByDateRange(todayIso, todayIso).enqueue(new Callback<List<ExamFormWithBillDto>>() {
+        billRepository.getAllBills().enqueue(new Callback<List<ExamFormWithBillDto>>() {
             @Override
             public void onResponse(@NonNull Call<List<ExamFormWithBillDto>> call,
                                    @NonNull Response<List<ExamFormWithBillDto>> response) {
                 if (!response.isSuccessful()) {
                     showApiError(response);
+                    defaultInvoices.clear();
                     allInvoices.clear();
                     applyFilter();
                     return;
@@ -285,17 +274,28 @@ public class ManageBill_staff extends BaseActivity {
                         ? response.body()
                         : new ArrayList<>();
 
+                defaultInvoices.clear();
+                defaultInvoices.addAll(BillMapper.fromExamForms(forms));
+
                 allInvoices.clear();
-                allInvoices.addAll(BillMapper.fromExamForms(forms));
+                allInvoices.addAll(defaultInvoices);
                 applyFilter();
             }
 
             @Override
             public void onFailure(@NonNull Call<List<ExamFormWithBillDto>> call, @NonNull Throwable t) {
                 Toast.makeText(ManageBill_staff.this,
-                        "Lá»—i táº£i hÃ³a Ä‘Æ¡n: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        "Lỗi tải hóa đơn: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void restoreDefaultInvoices() {
+        hideSearchError();
+        edtSearchPatient.setError(null);
+        allInvoices.clear();
+        allInvoices.addAll(defaultInvoices);
+        applyFilter();
     }
 
     private void fillMissingPatientNames(List<StaffInvoiceItem> items, String patientName) {
@@ -351,11 +351,8 @@ public class ManageBill_staff extends BaseActivity {
         }
 
         Intent intent = new Intent(this, BillDetail_staff.class);
-
         intent.putExtra("EXTRA_EXAM_FORM_DATA", invoice.getOriginalForm());
-
         intent.putExtra("EXTRA_SELECTED_BILL_ID", invoice.getId());
-
         startActivity(intent);
     }
 
@@ -533,6 +530,7 @@ public class ManageBill_staff extends BaseActivity {
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
     }
+
     private TextView createPickerButton(String text, String backgroundColor) {
         TextView button = new TextView(this);
         button.setText(text);
@@ -554,44 +552,56 @@ public class ManageBill_staff extends BaseActivity {
         float density = getResources().getDisplayMetrics().density;
         return Math.round(value * density);
     }
+
     private void applyFilter() {
-        String fromDateStr = edtFromDate.getText().toString().trim();
-        String toDateStr = edtToDate.getText().toString().trim();
-        
+        String fromDateStr = edtFromDate.getText() != null
+                ? edtFromDate.getText().toString().trim()
+                : "";
+        String toDateStr = edtToDate.getText() != null
+                ? edtToDate.getText().toString().trim()
+                : "";
+
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
         Date fromDate = null;
         Date toDate = null;
-        
+
         try {
-            if (!fromDateStr.isEmpty()) fromDate = sdf.parse(fromDateStr);
-        } catch (ParseException ignored) {}
-        
+            if (!fromDateStr.isEmpty()) {
+                fromDate = sdf.parse(fromDateStr);
+            }
+        } catch (ParseException ignored) {
+        }
+
         try {
-            if (!toDateStr.isEmpty()) toDate = sdf.parse(toDateStr);
-        } catch (ParseException ignored) {}
+            if (!toDateStr.isEmpty()) {
+                toDate = sdf.parse(toDateStr);
+            }
+        } catch (ParseException ignored) {
+        }
 
         List<StaffInvoiceItem> filteredList = new ArrayList<>();
-        
+
         for (StaffInvoiceItem item : allInvoices) {
-            boolean matchesStatus = false;
+            boolean matchesStatus;
             switch (currentFilterStatus) {
-                case ALL:
-                    matchesStatus = true;
-                    break;
                 case PAID:
                     matchesStatus = item.isPaid();
                     break;
                 case UNPAID:
                     matchesStatus = !item.isPaid();
                     break;
+                case ALL:
+                default:
+                    matchesStatus = true;
+                    break;
             }
-            
+
             if (!matchesStatus) {
                 continue;
             }
 
             String itemDateStr = item.getDate();
-            if (itemDateStr != null && !itemDateStr.equals("--")) {
+            if (itemDateStr != null && !"--".equals(itemDateStr)) {
                 try {
                     Date itemDate = sdf.parse(itemDateStr);
                     if (itemDate != null) {
@@ -602,37 +612,36 @@ public class ManageBill_staff extends BaseActivity {
                             continue;
                         }
                     }
-                } catch (ParseException ignored) {}
+                } catch (ParseException ignored) {
+                }
             }
-            
+
             filteredList.add(item);
         }
-        
+
         updateInvoiceList(filteredList);
     }
 
     private void updateFilterButtonsVisuals() {
         int selectedBgColor = Color.parseColor("#0D3F6E");
         int selectedTextColor = Color.WHITE;
-        
+
         int unselectedBgColor = Color.TRANSPARENT;
         int unselectedTextColor = Color.parseColor("#64748B");
         int unselectedStrokeColor = Color.parseColor("#7B92AD");
-        
+
         updateButtonState(btnFilterAll, currentFilterStatus == FilterStatus.ALL, selectedBgColor, selectedTextColor, unselectedBgColor, unselectedTextColor, unselectedStrokeColor);
         updateButtonState(btnFilterPaid, currentFilterStatus == FilterStatus.PAID, selectedBgColor, selectedTextColor, unselectedBgColor, unselectedTextColor, unselectedStrokeColor);
         updateButtonState(btnFilterUnpaid, currentFilterStatus == FilterStatus.UNPAID, selectedBgColor, selectedTextColor, unselectedBgColor, unselectedTextColor, unselectedStrokeColor);
     }
-    
-    private void updateButtonState(com.google.android.material.button.MaterialButton button, boolean isSelected, 
+
+    private void updateButtonState(com.google.android.material.button.MaterialButton button, boolean isSelected,
                                    int selectedBg, int selectedText, int unselectedBg, int unselectedText, int unselectedStroke) {
         if (isSelected) {
             button.setBackgroundTintList(ColorStateList.valueOf(selectedBg));
             button.setTextColor(selectedText);
             button.setStrokeColor(ColorStateList.valueOf(selectedBg));
-            if (button.getId() == R.id.btnFilterPaid) {
-                button.setIconTint(ColorStateList.valueOf(Color.WHITE));
-            } else if (button.getId() == R.id.btnFilterUnpaid) {
+            if (button.getId() == R.id.btnFilterPaid || button.getId() == R.id.btnFilterUnpaid) {
                 button.setIconTint(ColorStateList.valueOf(Color.WHITE));
             }
         } else {

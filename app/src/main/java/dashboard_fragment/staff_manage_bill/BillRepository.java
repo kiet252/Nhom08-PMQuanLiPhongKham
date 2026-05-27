@@ -27,6 +27,10 @@ public class BillRepository {
         this.billUpdatePayloadApiService = client.create(BillUpdatePayloadApiRequest.class);
     }
 
+    public Call<List<ExamFormWithBillDto>> getAllBills() {
+        return examFormWithBillDtoApiService.getAllBills(BILL_SELECT, "ngay_kham.desc");
+    }
+
     public Call<List<ExamFormWithBillDto>> getBillsByPatientId(String patientId) {
         return examFormWithBillDtoApiService.getBillsByPatientId("eq." + patientId, BILL_SELECT, "ngay_kham.desc");
     }
