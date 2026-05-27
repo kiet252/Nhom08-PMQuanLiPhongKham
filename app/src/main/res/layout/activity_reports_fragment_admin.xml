@@ -194,7 +194,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Số hóa đơn"
+                            android:text="Số phiếu khám"
                             android:textColor="#64748B"
                             android:textSize="13sp"
                             android:textStyle="bold" />
