@@ -190,7 +190,14 @@ public class ViewMedicalRecord_doctor extends BaseActivity {
             ExaminationFormHistoryResponse.MedicalRecordInner medicalRecord = history.getMedical_record();
             if (medicalRecord != null) {
                 diagnosisItems.addAll(splitDiagnosisItems(medicalRecord.getChanDoanChinh()));
-                diagnosisItems.addAll(splitDiagnosisItems(medicalRecord.getChanDoanBoSung()));
+                addDiagnosisItem(
+                        diagnosisItems,
+                        buildLabeledDiagnosisItem("Chẩn đoán bổ sung", medicalRecord.getChanDoanBoSung())
+                );
+                addDiagnosisItem(
+                        diagnosisItems,
+                        buildLabeledDiagnosisItem("Ghi chú lâm sàng", medicalRecord.getGhiChuLamSang())
+                );
 
                 if (medicalRecord.getMedicineData() != null) {
                     for (MedicalRecordMedicineWrapper medicineWrapper : medicalRecord.getMedicineData()) {
@@ -212,10 +219,6 @@ public class ViewMedicalRecord_doctor extends BaseActivity {
                             clinicalItems.add(clinicalName);
                         }
                     }
-                }
-
-                if (symptomDetail.isEmpty()) {
-                    symptomDetail = safeText(medicalRecord.getGhiChuLamSang());
                 }
             }
 
@@ -431,6 +434,25 @@ public class ViewMedicalRecord_doctor extends BaseActivity {
             }
         }
         return items;
+    }
+
+    private void addDiagnosisItem(Set<String> diagnosisItems, String item) {
+        if (diagnosisItems == null) {
+            return;
+        }
+
+        String normalizedItem = safeText(item);
+        if (!normalizedItem.isEmpty()) {
+            diagnosisItems.add(normalizedItem);
+        }
+    }
+
+    private String buildLabeledDiagnosisItem(String label, String value) {
+        String normalizedValue = safeText(value);
+        if (normalizedValue.isEmpty()) {
+            return "";
+        }
+        return label + ": " + normalizedValue;
     }
 
     private String buildMedicineDisplayText(MedicalRecordMedicineWrapper medWrapper) {

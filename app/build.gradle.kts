@@ -30,6 +30,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+
+        isCoreLibraryDesugaringEnabled = true
     }
 }
 
@@ -63,4 +65,6 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     // ViewPager2 cho tab Fragment
     implementation("androidx.viewpager2:viewpager2:1.1.0")
+
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }
