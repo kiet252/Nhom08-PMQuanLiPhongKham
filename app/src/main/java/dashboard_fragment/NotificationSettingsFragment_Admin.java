@@ -75,9 +75,11 @@ public class NotificationSettingsFragment_Admin extends Fragment {
     private final Runnable autoRefreshRunnable = new Runnable() {
         @Override
         public void run() {
+            // SỬA LỖI: Chỉ tự động làm mới nếu KHÔNG ở chế độ chọn
             if (isAdded() && manHinhDanhSach != null
                     && manHinhDanhSach.getVisibility() == View.VISIBLE
-                    && !dangXemNhap) {
+                    && !dangXemNhap
+                    && !isSelectionMode) { 
                 goiDuLieuRetrofit(false);
             }
             refreshHandler.postDelayed(this, AUTO_REFRESH_DELAY_MS);
@@ -342,7 +344,10 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         Collections.reverse(danhSachBanNhap);
         Collections.reverse(danhSachDaGui);
 
-        datLaiCheDoChon();
+        // SỬA LỖI: Chỉ reset nếu không ở chế độ chọn (phòng trường hợp fetch dữ liệu ngầm)
+        if (!isSelectionMode) {
+            datLaiCheDoChon();
+        }
         capNhatGiaoDienTabHienTai();
     }
 
@@ -389,6 +394,12 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         CheckBox checkBox = new CheckBox(requireContext());
         checkBox.setButtonTintList(ColorStateList.valueOf(Color.parseColor("#14B8D4")));
         checkBox.setVisibility(isSelectionMode ? View.VISIBLE : View.GONE);
+        
+        // SỬA LỖI: Duy trì trạng thái tích chọn nếu ID đã có trong danh sách
+        if (isSelectionMode && selectedIds.contains(thongBao.getId())) {
+            checkBox.setChecked(true);
+        }
+
         listCheckBoxes.add(checkBox);
         checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             Integer id = thongBao.getId();
