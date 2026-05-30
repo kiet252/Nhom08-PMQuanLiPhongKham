@@ -95,6 +95,75 @@
                     android:paddingEnd="20dp"
                     android:paddingBottom="40dp">
 
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="22dp"
+                        app:cardBackgroundColor="#FFFFFF"
+                        app:cardCornerRadius="24dp"
+                        app:cardElevation="2dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:paddingStart="22dp"
+                            android:paddingTop="22dp"
+                            android:paddingEnd="22dp"
+                            android:paddingBottom="20dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Doanh thu"
+                                        android:textColor="#1E293B"
+                                        android:textSize="22sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="4dp"
+                                        android:text="6 tháng gần nhất (triệu đồng)"
+                                        android:textColor="#6B7280"
+                                        android:textSize="15sp" />
+                                </LinearLayout>
+
+                                <TextView
+                                    android:id="@+id/tv_admin_revenue_change"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="42dp"
+                                    android:background="@drawable/bg_admin_revenue_badge"
+                                    android:gravity="center"
+                                    android:minWidth="98dp"
+                                    android:paddingStart="14dp"
+                                    android:paddingEnd="14dp"
+                                    android:text="+0.0%"
+                                    android:textColor="#3F7D3A"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <dashboard_fragment.RevenueChartView
+                                android:id="@+id/chart_admin_revenue"
+                                android:layout_width="match_parent"
+                                android:layout_height="230dp"
+                                android:layout_marginTop="18dp" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
