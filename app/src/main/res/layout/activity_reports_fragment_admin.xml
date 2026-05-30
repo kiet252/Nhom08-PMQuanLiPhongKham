@@ -59,9 +59,46 @@
             android:paddingEnd="20dp"
             android:paddingBottom="40dp">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_tab_phieu_kham"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:text="Phiếu Khám"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    app:backgroundTint="#0D3F6E"
+                    app:cornerRadius="10dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_tab_bill"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="Hóa Đơn"
+                    android:textAllCaps="false"
+                    android:textColor="#0D3F6E"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    app:backgroundTint="#FFFFFF"
+                    app:cornerRadius="10dp"
+                    app:strokeColor="#0D3F6E"
+                    app:strokeWidth="1dp" />
+            </LinearLayout>
+
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="2dp"
@@ -192,6 +229,7 @@
                         android:padding="16dp">
 
                         <TextView
+                            android:id="@+id/tv_summary_count_label"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Số hóa đơn"
@@ -227,6 +265,7 @@
                         android:padding="16dp">
 
                         <TextView
+                            android:id="@+id/tv_summary_revenue_label"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Tổng thu"
