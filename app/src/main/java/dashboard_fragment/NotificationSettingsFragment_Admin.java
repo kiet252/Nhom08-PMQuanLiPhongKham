@@ -8,6 +8,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,9 +32,13 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -77,7 +82,8 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         public void run() {
             if (isAdded() && manHinhDanhSach != null
                     && manHinhDanhSach.getVisibility() == View.VISIBLE
-                    && !dangXemNhap) {
+                    && !dangXemNhap
+                    && !isSelectionMode) {
                 goiDuLieuRetrofit(false);
             }
             refreshHandler.postDelayed(this, AUTO_REFRESH_DELAY_MS);
@@ -309,6 +315,9 @@ public class NotificationSettingsFragment_Admin extends Fragment {
                 }
 
                 tvLoading.setVisibility(View.GONE);
+                if (isSelectionMode && !showLoading) {
+                    return;
+                }
                 if (response.isSuccessful() && response.body() != null) {
                     phanLoaiVaHienThi(response.body());
                 }
@@ -362,7 +371,13 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         }
 
         layoutEmpty.setVisibility(View.GONE);
+        String ngayGanNhat = "";
         for (ThongBao thongBao : targetList) {
+            String ngayThongBao = dinhDangNgay(thongBao.getCreated_at());
+            if (!ngayThongBao.isEmpty() && !ngayThongBao.equals(ngayGanNhat)) {
+                layoutDanhSach.addView(taoNhanNgay(ngayThongBao));
+                ngayGanNhat = ngayThongBao;
+            }
             layoutDanhSach.addView(taoCardThongBao(thongBao));
         }
     }
@@ -389,17 +404,9 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         CheckBox checkBox = new CheckBox(requireContext());
         checkBox.setButtonTintList(ColorStateList.valueOf(Color.parseColor("#14B8D4")));
         checkBox.setVisibility(isSelectionMode ? View.VISIBLE : View.GONE);
+        checkBox.setFocusable(false);
+        checkBox.setOnClickListener(v -> capNhatThongBaoDaChon(thongBao.getId(), checkBox.isChecked()));
         listCheckBoxes.add(checkBox);
-        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            Integer id = thongBao.getId();
-            if (id == null) return;
-
-            if (isChecked) {
-                if (!selectedIds.contains(id)) selectedIds.add(id);
-            } else {
-                selectedIds.remove(id);
-            }
-        });
 
         LinearLayout contentColumn = new LinearLayout(requireContext());
         contentColumn.setOrientation(LinearLayout.VERTICAL);
@@ -423,6 +430,14 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         tvContent.setMaxLines(2);
         tvContent.setPadding(0, dp(6), 0, 0);
 
+        TextView tvTime = new TextView(requireContext());
+        tvTime.setText(dinhDangGioNeuTrongNgay(thongBao.getCreated_at()));
+        tvTime.setTextColor(Color.parseColor("#0D5FA8"));
+        tvTime.setTextSize(12);
+        tvTime.setTypeface(null, Typeface.BOLD);
+        tvTime.setPadding(0, dp(8), 0, 0);
+        tvTime.setVisibility(tvTime.getText().length() > 0 ? View.VISIBLE : View.GONE);
+
         TextView tvRole = new TextView(requireContext());
         tvRole.setText("Gửi đến: " + hienThiVaiTro(thongBao.getVai_tro()));
         tvRole.setTextColor(Color.parseColor("#0D5FA8"));
@@ -432,6 +447,7 @@ public class NotificationSettingsFragment_Admin extends Fragment {
 
         contentColumn.addView(tvTitle);
         contentColumn.addView(tvContent);
+        contentColumn.addView(tvTime);
         contentColumn.addView(tvRole);
         row.addView(checkBox);
         row.addView(contentColumn, contentParams);
@@ -464,12 +480,24 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         card.addView(row);
         card.setOnClickListener(v -> {
             if (isSelectionMode) {
-                checkBox.setChecked(!checkBox.isChecked());
+                boolean newChecked = !checkBox.isChecked();
+                checkBox.setChecked(newChecked);
+                capNhatThongBaoDaChon(thongBao.getId(), newChecked);
             } else {
                 hienThiChiTietThongBao(thongBao);
             }
         });
         return card;
+    }
+
+    private void capNhatThongBaoDaChon(Integer id, boolean isChecked) {
+        if (id == null) return;
+
+        if (isChecked) {
+            if (!selectedIds.contains(id)) selectedIds.add(id);
+        } else {
+            selectedIds.remove(id);
+        }
     }
 
     private void hienThiChiTietThongBao(ThongBao thongBao) {
@@ -658,6 +686,17 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         tvTitle.setLineSpacing(dp(3), 1f);
         content.addView(tvTitle);
 
+        String thoiGianTrongNgay = dinhDangGioNeuTrongNgay(thongBao.getCreated_at());
+        if (!thoiGianTrongNgay.isEmpty()) {
+            TextView tvTime = new TextView(requireContext());
+            tvTime.setText(thoiGianTrongNgay);
+            tvTime.setTextColor(Color.parseColor("#0D5FA8"));
+            tvTime.setTextSize(13);
+            tvTime.setTypeface(null, Typeface.BOLD);
+            tvTime.setPadding(0, dp(8), 0, 0);
+            content.addView(tvTime);
+        }
+
         View line = new View(requireContext());
         line.setBackgroundColor(Color.parseColor("#E2E8F0"));
         LinearLayout.LayoutParams lineParams = new LinearLayout.LayoutParams(
@@ -786,6 +825,33 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         GradientDrawable drawable = new GradientDrawable();
         drawable.setColor(color);
         drawable.setCornerRadius(radius);
+        return drawable;
+    }
+
+    private View taoNhanNgay(String ngayThongBao) {
+        TextView tvNgay = new TextView(requireContext());
+        tvNgay.setText("  " + ngayThongBao);
+        tvNgay.setTextColor(Color.parseColor("#2196F3"));
+        tvNgay.setTextSize(16);
+        tvNgay.setTypeface(null, Typeface.BOLD);
+        tvNgay.setGravity(Gravity.CENTER_VERTICAL);
+        tvNgay.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_date_exam_wrapper, 0, 0, 0);
+        tvNgay.setCompoundDrawablePadding(dp(8));
+        tvNgay.setPadding(dp(16), 0, dp(16), 0);
+        tvNgay.setBackground(taoNenNgay());
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                dp(56)
+        );
+        params.setMargins(0, 0, 0, dp(16));
+        tvNgay.setLayoutParams(params);
+        return tvNgay;
+    }
+
+    private GradientDrawable taoNenNgay() {
+        GradientDrawable drawable = taoNenBoGoc(Color.parseColor("#EAF5FF"), dp(24));
+        drawable.setStroke(dp(2), Color.parseColor("#2196F3"));
         return drawable;
     }
 
@@ -1042,9 +1108,82 @@ public class NotificationSettingsFragment_Admin extends Fragment {
         }
         return message;
     }
-    
+
     private int dp(int value)
     {
         return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
+    private String dinhDangNgay(String createdAt) {
+        Date date = parseCreatedAt(createdAt);
+        if (date != null) {
+            return new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(date);
+        }
+        String rawDate = layPhanNgay(createdAt);
+        return rawDate.isEmpty() ? "" : rawDate;
+    }
+
+    private String dinhDangGioNeuTrongNgay(String createdAt) {
+        Date date = parseCreatedAt(createdAt);
+        if (date != null) {
+            return new SimpleDateFormat("HH:mm", Locale.getDefault()).format(date);
+        }
+        return layPhanGio(createdAt);
+    }
+
+    private Date parseCreatedAt(String createdAt) {
+        if (createdAt == null || createdAt.trim().isEmpty()) {
+            return null;
+        }
+
+        String normalized = chuanHoaCreatedAt(createdAt);
+
+        String[] patterns = {
+                "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+                "yyyy-MM-dd'T'HH:mm:ssXXX",
+                "yyyy-MM-dd HH:mm:ss.SSS",
+                "yyyy-MM-dd HH:mm:ss"
+        };
+        for (String pattern : patterns) {
+            try {
+                return new SimpleDateFormat(pattern, Locale.getDefault()).parse(normalized);
+            } catch (ParseException ignored) {
+            }
+        }
+        return null;
+    }
+
+    private String chuanHoaCreatedAt(String createdAt) {
+        String normalized = createdAt.trim().replace("T", " ").replace("Z", "+00:00");
+        int dotIndex = normalized.indexOf('.');
+        if (dotIndex > 0) {
+            int timezoneIndex = Math.max(normalized.lastIndexOf('+'), normalized.lastIndexOf('-'));
+            if (timezoneIndex <= dotIndex) {
+                timezoneIndex = normalized.length();
+            }
+            String fraction = normalized.substring(dotIndex + 1, timezoneIndex);
+            if (fraction.length() > 3) {
+                normalized = normalized.substring(0, dotIndex + 4) + normalized.substring(timezoneIndex);
+            }
+        }
+        return normalized;
+    }
+
+    private String layPhanNgay(String createdAt) {
+        if (createdAt == null || createdAt.length() < 10) {
+            return "";
+        }
+        String[] parts = createdAt.substring(0, 10).split("-");
+        if (parts.length != 3) {
+            return "";
+        }
+        return parts[2] + "/" + parts[1] + "/" + parts[0];
+    }
+
+    private String layPhanGio(String createdAt) {
+        if (createdAt == null || createdAt.length() < 16) {
+            return "";
+        }
+        return createdAt.substring(11, 16);
     }
 }

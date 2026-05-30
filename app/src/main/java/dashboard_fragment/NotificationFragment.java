@@ -22,12 +22,20 @@ import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import com.example.nhom08_quanlyphongkham.R;
+import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.uilogin.AuthRepository;
+import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.example.nhom08_quanlyphongkham.uilogin.ThongBao;
 import com.google.android.material.card.MaterialCardView;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -41,6 +49,9 @@ public class NotificationFragment extends Fragment {
     private AuthRepository authRepository;
     private UserRole userRole = UserRole.NHAN_VIEN;
     private AlertDialog dialogChiTietThongBao;
+    private SharedPreferences notificationReadPrefs;
+    private Set<String> readNotificationKeys = new HashSet<>();
+    private String currentUserId = "guest";
 
     public NotificationFragment() {
     }
@@ -71,6 +82,13 @@ public class NotificationFragment extends Fragment {
             userRole = UserRole.NHAN_VIEN;
         }
 
+        UserProfile profile = SharedPrefManager.getInstance(requireContext()).getProfile();
+        if (profile != null && profile.getID() != null && !profile.getID().trim().isEmpty()) {
+            currentUserId = profile.getID();
+        }
+        notificationReadPrefs = requireContext().getSharedPreferences("NotificationReadPrefs", Context.MODE_PRIVATE);
+        readNotificationKeys = new HashSet<>(notificationReadPrefs.getStringSet(readPrefKey(), new HashSet<>()));
+
         goiDuLieuRetrofit();
     }
 
@@ -87,8 +105,14 @@ public class NotificationFragment extends Fragment {
                     layoutDanhSachThongBao.removeAllViews();
 
                     Collections.reverse(ds);
+                    String ngayGanNhat = "";
                     for (ThongBao tb : ds) {
-                        themVaoKhungXam(tb.getTieu_de(), tb.getNoi_dung());
+                        String ngayThongBao = dinhDangNgay(tb.getCreated_at());
+                        if (!ngayThongBao.isEmpty() && !ngayThongBao.equals(ngayGanNhat)) {
+                            themNgayVaoDanhSach(ngayThongBao);
+                            ngayGanNhat = ngayThongBao;
+                        }
+                        themVaoKhungXam(tb);
                     }
                 }
             }
@@ -106,8 +130,14 @@ public class NotificationFragment extends Fragment {
         return Math.round((float) dp * getResources().getDisplayMetrics().density);
     }
 
-    private void themVaoKhungXam(String tieuDe, String noiDung) {
+    private void themVaoKhungXam(ThongBao thongBao) {
         if (layoutDanhSachThongBao == null) return;
+
+        String tieuDe = thongBao.getTieu_de();
+        String noiDung = thongBao.getNoi_dung();
+        String thoiGianTrongNgay = dinhDangGioNeuTrongNgay(thongBao.getCreated_at());
+        String notificationKey = taoNotificationKey(thongBao);
+        boolean daDoc = readNotificationKeys.contains(notificationKey);
 
         MaterialCardView cardMoi = new MaterialCardView(requireContext());
         LinearLayout.LayoutParams paramsCard = new LinearLayout.LayoutParams(
@@ -115,10 +145,14 @@ public class NotificationFragment extends Fragment {
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         paramsCard.setMargins(0, 0, 0, dpToPx(16));
         cardMoi.setLayoutParams(paramsCard);
-        cardMoi.setCardBackgroundColor(Color.WHITE);
+        cardMoi.setCardBackgroundColor(daDoc ? Color.WHITE : Color.parseColor("#EAF5FF"));
         cardMoi.setRadius(dpToPx(18));
         cardMoi.setCardElevation(dpToPx(2));
-        cardMoi.setOnClickListener(v -> hienThiChiTietThongBao(tieuDe, noiDung));
+        cardMoi.setOnClickListener(v -> {
+            danhDauDaDoc(notificationKey);
+            cardMoi.setCardBackgroundColor(Color.WHITE);
+            hienThiChiTietThongBao(tieuDe, noiDung, thoiGianTrongNgay);
+        });
 
         LinearLayout lopNgang = new LinearLayout(requireContext());
         lopNgang.setOrientation(LinearLayout.HORIZONTAL);
@@ -143,18 +177,47 @@ public class NotificationFragment extends Fragment {
 
         lopDoc.addView(tvTieuDe);
         lopDoc.addView(tvNoiDung);
+        if (!thoiGianTrongNgay.isEmpty()) {
+            TextView tvThoiGian = new TextView(requireContext());
+            tvThoiGian.setText(thoiGianTrongNgay);
+            tvThoiGian.setTextColor(Color.parseColor("#0D5FA8"));
+            tvThoiGian.setTextSize(12);
+            tvThoiGian.setTypeface(null, Typeface.BOLD);
+            tvThoiGian.setPadding(0, dpToPx(8), 0, 0);
+            lopDoc.addView(tvThoiGian);
+        }
         lopNgang.addView(lopDoc);
         cardMoi.addView(lopNgang);
 
         layoutDanhSachThongBao.addView(cardMoi);
     }
 
-    private void hienThiChiTietThongBao(String tieuDe, String noiDung)
+    private void themNgayVaoDanhSach(String ngayThongBao) {
+        TextView tvNgay = new TextView(requireContext());
+        tvNgay.setText("  " + ngayThongBao);
+        tvNgay.setTextColor(Color.parseColor("#2196F3"));
+        tvNgay.setTextSize(16);
+        tvNgay.setTypeface(null, Typeface.BOLD);
+        tvNgay.setGravity(Gravity.CENTER_VERTICAL);
+        tvNgay.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_date_exam_wrapper, 0, 0, 0);
+        tvNgay.setCompoundDrawablePadding(dpToPx(8));
+        tvNgay.setPadding(dpToPx(16), 0, dpToPx(16), 0);
+        tvNgay.setBackground(taoNenNgay());
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                dpToPx(56)
+        );
+        params.setMargins(0, 0, 0, dpToPx(18));
+        layoutDanhSachThongBao.addView(tvNgay, params);
+    }
+
+    private void hienThiChiTietThongBao(String tieuDe, String noiDung, String thoiGianTrongNgay)
     {
         if (!isAdded()) return;
 
         dialogChiTietThongBao = new AlertDialog.Builder(requireContext()).create();
-        dialogChiTietThongBao.setView(taoCuaSoChiTietThongBao(tieuDe, noiDung));
+        dialogChiTietThongBao.setView(taoCuaSoChiTietThongBao(tieuDe, noiDung, thoiGianTrongNgay));
         dialogChiTietThongBao.setOnShowListener(dialogInterface -> {
             if (dialogChiTietThongBao.getWindow() != null) {
                 dialogChiTietThongBao.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
@@ -164,7 +227,7 @@ public class NotificationFragment extends Fragment {
         dialogChiTietThongBao.show();
     }
 
-    private View taoCuaSoChiTietThongBao(String tieuDe, String noiDung)
+    private View taoCuaSoChiTietThongBao(String tieuDe, String noiDung, String thoiGianTrongNgay)
     {
         CardView contentCard = new CardView(requireContext());
         contentCard.setCardBackgroundColor(Color.WHITE);
@@ -234,6 +297,16 @@ public class NotificationFragment extends Fragment {
         tvTitle.setTypeface(null, Typeface.BOLD);
         tvTitle.setLineSpacing(dpToPx(3), 1f);
         content.addView(tvTitle);
+
+        if (!thoiGianTrongNgay.isEmpty()) {
+            TextView tvTime = new TextView(requireContext());
+            tvTime.setText(thoiGianTrongNgay);
+            tvTime.setTextColor(Color.parseColor("#0D5FA8"));
+            tvTime.setTextSize(13);
+            tvTime.setTypeface(null, Typeface.BOLD);
+            tvTime.setPadding(0, dpToPx(8), 0, 0);
+            content.addView(tvTime);
+        }
 
         View line = new View(requireContext());
         line.setBackgroundColor(Color.parseColor("#E2E8F0"));
@@ -309,5 +382,110 @@ public class NotificationFragment extends Fragment {
         drawable.setColor(color);
         drawable.setCornerRadius(radius);
         return drawable;
+    }
+
+    private GradientDrawable taoNenNgay() {
+        GradientDrawable drawable = taoNenBoGoc(Color.parseColor("#EAF5FF"), dpToPx(24));
+        drawable.setStroke(dpToPx(2), Color.parseColor("#2196F3"));
+        return drawable;
+    }
+
+    private String readPrefKey() {
+        return "read_notifications_" + currentUserId;
+    }
+
+    private String taoNotificationKey(ThongBao thongBao) {
+        if (thongBao.getId() != null) {
+            return String.valueOf(thongBao.getId());
+        }
+        return layChuoi(thongBao.getTieu_de()) + "|" + layChuoi(thongBao.getCreated_at());
+    }
+
+    private String layChuoi(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private void danhDauDaDoc(String notificationKey) {
+        if (notificationKey.isEmpty() || readNotificationKeys.contains(notificationKey)) {
+            return;
+        }
+
+        readNotificationKeys.add(notificationKey);
+        notificationReadPrefs.edit()
+                .putStringSet(readPrefKey(), new HashSet<>(readNotificationKeys))
+                .apply();
+    }
+
+    private String dinhDangNgay(String createdAt) {
+        Date date = parseCreatedAt(createdAt);
+        if (date != null) {
+            return new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(date);
+        }
+        String rawDate = layPhanNgay(createdAt);
+        return rawDate.isEmpty() ? "" : rawDate;
+    }
+
+    private String dinhDangGioNeuTrongNgay(String createdAt) {
+        Date date = parseCreatedAt(createdAt);
+        if (date != null) {
+            return new SimpleDateFormat("HH:mm", Locale.getDefault()).format(date);
+        }
+        return layPhanGio(createdAt);
+    }
+
+    private Date parseCreatedAt(String createdAt) {
+        if (createdAt == null || createdAt.trim().isEmpty()) {
+            return null;
+        }
+
+        String normalized = chuanHoaCreatedAt(createdAt);
+
+        String[] patterns = {
+                "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+                "yyyy-MM-dd'T'HH:mm:ssXXX",
+                "yyyy-MM-dd HH:mm:ss.SSS",
+                "yyyy-MM-dd HH:mm:ss"
+        };
+        for (String pattern : patterns) {
+            try {
+                return new SimpleDateFormat(pattern, Locale.getDefault()).parse(normalized);
+            } catch (ParseException ignored) {
+            }
+        }
+        return null;
+    }
+
+    private String chuanHoaCreatedAt(String createdAt) {
+        String normalized = createdAt.trim().replace("T", " ").replace("Z", "+00:00");
+        int dotIndex = normalized.indexOf('.');
+        if (dotIndex > 0) {
+            int timezoneIndex = Math.max(normalized.lastIndexOf('+'), normalized.lastIndexOf('-'));
+            if (timezoneIndex <= dotIndex) {
+                timezoneIndex = normalized.length();
+            }
+            String fraction = normalized.substring(dotIndex + 1, timezoneIndex);
+            if (fraction.length() > 3) {
+                normalized = normalized.substring(0, dotIndex + 4) + normalized.substring(timezoneIndex);
+            }
+        }
+        return normalized;
+    }
+
+    private String layPhanNgay(String createdAt) {
+        if (createdAt == null || createdAt.length() < 10) {
+            return "";
+        }
+        String[] parts = createdAt.substring(0, 10).split("-");
+        if (parts.length != 3) {
+            return "";
+        }
+        return parts[2] + "/" + parts[1] + "/" + parts[0];
+    }
+
+    private String layPhanGio(String createdAt) {
+        if (createdAt == null || createdAt.length() < 16) {
+            return "";
+        }
+        return createdAt.substring(11, 16);
     }
 }

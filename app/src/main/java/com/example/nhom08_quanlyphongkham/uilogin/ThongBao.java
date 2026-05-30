@@ -1,5 +1,7 @@
 package com.example.nhom08_quanlyphongkham.uilogin;
 
+import com.google.gson.annotations.SerializedName;
+
 public class ThongBao
 {
     private Integer id;
@@ -7,6 +9,8 @@ public class ThongBao
     private String tieu_de;
     private String noi_dung;
     private String vai_tro;
+    @SerializedName("created_at")
+    private String created_at;
 
     public ThongBao(String tieu_de, String noi_dung)
     {
@@ -52,5 +56,13 @@ public class ThongBao
     }
     public void setVai_tro(String vai_tro) {
         this.vai_tro = vai_tro;
+    }
+
+    public String getCreated_at() {
+        return created_at;
+    }
+
+    public void setCreated_at(String created_at) {
+        this.created_at = created_at;
     }
 }
