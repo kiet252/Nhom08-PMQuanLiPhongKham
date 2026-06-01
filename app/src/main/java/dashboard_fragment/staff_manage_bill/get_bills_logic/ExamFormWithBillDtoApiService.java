@@ -8,6 +8,11 @@ import retrofit2.http.Query;
 
 public interface ExamFormWithBillDtoApiService {
   @GET("rest/v1/examination_form")
+  Call<List<ExamFormWithBillDto>> getAllBills(
+      @Query(value = "select", encoded = true) String select,
+      @Query("order") String order);
+
+  @GET("rest/v1/examination_form")
   Call<List<ExamFormWithBillDto>> getBillsByPatientId(
       @Query("patient_id") String patientIdFilter,
       @Query(value = "select", encoded = true) String select,
