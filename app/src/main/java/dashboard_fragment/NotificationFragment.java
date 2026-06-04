@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -120,7 +121,8 @@ public class NotificationFragment extends Fragment {
             @Override
             public void onFailure(Call<List<ThongBao>> call, Throwable t) {
                 if (isAdded()) {
-                    Toast.makeText(getContext(), "Lỗi tải thông báo: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Lỗi tải thông báo", Toast.LENGTH_SHORT).show();
+                    Log.d("Load notification error", t.getMessage());
                 }
             }
         });

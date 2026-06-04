@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.View;
@@ -208,7 +209,8 @@ public class ManageBill_staff extends BaseActivity {
             @Override
             public void onFailure(@NonNull Call<List<PatientProfile>> call, @NonNull Throwable t) {
                 Toast.makeText(ManageBill_staff.this,
-                        "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        "Lỗi kết nối: ", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }
@@ -249,7 +251,8 @@ public class ManageBill_staff extends BaseActivity {
             @Override
             public void onFailure(@NonNull Call<List<ExamFormWithBillDto>> call, @NonNull Throwable t) {
                 Toast.makeText(ManageBill_staff.this,
-                        "Lỗi tải hóa đơn: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }
@@ -285,7 +288,8 @@ public class ManageBill_staff extends BaseActivity {
             @Override
             public void onFailure(@NonNull Call<List<ExamFormWithBillDto>> call, @NonNull Throwable t) {
                 Toast.makeText(ManageBill_staff.this,
-                        "Lỗi tải hóa đơn: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        "Lỗi kết nối: ", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }

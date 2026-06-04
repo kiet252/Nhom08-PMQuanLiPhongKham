@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
@@ -34,6 +35,7 @@ import java.util.Locale;
 import coil.Coil;
 import coil.request.ImageRequest;
 import dashboard_fragment.account_edit_profile.update_profile_logic.UpdateProfileRequest;
+import dashboard_fragment.staff_add_update_patient.PatientDatabaseConstraintsChecker;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -194,7 +196,7 @@ public class EditProfile extends BaseActivity {
             return;
         }
 
-        if (!soDienThoai.matches("^0\\d{9}$")) {
+        if (PatientDatabaseConstraintsChecker.isValidPhoneNumInDB(soDienThoai)) {
             edtEditProfilePhone.setError("Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0");
             edtEditProfilePhone.requestFocus();
             return;
@@ -246,7 +248,8 @@ public class EditProfile extends BaseActivity {
 
                     @Override
                     public void onFailure(@NonNull Call<java.util.List<UserProfile>> call, @NonNull Throwable t) {
-                        Toast.makeText(EditProfile.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(EditProfile.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                        Log.d("Error", "Lỗi kết nối: " + t.getMessage());
                     }
                 });
     }

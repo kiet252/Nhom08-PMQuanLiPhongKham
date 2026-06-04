@@ -1,6 +1,7 @@
 package dashboard_fragment.staff_manage_examination_form;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -162,7 +163,8 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
                     }
                 } else {
                     try {
-                        Toast.makeText(ManageExaminationForm_staff.this, "Lỗi: " + response.code() + (response.errorBody()).string(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ManageExaminationForm_staff.this, "Lỗi ", Toast.LENGTH_SHORT).show();
+                        Log.d("Error", "Lỗi: " + response.code() + (response.errorBody()).string());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -171,7 +173,8 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
 
             @Override
             public void onFailure(@NonNull Call<List<ExaminationFormWithPatientDto>> call, @NonNull Throwable t) {
-                Toast.makeText(ManageExaminationForm_staff.this, "Lỗi kết nối khi tải phiếu khám: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ManageExaminationForm_staff.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }
@@ -466,17 +469,18 @@ public class ManageExaminationForm_staff extends AppCompatActivity {
                 } else {
                     try {
                         String errorText = response.errorBody() != null ? response.errorBody().string() : "Không có nội dung lỗi";
-                        Toast.makeText(ManageExaminationForm_staff.this, "Không thể hủy phiếu: " + response.code(), Toast.LENGTH_SHORT).show();
-                        android.util.Log.e("CANCEL_EX_FORM", "Code: " + response.code() + " - " + errorText);
+                        Toast.makeText(ManageExaminationForm_staff.this, "Lỗi: Không thể hủy phiếu", Toast.LENGTH_SHORT).show();
+                        Log.e("CANCEL_EX_FORM", "Code: " + response.code() + " - " + errorText);
                     } catch (Exception e) {
-                        android.util.Log.e("CANCEL_EX_FORM", "Code: " + response.code());
+                        Log.e("CANCEL_EX_FORM", "Code: " + response.code());
                     }
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
-                Toast.makeText(ManageExaminationForm_staff.this, "Lỗi kết nối khi hủy phiếu: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ManageExaminationForm_staff.this, "Lỗi kết nối khi hủy phiếu", Toast.LENGTH_SHORT).show();
+                Log.e("CANCEL_EX_FORM", "Code: " + t.getMessage());
             }
         });
     }

@@ -234,10 +234,11 @@ public class set_staff_detail extends BaseActivity {
                             pd.dismiss();
                             if (response.isSuccessful()) {
                                 Toast.makeText(set_staff_detail.this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
-                                setResult(Activity.RESULT_OK); // Trả về kết quả thành công để load lại dữ liệu
+                                setResult(Activity.RESULT_OK);
                                 finish();
                             } else {
-                                Toast.makeText(set_staff_detail.this, "Lỗi: " + response.code(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(set_staff_detail.this, "Lỗi khi cập nhật thông tin", Toast.LENGTH_SHORT).show();
+                                Log.d("Error", "Lỗi: " + response.code());
                             }
                         }
 
@@ -245,6 +246,7 @@ public class set_staff_detail extends BaseActivity {
                         public void onFailure(Call<ResponseBody> call, Throwable t) {
                             pd.dismiss();
                             Toast.makeText(set_staff_detail.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                            Log.d("Error", "Lỗi kết nối: " + t.getMessage());
                         }
                     });
                 });

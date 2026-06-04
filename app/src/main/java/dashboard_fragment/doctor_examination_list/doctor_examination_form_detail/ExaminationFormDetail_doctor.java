@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -334,7 +335,8 @@ public class ExaminationFormDetail_doctor extends BaseActivity {
                     }
                 } else {
                     try {
-                        Toast.makeText(ExaminationFormDetail_doctor.this, "Lỗi: " + response.code() + " " + (response.errorBody()).string(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(ExaminationFormDetail_doctor.this, "Lỗi kết nối" , Toast.LENGTH_LONG).show();
+                        Log.d("Error", "Lỗi kết nối: " + response.code() + " " + (response.errorBody()).string());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -343,7 +345,8 @@ public class ExaminationFormDetail_doctor extends BaseActivity {
 
             @Override
             public void onFailure(@NonNull Call<List<FullMedicalRecordResponse>> call, @NonNull Throwable t) {
-                Toast.makeText(ExaminationFormDetail_doctor.this, "Lỗi kết nối khi tải bệnh án: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ExaminationFormDetail_doctor.this, "Lỗi kết nối khi tải bệnh án", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }

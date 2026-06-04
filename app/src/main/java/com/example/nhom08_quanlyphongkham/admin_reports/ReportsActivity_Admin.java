@@ -202,7 +202,7 @@ public class ReportsActivity_Admin extends BaseActivity {
                     }
                     thucHienLocDuLieu(input, tuNgay, denNgay);
                 } else {
-                    Toast.makeText(ReportsActivity_Admin.this, "Khong the lay du lieu moi nhat", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ReportsActivity_Admin.this, "Không thể lấy dữ liệu mới nhất!", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -210,7 +210,7 @@ public class ReportsActivity_Admin extends BaseActivity {
             public void onFailure(@NonNull Call<List<ReportItem>> call, @NonNull Throwable t) {
                 pd.dismiss();
                 Log.e("REPORTS_API", "Error: " + t.getMessage());
-                Toast.makeText(ReportsActivity_Admin.this, "Loi ket noi mang", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ReportsActivity_Admin.this, "Lỗi kết nối mạng", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -242,7 +242,7 @@ public class ReportsActivity_Admin extends BaseActivity {
                     }
                     thucHienLocBill(input, tuNgay, denNgay);
                 } else {
-                    Toast.makeText(ReportsActivity_Admin.this, "Khong the lay du lieu bill", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ReportsActivity_Admin.this, "Không thể lấy dữ liệu từ bill", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -250,14 +250,14 @@ public class ReportsActivity_Admin extends BaseActivity {
             public void onFailure(@NonNull Call<List<ReportItem>> call, @NonNull Throwable t) {
                 pd.dismiss();
                 Log.e("REPORTS_BILL_API", "Error: " + t.getMessage());
-                Toast.makeText(ReportsActivity_Admin.this, "Loi ket noi mang", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ReportsActivity_Admin.this, "Lỗi kết nối mạng", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private ProgressDialog createProgressDialog() {
         ProgressDialog pd = new ProgressDialog(this);
-        pd.setMessage("Dang truy xuat du lieu tu may chu...");
+        pd.setMessage("Đang truy xất dữ liệu từ máy chủ...");
         pd.setCancelable(false);
         pd.show();
         return pd;
@@ -310,11 +310,11 @@ public class ReportsActivity_Admin extends BaseActivity {
             if (isSelectedDate(tuNgay)) range.from = sdf.parse(tuNgay);
             if (isSelectedDate(denNgay)) range.to = sdf.parse(denNgay);
             if (range.from != null && range.to != null && range.from.after(range.to)) {
-                Toast.makeText(this, "Ngay bat dau khong duoc sau ngay ket thuc!", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Ngày bắt đầu không được sau ngày kết thúc!", Toast.LENGTH_LONG).show();
                 range.valid = false;
             }
         } catch (Exception e) {
-            Toast.makeText(this, "Dinh dang ngay chua chuan!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Định dạng ngày chưa chuẩn!", Toast.LENGTH_SHORT).show();
             range.valid = false;
         }
         return range;

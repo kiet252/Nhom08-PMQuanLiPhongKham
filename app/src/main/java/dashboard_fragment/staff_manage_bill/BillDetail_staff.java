@@ -1,6 +1,7 @@
 package dashboard_fragment.staff_manage_bill;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -285,9 +286,11 @@ public class BillDetail_staff extends BaseActivity {
                     public void onFailure(retrofit2.Call<Void> call, Throwable t) {
                         Toast.makeText(
                                 BillDetail_staff.this,
-                                "Lỗi kết nối mạng: " + t.getMessage(),
+                                "Lỗi kết nối",
                                 Toast.LENGTH_LONG
                         ).show();
+
+                        Log.d("Error", "Lỗi kết nối: " + t.getMessage());
                     }
                 });
     }

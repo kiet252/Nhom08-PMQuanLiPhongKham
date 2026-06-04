@@ -161,6 +161,7 @@ public class CreatePatientFragment extends Fragment {
                 } else {
                     try {
                         Toast.makeText(requireContext(), "Lỗi: " + response.code() + (response.errorBody()).string(), Toast.LENGTH_SHORT).show();
+                        Log.d("Error", "Lỗi kết nối: " + response.code() + ", " + (response.errorBody()).string());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -169,7 +170,8 @@ public class CreatePatientFragment extends Fragment {
 
             @Override
             public void onFailure(Call<List<PatientProfile>> call, Throwable t) {
-                Toast.makeText(requireContext(), "Lỗi kết nối mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }

@@ -3,6 +3,7 @@ package dashboard_fragment.doctor_examination_list.doctor_examination_form_detai
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -226,7 +227,7 @@ public class TabClinicalFragment extends Fragment {
                     availableClinicalItems = response.body();
                     renderClinicalItemsIfReady();
                 } else {
-                    Toast.makeText(requireContext(), "Không tải được dữ liê cận lâm sàng", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Không tải được dữ liệu cận lâm sàng", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -236,7 +237,8 @@ public class TabClinicalFragment extends Fragment {
                     return;
                 }
 
-                Toast.makeText(requireContext(), "Loi ket noi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }

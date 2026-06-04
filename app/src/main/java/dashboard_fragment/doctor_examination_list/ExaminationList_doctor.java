@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -169,12 +170,13 @@ public class ExaminationList_doctor extends BaseActivity {
                         resultExaminationFormsAndPatients.clear();
                         updateCounts(resultExaminationFormsAndPatients);
                         refreshExaminationFormsList();
-                        Toast.makeText(ExaminationList_doctor.this, "Khong tim thay phieu kham!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ExaminationList_doctor.this, "Không tìm thấy phiếu khám!", Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     try {
                         String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
-                        Toast.makeText(ExaminationList_doctor.this, "Loi: " + response.code() + errorBody, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ExaminationList_doctor.this, "Lỗi: ", Toast.LENGTH_SHORT).show();
+                        Log.d("Error", "Lỗi kết nối: " + response.code() + ", " + errorBody);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -183,7 +185,8 @@ public class ExaminationList_doctor extends BaseActivity {
 
             @Override
             public void onFailure(@NonNull Call<List<ExaminationFormWithPatientDto>> call, @NonNull Throwable t) {
-                Toast.makeText(ExaminationList_doctor.this, "Loi ket noi khi tai phieu kham: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ExaminationList_doctor.this, "Lỗi kết nối: ", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }
@@ -469,7 +472,8 @@ public class ExaminationList_doctor extends BaseActivity {
             public void onFailure(@NonNull Call<List<ExaminationFormWithPatientDto>> call,
                                   @NonNull Throwable t) {
                 Toast.makeText(ExaminationList_doctor.this,
-                        "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        "Lỗi kết nối" , Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }

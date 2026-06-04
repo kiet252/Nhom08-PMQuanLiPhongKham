@@ -315,7 +315,7 @@ public class create_staff extends BaseActivity {
             } catch (Exception e) {
                 handler.post(() -> {
                     progressDialog.dismiss();
-                    Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Lỗi tạo nhân viên", Toast.LENGTH_LONG).show();
                     Log.e("SUPABASE", "Lỗi tạo nhân viên", e);
                 });
             }

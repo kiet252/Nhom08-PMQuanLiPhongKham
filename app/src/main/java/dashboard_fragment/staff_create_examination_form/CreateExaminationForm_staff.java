@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.View;
@@ -208,7 +209,8 @@ public class CreateExaminationForm_staff extends BaseActivity {
 
             @Override
             public void onFailure(@NonNull Call<List<UserProfile>> call, @NonNull Throwable t) {
-                Toast.makeText(CreateExaminationForm_staff.this, "Lỗi kết nối khi tải bác sĩ", Toast.LENGTH_SHORT).show();
+                Toast.makeText(CreateExaminationForm_staff.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }
@@ -262,7 +264,8 @@ public class CreateExaminationForm_staff extends BaseActivity {
 
             @Override
             public void onFailure(@NonNull Call<List<PatientProfile>> call, @NonNull Throwable t) {
-                Toast.makeText(CreateExaminationForm_staff.this, "Lỗi kết nối mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(CreateExaminationForm_staff.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }
@@ -645,11 +648,13 @@ public class CreateExaminationForm_staff extends BaseActivity {
 
                 @Override
                 public void onFailure(@NonNull Call<List<ExaminationForm>> call, @NonNull Throwable t) {
-                    Toast.makeText(CreateExaminationForm_staff.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(CreateExaminationForm_staff.this, "Lỗi kết nối", Toast.LENGTH_LONG).show();
+                    Log.d("Error", "Lỗi kết nối: " + t.getMessage());
                 }
             });
         } catch (Exception e) {
-            Toast.makeText(this, "Dữ liệu không hợp lệ: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Dữ liệu không hợp lệ", Toast.LENGTH_LONG).show();
+            Log.d("Invalid data", e.getMessage());
         }
     }
 

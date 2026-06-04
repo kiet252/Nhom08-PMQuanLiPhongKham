@@ -95,7 +95,8 @@ public class UpdatePatientFragment extends Fragment {
                     }
                 } else {
                     try {
-                        Toast.makeText(requireContext(), "Lỗi: " + response.code() + (response.errorBody()).string(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Lỗi", Toast.LENGTH_SHORT).show();
+                        Log.d("Error", "Lỗi kết nối: " + response.code() + ", " + (response.errorBody()).string());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -104,7 +105,8 @@ public class UpdatePatientFragment extends Fragment {
 
             @Override
             public void onFailure(Call<List<PatientProfile>> call, Throwable t) {
-                Toast.makeText(requireContext(), "Lỗi kết nối mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
 
@@ -170,14 +172,14 @@ public class UpdatePatientFragment extends Fragment {
                     EdtCCCD.requestFocus();
                 } else {
                     Log.e("API_ERROR", "Code: " + response.code() + " Message: " + response.message());
-                    Toast.makeText(getContext(), "Lỗi server: " + response.code(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Lỗi máy chủ", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
-                Log.e("API_FAILURE", t.getMessage());
-                Toast.makeText(getContext(), "Kết nối thất bại. Vui lòng kiểm tra mạng!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }

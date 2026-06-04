@@ -3,6 +3,7 @@ package com.example.nhom08_quanlyphongkham.admin_manage_staff;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -193,7 +194,8 @@ public class staff_detail extends BaseActivity {
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(staff_detail.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(staff_detail.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                Log.d("Connection Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }
