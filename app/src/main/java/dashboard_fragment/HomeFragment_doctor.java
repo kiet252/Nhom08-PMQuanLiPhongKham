@@ -15,7 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
@@ -47,13 +46,20 @@ public class HomeFragment_doctor extends Fragment {
 
     private List<ExaminationFormWithPatientDto> allForms = new ArrayList<>();
     private ExaminationFormRepository repository;
-    private CardView btnExaminationList, btnCreateAppointment, btnViewMedicalRecords;
+    private CardView btnExaminationList, btnCreateAppointment, btnViewMedicalRecords, btnTimekeeping;
 
     private ExaminationFormWithPatientDto nextPatient;
 
-    // Handler để tự động làm mới dữ liệu
     private final Handler refreshHandler = new Handler(Looper.getMainLooper());
-    private Runnable refreshRunnable;
+    private final Runnable autoRefreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (isAdded()) {
+                loadAllFormsAndPatientDto();
+                refreshHandler.postDelayed(this, 10000);
+            }
+        }
+    };
 
     public HomeFragment_doctor() {
         // Required empty public constructor
@@ -84,47 +90,19 @@ public class HomeFragment_doctor extends Fragment {
         btnViewMedicalRecords = view.findViewById(R.id.btnViewMedicalRecords);
         btn_KhamNgay = view.findViewById(R.id.btnKhamNgay);
         ic_ChoKham = view.findViewById(R.id.txtChoKham);
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        if (profile != null && profile.getHo_ten() != null) {
-            tvName.setText(profile.getHo_ten());
-        }
+        btnTimekeeping = view.findViewById(R.id.btnTimekeeping);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        startAutoRefresh();
+        refreshHandler.post(autoRefreshRunnable);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        stopAutoRefresh();
-    }
-
-    private void startAutoRefresh() {
-        if (refreshRunnable == null) {
-            refreshRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    loadAllFormsAndPatientDto();
-                    // Tự động làm mới sau mỗi 10 giây
-                    refreshHandler.postDelayed(this, 10000);
-                }
-            };
-        }
-        refreshHandler.removeCallbacks(refreshRunnable);
-        refreshHandler.post(refreshRunnable);
-    }
-
-    private void stopAutoRefresh() {
-        if (refreshRunnable != null) {
-            refreshHandler.removeCallbacks(refreshRunnable);
-        }
+        refreshHandler.removeCallbacks(autoRefreshRunnable);
     }
 
     private void loadAllFormsAndPatientDto() {
@@ -144,7 +122,6 @@ public class HomeFragment_doctor extends Fragment {
 
             @Override
             public void onFailure(@NonNull Call<List<ExaminationFormWithPatientDto>> call, @NonNull Throwable t) {
-                // Không hiển thị Toast ở đây để tránh làm phiền người dùng khi tự động làm mới gặp lỗi mạng tạm thời
             }
         });
     }
@@ -169,31 +146,17 @@ public class HomeFragment_doctor extends Fragment {
     private void SetNumber(View view) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         String today = sdf.format(new Date());
-
-        int total = 0;
-        int waitCount = 0;
-        int checkingCount = 0;
-        int doneCount = 0;
+        int total = 0, waitCount = 0, checkingCount = 0, doneCount = 0;
 
         for (ExaminationFormWithPatientDto form : allForms) {
-            Date dateKham = form.getNgay_kham();
             String status = form.getTrang_thai();
-
             if (status == null) continue;
-
-            String formDateStr = (dateKham != null) ? sdf.format(dateKham) : "";
+            String formDateStr = (form.getNgay_kham() != null) ? sdf.format(form.getNgay_kham()) : "";
             boolean isToday = formDateStr.equals(today);
 
-            if (status.equals("Đang khám")) {
-                checkingCount++;
-                total++;
-            } else if (status.equals("Chờ khám") && isToday) {
-                waitCount++;
-                total++;
-            } else if (status.equals("Đã khám") && isToday) {
-                doneCount++;
-                total++;
-            }
+            if (status.equals("Đang khám")) { checkingCount++; total++; }
+            else if (status.equals("Chờ khám") && isToday) { waitCount++; total++; }
+            else if (status.equals("Đã khám") && isToday) { doneCount++; total++; }
         }
         updateUI(view, total, waitCount, checkingCount, doneCount);
     }
@@ -207,63 +170,43 @@ public class HomeFragment_doctor extends Fragment {
         ((TextView) v.findViewById(R.id.PatientDone)).setText(String.valueOf(done));
     }
 
-    private void SetAvatar(View view, UserProfile userprofile) {
+    public void SetAvatar(View view, UserProfile userprofile) {
         if (userprofile == null) return;
         ImageView avatar = view.findViewById(R.id.home_avatar_admin);
-        String avatarUrl = userprofile.getAnh_dai_dien();
-
-        if (avatarUrl != null && !avatarUrl.isEmpty()) {
-            if (!avatarUrl.startsWith("http")) {
-                avatarUrl = "https://waiuciilyysobnvcwshd.supabase.co/storage/v1/object/public/avatars/" + avatarUrl;
-            }
-
-            ImageRequest request = new ImageRequest.Builder(requireContext())
-                    .data(avatarUrl)
-                    .target(avatar)
-                    .crossfade(true)
-                    .placeholder(R.drawable.ic_launcher_background)
-                    .error(R.drawable.ic_launcher_background)
-                    .build();
-
-            Coil.imageLoader(requireContext()).enqueue(request);
+        String url = userprofile.getAnh_dai_dien();
+        if (url != null && !url.isEmpty() && !url.startsWith("http")) {
+            url = "https://waiuciilyysobnvcwshd.supabase.co/storage/v1/object/public/avatars/" + url;
         }
+        ImageRequest request = new ImageRequest.Builder(requireContext()).data(url).target(avatar).crossfade(true).build();
+        Coil.imageLoader(requireContext()).enqueue(request);
     }
 
     private void setupListeners() {
-        btnExaminationList.setOnClickListener(v -> openExFormsLists());
-        btnCreateAppointment.setOnClickListener(v -> openCreateAppointment());
-        btnViewMedicalRecords.setOnClickListener(v -> {
-            Intent intent = new Intent(getActivity(), dashboard_fragment.doctor_view_medical_record.ViewMedicalRecord_doctor.class);
-            startActivity(intent);
-        });
+        btnExaminationList.setOnClickListener(v -> startActivity(new Intent(getActivity(), ExaminationList_doctor.class)));
+        btnCreateAppointment.setOnClickListener(v -> startActivity(new Intent(getActivity(), CreateAppointment_doctor.class)));
+        btnViewMedicalRecords.setOnClickListener(v -> startActivity(new Intent(getActivity(), dashboard_fragment.doctor_view_medical_record.ViewMedicalRecord_doctor.class)));
         btn_KhamNgay.setOnClickListener(v -> {
-            if (nextPatient == null || nextPatient.getPatient() == null) return;
+            if (nextPatient == null) return;
             Intent intent = new Intent(getActivity(), ExaminationList_doctor.class);
             intent.putExtra("auto_open_form_id", nextPatient.getId());
             startActivity(intent);
         });
-    }
-
-    private void openExFormsLists() {
-        startActivity(new Intent(getActivity(), ExaminationList_doctor.class));
-    }
-
-    private void openCreateAppointment() {
-        startActivity(new Intent(getActivity(), CreateAppointment_doctor.class));
+        
+        // MỞ GIAO DIỆN CHẤM CÔNG
+        if (btnTimekeeping != null) {
+            btnTimekeeping.setOnClickListener(v -> {
+                startActivity(new Intent(getActivity(), timekeeping.class));
+            });
+        }
     }
 
     private ExaminationFormWithPatientDto getPriorityPatient() {
         if (allForms == null || allForms.isEmpty()) return null;
-
-        SimpleDateFormat dateSdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        String today = dateSdf.format(new Date());
-
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        String today = sdf.format(new Date());
         for (ExaminationFormWithPatientDto form : allForms) {
-            String formDate = (form.getNgay_kham() != null) ? dateSdf.format(form.getNgay_kham()) : "";
-            // Ưu tiên lấy bệnh nhân "Chờ khám" sớm nhất trong ngày hôm nay
-            if (today.equals(formDate) && "Chờ khám".equals(form.getTrang_thai())) {
-                return form;
-            }
+            String fDate = (form.getNgay_kham() != null) ? sdf.format(form.getNgay_kham()) : "";
+            if (today.equals(fDate) && "Chờ khám".equals(form.getTrang_thai())) return form;
         }
         return null;
     }
