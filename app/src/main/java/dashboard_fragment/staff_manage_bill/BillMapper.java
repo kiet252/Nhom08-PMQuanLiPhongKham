@@ -12,9 +12,7 @@ import dashboard_fragment.staff_manage_bill.get_bills_logic.ExamFormWithBillDto.
 
 public final class BillMapper {
     private static final String PAID_STATUS = "Đã thanh toán";
-
     private BillMapper() {}
-
     public static List<StaffInvoiceItem> fromExamForms(List<ExamFormWithBillDto> forms) {
         List<StaffInvoiceItem> items = new ArrayList<>();
         if (forms == null) {
@@ -22,9 +20,7 @@ public final class BillMapper {
         }
 
         for (ExamFormWithBillDto form : forms) {
-            if (form == null
-                    || form.getMedical_record() == null
-                    || form.getMedical_record().getBill() == null) {
+            if (form == null || form.getMedical_record() == null || form.getMedical_record().getBill() == null) {
                 continue;
             }
 
@@ -37,10 +33,8 @@ public final class BillMapper {
             }
 
             boolean paid = PAID_STATUS.equals(bill.getTrang_thai_thanh_toan());
-            long amount =
-                    bill.getTong_thanh_toan() != null ? Math.round(bill.getTong_thanh_toan()) : 0L;
-            String date =
-                    displayDate != null ? displayDate : formatDateString(bill.getCreated_at());
+            long amount = bill.getTong_thanh_toan() != null ? Math.round(bill.getTong_thanh_toan()) : 0L;
+            String date = displayDate != null ? displayDate : formatDateString(bill.getCreated_at());
 
             items.add(
                     new StaffInvoiceItem(

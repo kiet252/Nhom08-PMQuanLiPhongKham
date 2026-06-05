@@ -220,6 +220,7 @@ public class HomeFragment_admin extends Fragment {
                 calendar.setTime(new SimpleDateFormat(pattern, Locale.getDefault()).parse(value.trim()));
                 return calendar;
             } catch (ParseException ignored) {
+
             }
         }
         return null;

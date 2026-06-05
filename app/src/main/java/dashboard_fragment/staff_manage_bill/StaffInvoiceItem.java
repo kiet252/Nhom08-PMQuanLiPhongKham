@@ -11,8 +11,7 @@ public class StaffInvoiceItem implements Serializable {
     private final boolean paid;
     private final String paymentMethod;
     private final ExamFormWithBillDto originalForm;
-    public StaffInvoiceItem(String id, String patientName, String date, long amount,
-                            boolean paid, String paymentMethod, ExamFormWithBillDto originalForm) {
+    public StaffInvoiceItem(String id, String patientName, String date, long amount, boolean paid, String paymentMethod, ExamFormWithBillDto originalForm) {
         this.id = id;
         this.patientName = patientName;
         this.date = date;
@@ -21,7 +20,6 @@ public class StaffInvoiceItem implements Serializable {
         this.paymentMethod = paymentMethod;
         this.originalForm = originalForm;
     }
-
     public String getId() { return id; }
     public String getPatientName() { return patientName; }
     public String getDate() { return date; }

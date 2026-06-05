@@ -24,11 +24,8 @@ import com.google.android.material.button.MaterialButton;
 import dashboard_fragment.staff_manage_bill.get_bills_logic.ExamFormWithBillDto;
 
 public class BillDetail_staff extends BaseActivity {
-
     private ImageView btnBack;
-
     private TextView tvDetailPatientName, tvDetailPatientID, tvDetailPhone, tvDetailAddress;
-
     private TextView tvGrandTotal, tvTransferContent;
     private AutoCompleteTextView actvInvoiceStatus, actvPaymentMethod;
     private LinearLayout layoutQRCode;
@@ -139,32 +136,33 @@ public class BillDetail_staff extends BaseActivity {
         computedGrandTotal = BillRowBinder.calculateGrandTotal(examFormData);
         tvGrandTotal.setText(String.format("%,.0fđ", computedGrandTotal));
 
-        if (examFormData.getMedical_record() != null && examFormData.getMedical_record().getBill() != null) {
-            ExamFormWithBillDto.BillSummaryDto bill = examFormData.getMedical_record().getBill();
-            if (bill.getId() != null && bill.getId() == selectedBillId) {
-
-                    String status = bill.getTrang_thai_thanh_toan();
-                    if ("chưa thanh toán".equalsIgnoreCase(status)) {
-                        status = "Chưa thanh toán";
-                    } else if ("đã thanh toán".equalsIgnoreCase(status)) {
-                        status = "Đã thanh toán";
-                    }
-
-                    String method = bill.getPhuong_thuc_thanh_toan();
-                    if ("tiền mặt".equalsIgnoreCase(method)) {
-                        method = "Tiền mặt";
-                    } else if ("chuyển khoản".equalsIgnoreCase(method)) {
-                        method = "Chuyển khoản";
-                    }
-
-                    actvInvoiceStatus.setText(status, false);
-                    actvPaymentMethod.setText(method, false);
-
-                    isPaidLocked = "Đã thanh toán".equalsIgnoreCase(status);
-                    updateEditableState();
-
-            }
+        //Exit early if any required data is missing or doesn't match
+        if (examFormData.getMedical_record() == null || examFormData.getMedical_record().getBill() == null) {
+            return;
         }
+
+        ExamFormWithBillDto.BillSummaryDto bill = examFormData.getMedical_record().getBill();
+        if (bill.getId() == null || bill.getId() != selectedBillId) {
+            return;
+        }
+
+        //Format Status & Method (Capitalize first letter cleanly)
+        String status = capitalizeText(bill.getTrang_thai_thanh_toan());
+        String method = capitalizeText(bill.getPhuong_thuc_thanh_toan());
+
+        //Update UI and State
+        actvInvoiceStatus.setText(status, false);
+        actvPaymentMethod.setText(method, false);
+
+        isPaidLocked = "Đã thanh toán".equalsIgnoreCase(status);
+        updateEditableState();
+    }
+
+    private String capitalizeText(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return "";
+        }
+        return text.substring(0, 1).toUpperCase() + text.substring(1).toLowerCase();
     }
 
     private void populateTablesData() {
@@ -196,12 +194,8 @@ public class BillDetail_staff extends BaseActivity {
     }
 
     private void updateEditableState() {
-        String currentStatus = actvInvoiceStatus.getText() != null
-                ? actvInvoiceStatus.getText().toString().trim()
-                : "";
-        String currentMethod = actvPaymentMethod.getText() != null
-                ? actvPaymentMethod.getText().toString().trim()
-                : "";
+        String currentStatus = actvInvoiceStatus.getText() != null ? actvInvoiceStatus.getText().toString().trim() : "";
+        String currentMethod = actvPaymentMethod.getText() != null ? actvPaymentMethod.getText().toString().trim() : "";
 
         boolean isPaid = isPaidStatus(currentStatus);
         boolean shouldShowQrCode = !isPaid && isTransferMethod(currentMethod);
@@ -222,13 +216,8 @@ public class BillDetail_staff extends BaseActivity {
     }
 
     private void saveInvoiceChanges() {
-        String finalStatus = actvInvoiceStatus.getText() != null
-                ? actvInvoiceStatus.getText().toString().trim()
-                : "";
-        String finalMethod = actvPaymentMethod.getText() != null
-                ? actvPaymentMethod.getText().toString().trim()
-                : "";
-
+        String finalStatus = actvInvoiceStatus.getText() != null ? actvInvoiceStatus.getText().toString().trim() : "";
+        String finalMethod = actvPaymentMethod.getText() != null ? actvPaymentMethod.getText().toString().trim() : "";
 
         if (isPaidLocked) {
             Toast.makeText(this, "Hóa đơn đã thanh toán, không thể chỉnh sửa", Toast.LENGTH_SHORT).show();
@@ -241,31 +230,25 @@ public class BillDetail_staff extends BaseActivity {
             return;
         }
 
-        if (isPaidStatus(finalStatus)) {
-
-            finalMethod = actvPaymentMethod.getText() != null
-                    ? actvPaymentMethod.getText().toString().trim()
-                    : "";
-        } else {
+        if (!isPaidStatus(finalStatus)) {
             if (finalMethod.isEmpty()) {
                 actvPaymentMethod.setError("Vui lòng chọn phương thức thanh toán");
                 actvPaymentMethod.requestFocus();
                 return;
             }
+        } else {
+            // 2. If it IS a paid status, safely extract the text
+            CharSequence text = actvPaymentMethod.getText();
+            finalMethod = (text != null) ? text.toString().trim() : "";
         }
 
         Toast.makeText(this, "Đang xử lý cập nhật...", Toast.LENGTH_SHORT).show();
 
-        billRepository.updateBill(selectedBillId, finalMethod, finalStatus, computedGrandTotal)
-                .enqueue(new retrofit2.Callback<Void>() {
+        billRepository.updateBill(selectedBillId, finalMethod, finalStatus, computedGrandTotal).enqueue(new retrofit2.Callback<Void>() {
                     @Override
                     public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
                         if (response.isSuccessful()) {
-                            Toast.makeText(
-                                    BillDetail_staff.this,
-                                    "Cập nhật hóa đơn " + String.format("%,.0fđ", computedGrandTotal) + " thành công!",
-                                    Toast.LENGTH_SHORT
-                            ).show();
+                            Toast.makeText(BillDetail_staff.this, "Cập nhật hóa đơn " + String.format("%,.0fđ", computedGrandTotal) + " thành công!", Toast.LENGTH_SHORT).show();
 
                             if (isPaidStatus(finalStatus)) {
                                 isPaidLocked = true;
@@ -274,22 +257,13 @@ public class BillDetail_staff extends BaseActivity {
                             updateEditableState();
                             finish();
                         } else {
-                            Toast.makeText(
-                                    BillDetail_staff.this,
-                                    "Lỗi hệ thống: " + response.code(),
-                                    Toast.LENGTH_SHORT
-                            ).show();
+                            Toast.makeText(BillDetail_staff.this, "Lỗi hệ thống: " + response.code(), Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
                     public void onFailure(retrofit2.Call<Void> call, Throwable t) {
-                        Toast.makeText(
-                                BillDetail_staff.this,
-                                "Lỗi kết nối",
-                                Toast.LENGTH_LONG
-                        ).show();
-
+                        Toast.makeText(BillDetail_staff.this, "Lỗi kết nối", Toast.LENGTH_LONG).show();
                         Log.d("Error", "Lỗi kết nối: " + t.getMessage());
                     }
                 });

@@ -248,18 +248,13 @@ public class HomeFragment_staff extends Fragment {
         dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.PatientBriefDto patient = form.getPatient();
 
         tvPatientName.setText("Họ tên: " + (patient != null ? patient.getHo_ten() : "--"));
-        tvBirthday.setText("Ngày sinh: " + (patient != null && patient.getNgay_sinh() != null
-                ? sdf.format(patient.getNgay_sinh()) : "--"));
+        tvBirthday.setText("Ngày sinh: " + (patient != null && patient.getNgay_sinh() != null ? sdf.format(patient.getNgay_sinh()) : "--"));
         tvAddress.setText("Địa chỉ: " + (patient != null ? patient.getDia_chi() : "--"));
-        tvExamDate.setText("Ngày khám: " + (form.getNgay_kham() != null
-                ? sdf.format(form.getNgay_kham()) : "--"));
-        tvExamTime.setText("Giờ dự kiến: " + (form.getGio_du_kien() != null
-                ? form.getGio_du_kien() : "--"));
+        tvExamDate.setText("Ngày khám: " + (form.getNgay_kham() != null ? sdf.format(form.getNgay_kham()) : "--"));
+        tvExamTime.setText("Giờ dự kiến: " + (form.getGio_du_kien() != null ? form.getGio_du_kien() : "--"));
         tvSequence.setText("Số tiếp nhận: " + form.getSo_tiep_nhan());
-        tvStatus.setText("Trạng thái: " + (form.getTrang_thai() != null
-                ? form.getTrang_thai() : "--"));
-        tvSymptoms.setText(form.getTrieu_chung_ban_dau() != null
-                ? form.getTrieu_chung_ban_dau() : "--");
+        tvStatus.setText("Trạng thái: " + (form.getTrang_thai() != null ? form.getTrang_thai() : "--"));
+        tvSymptoms.setText(form.getTrieu_chung_ban_dau() != null ? form.getTrieu_chung_ban_dau() : "--");
 
         AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setView(dialogView)
@@ -278,25 +273,21 @@ public class HomeFragment_staff extends Fragment {
 
     private void startAddUpdatePatientIntent() {
         Intent intentAddUpdatePatient = new Intent(getContext(), AddUpdatePatientInfo_staff.class);
-        intentAddUpdatePatient.putExtra("accessToken", currentToken);
         startActivity(intentAddUpdatePatient);
     }
 
     private void startCreateExaminationFormIntent() {
         Intent intentCreateExaminationForm = new Intent(getContext(), CreateExaminationForm_staff.class);
-        intentCreateExaminationForm.putExtra("accessToken", currentToken);
         startActivity(intentCreateExaminationForm);
     }
 
     private void startManageExaminationFormIntent() {
         Intent intentManageExaminationForm = new Intent(getContext(), ManageExaminationForm_staff.class);
-        intentManageExaminationForm.putExtra("accessToken", currentToken);
         startActivity(intentManageExaminationForm);
     }
 
     private void startManageBillIntent() {
         Intent intentManageBill = new Intent(getContext(), ManageBill_staff.class);
-        intentManageBill.putExtra("accessToken", currentToken);
         startActivity(intentManageBill);
     }
 }
