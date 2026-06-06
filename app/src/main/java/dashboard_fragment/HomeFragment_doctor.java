@@ -35,6 +35,8 @@ import dashboard_fragment.staff_create_examination_form.ExaminationFormRepositor
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import retrofit2.Call;
 
+import android.widget.Toast;
+import com.example.nhom08_quanlyphongkham.widget.ChatbotFloatingButton;
 
 public class HomeFragment_doctor extends Fragment {
 
@@ -91,6 +93,13 @@ public class HomeFragment_doctor extends Fragment {
         btn_KhamNgay = view.findViewById(R.id.btnKhamNgay);
         ic_ChoKham = view.findViewById(R.id.txtChoKham);
         btnTimekeeping = view.findViewById(R.id.btnTimekeeping);
+
+        ChatbotFloatingButton chatbotButton = rootView.findViewById(R.id.chatbot_floating_button);
+        chatbotButton.setOnClickListener(v -> {
+            Toast.makeText(requireContext(), "Mở chatbot hướng dẫn", Toast.LENGTH_SHORT).show();
+            // TODO: thay bằng Intent sang màn chatbot
+        });
+
     }
 
     @Override

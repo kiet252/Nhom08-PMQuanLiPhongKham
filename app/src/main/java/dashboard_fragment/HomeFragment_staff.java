@@ -39,6 +39,9 @@ import dashboard_fragment.staff_manage_examination_form.ManageExaminationForm_st
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import retrofit2.Call;
 
+import android.widget.Toast;
+import com.example.nhom08_quanlyphongkham.widget.ChatbotFloatingButton;
+
 public class HomeFragment_staff extends Fragment {
 
     private static final String ARG_TOKEN = "token";
@@ -106,6 +109,12 @@ public class HomeFragment_staff extends Fragment {
         layoutTodayExFormsHeader = view.findViewById(R.id.layoutTodayExFormsHeader);
         layoutTodayExFormsContainer = view.findViewById(R.id.layoutTodayExFormsContainer);
         tvTodayExFormsEmpty = view.findViewById(R.id.tvTodayExFormsEmpty);
+
+        ChatbotFloatingButton chatbotButton = view.findViewById(R.id.chatbot_floating_button);
+        chatbotButton.setOnClickListener(v -> {
+            Toast.makeText(requireContext(), "Mở chatbot hướng dẫn", Toast.LENGTH_SHORT).show();
+            // TODO: thay bằng Intent sang màn chatbot
+        });
     }
 
     private void setupListeners(View view) {

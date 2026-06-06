@@ -37,6 +37,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import android.widget.Toast;
+import com.example.nhom08_quanlyphongkham.widget.ChatbotFloatingButton;
+
 public class HomeFragment_admin extends Fragment {
 
     private Button mngStaff;
@@ -118,6 +121,12 @@ public class HomeFragment_admin extends Fragment {
         tvRevenueChange = view.findViewById(R.id.tv_admin_revenue_change);
         chartRevenue = view.findViewById(R.id.chart_admin_revenue);
         reportApiService = SupabaseClientProvider.getClient(requireContext()).create(ReportApiService.class);
+
+        ChatbotFloatingButton chatbotButton = view.findViewById(R.id.chatbot_floating_button);
+        chatbotButton.setOnClickListener(v -> {
+            Toast.makeText(requireContext(), "Mở chatbot hướng dẫn", Toast.LENGTH_SHORT).show();
+            // TODO: thay bằng Intent sang màn chatbot
+        });
 
         // Lấy tên người dùng từ SharedPrefManager
         SharedPrefManager prefManager = SharedPrefManager.getInstance(requireContext());
