@@ -21,6 +21,13 @@ import com.example.nhom08_quanlyphongkham.BaseActivity;
 import com.example.nhom08_quanlyphongkham.R;
 import com.google.android.material.button.MaterialButton;
 
+import android.net.Uri;
+
+import java.text.Normalizer;
+
+import coil.Coil;
+import coil.request.ImageRequest;
+
 import dashboard_fragment.staff_manage_bill.get_bills_logic.ExamFormWithBillDto;
 
 public class BillDetail_staff extends BaseActivity {
@@ -32,6 +39,9 @@ public class BillDetail_staff extends BaseActivity {
     private MaterialButton btnSaveBillDetail;
     private LinearLayout containerServiceRows;
     private LinearLayout containerMedicineRows;
+    private ImageView imgQRCode;
+    private static final String QR_BANK_ID = "970436";
+    private static final String QR_ACCOUNT_NO = "1015392878";
     private ExamFormWithBillDto examFormData;
     private long selectedBillId;
     private double computedGrandTotal = 0.0;
@@ -74,6 +84,8 @@ public class BillDetail_staff extends BaseActivity {
 
         containerServiceRows = findViewById(R.id.containerServiceRows);
         containerMedicineRows = findViewById(R.id.containerMedicineRows);
+
+        imgQRCode = findViewById(R.id.imgQRCode);
     }
 
     private void setupDropdownMenus() {
@@ -126,9 +138,6 @@ public class BillDetail_staff extends BaseActivity {
             tvDetailPatientID.setText(patient.getId() != null ? String.valueOf(patient.getId()) : "--");
             tvDetailPhone.setText(patient.getSo_dien_thoai() != null ? patient.getSo_dien_thoai() : "--");
             tvDetailAddress.setText(patient.getDia_chi() != null ? patient.getDia_chi() : "--");
-
-            String patientIdStr = patient.getId() != null ? String.valueOf(patient.getId()) : "0";
-            tvTransferContent.setText(String.format("Nội dung: %s %s", patientIdStr, patient.getHo_ten()));
         }
 
         populateTablesData();
@@ -136,13 +145,19 @@ public class BillDetail_staff extends BaseActivity {
         computedGrandTotal = BillRowBinder.calculateGrandTotal(examFormData);
         tvGrandTotal.setText(String.format("%,.0fđ", computedGrandTotal));
 
+        if (examFormData.getPatient() != null) {
+            updateTransferContent();
+        }
+
         //Exit early if any required data is missing or doesn't match
         if (examFormData.getMedical_record() == null || examFormData.getMedical_record().getBill() == null) {
+            updateEditableState();
             return;
         }
 
         ExamFormWithBillDto.BillSummaryDto bill = examFormData.getMedical_record().getBill();
         if (bill.getId() == null || bill.getId() != selectedBillId) {
+            updateEditableState();
             return;
         }
 
@@ -194,8 +209,12 @@ public class BillDetail_staff extends BaseActivity {
     }
 
     private void updateEditableState() {
-        String currentStatus = actvInvoiceStatus.getText() != null ? actvInvoiceStatus.getText().toString().trim() : "";
-        String currentMethod = actvPaymentMethod.getText() != null ? actvPaymentMethod.getText().toString().trim() : "";
+        String currentStatus = actvInvoiceStatus.getText() != null
+                ? actvInvoiceStatus.getText().toString().trim()
+                : "";
+        String currentMethod = actvPaymentMethod.getText() != null
+                ? actvPaymentMethod.getText().toString().trim()
+                : "";
 
         boolean isPaid = isPaidStatus(currentStatus);
         boolean shouldShowQrCode = !isPaid && isTransferMethod(currentMethod);
@@ -208,13 +227,75 @@ public class BillDetail_staff extends BaseActivity {
             btnSaveBillDetail.setVisibility(View.VISIBLE);
             btnSaveBillDetail.setEnabled(true);
             setFieldEnabled(actvInvoiceStatus, true);
-
             setFieldEnabled(actvPaymentMethod, !isPaid);
         }
 
         layoutQRCode.setVisibility(shouldShowQrCode ? View.VISIBLE : View.GONE);
+
+        if (shouldShowQrCode) {
+            loadVietQrForBill();
+        }
     }
 
+
+    private void loadVietQrForBill() {
+        String transferContent = buildTransferContentForQr();
+        tvTransferContent.setText("Nội dung: " + transferContent);
+
+        String qrUrl = buildVietQrImageUrl(transferContent, Math.round(computedGrandTotal));
+
+        imgQRCode.setImageDrawable(null);
+
+        ImageRequest request = new ImageRequest.Builder(this)
+                .data(qrUrl)
+                .target(imgQRCode)
+                .crossfade(true)
+                .build();
+
+        Coil.imageLoader(this).enqueue(request);
+    }
+
+    private String buildTransferContentForQr() {
+        if (examFormData == null || examFormData.getPatient() == null) {
+            return "[MaBN] [HoTen]";
+        }
+
+        ExamFormWithBillDto.PatientWrapper patient = examFormData.getPatient();
+        String patientId = patient.getId() != null ? String.valueOf(patient.getId()) : "";
+        String patientName = removeVietnameseTones(patient.getHo_ten());
+
+        patientName = patientName == null ? "" : patientName.replaceAll("\\s+", " ").trim();
+
+        if (patientId.isEmpty() || patientName.isEmpty()) {
+            return "[MaBN] [HoTen]";
+        }
+
+        return patientId + " " + patientName;
+    }
+
+    private String buildVietQrImageUrl(String transferContent, long amount) {
+        return "https://img.vietqr.io/image/"
+                + QR_BANK_ID
+                + "-"
+                + QR_ACCOUNT_NO
+                + "-compact2.png?amount="
+                + amount
+                + "&addInfo="
+                + Uri.encode(transferContent);
+    }
+
+    private String removeVietnameseTones(String input) {
+        if (input == null) return "";
+
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
+        normalized = normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        normalized = normalized.replace('đ', 'd').replace('Đ', 'D');
+
+        return normalized;
+    }
+    private void updateTransferContent() {
+        tvTransferContent.setText("Nội dung: " + buildTransferContentForQr());
+    }
     private void saveInvoiceChanges() {
         String finalStatus = actvInvoiceStatus.getText() != null ? actvInvoiceStatus.getText().toString().trim() : "";
         String finalMethod = actvPaymentMethod.getText() != null ? actvPaymentMethod.getText().toString().trim() : "";

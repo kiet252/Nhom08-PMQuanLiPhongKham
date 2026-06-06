@@ -97,14 +97,16 @@ public class ManageBill_staff extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
         if (edtSearchPatient != null && edtSearchPatient.getText() != null) {
             String keyword = edtSearchPatient.getText().toString().trim();
             if (!keyword.isEmpty()) {
                 searchInvoicesByPatient();
-            } else {
-                restoreDefaultInvoices();
+                return;
             }
         }
+
+        loadAllBills();
     }
 
     private void initializeViews() {
