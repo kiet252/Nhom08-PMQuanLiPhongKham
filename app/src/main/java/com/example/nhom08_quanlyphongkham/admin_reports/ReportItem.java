@@ -2,17 +2,20 @@ package com.example.nhom08_quanlyphongkham.admin_reports;
 
 public class ReportItem {
     private String id;
+    private String created_at;
     private String ngay_kham;
-    private PatientInfo patient_name; 
+    private PatientInfo patient_name;
     private MedicalRecordInfo medical_record;
     private String trang_thai;
+    private String trang_thai_thanh_toan;
     private long phi_kham;
+    private Double tong_thanh_toan;
 
     public static class PatientInfo {
         private String id;
         private String cccd;
         private String ho_ten;
-        
+
         public String getId() { return id; }
         public String getCccd() { return cccd; }
         public String getHo_ten() { return ho_ten; }
@@ -38,16 +41,20 @@ public class ReportItem {
         public Double getTong_thanh_toan() { return tong_thanh_toan; }
     }
 
-    public String getId() { 
-        return id != null ? id : ""; 
+    public String getId() {
+        return id != null ? id : "";
     }
 
-    public String getNgay_kham() { 
-        return ngay_kham != null ? ngay_kham : ""; 
+    public String getCreated_at() {
+        return created_at != null ? created_at : "";
     }
-    
-    public String getPatientName() { 
-        return (patient_name != null && patient_name.getHo_ten() != null) ? patient_name.getHo_ten() : "Không rõ"; 
+
+    public String getNgay_kham() {
+        return ngay_kham != null ? ngay_kham : "";
+    }
+
+    public String getPatientName() {
+        return (patient_name != null && patient_name.getHo_ten() != null) ? patient_name.getHo_ten() : "Không rõ";
     }
 
     public String getPatientId() {
@@ -57,17 +64,25 @@ public class ReportItem {
     public String getPatientCccd() {
         return (patient_name != null && patient_name.getCccd() != null) ? patient_name.getCccd() : "";
     }
-    
-    public String getTrang_thai() { 
-        return trang_thai != null ? trang_thai : ""; 
+
+    public String getTrang_thai() {
+        return trang_thai != null ? trang_thai : "";
+    }
+
+    public String getTrang_thai_thanh_toan() {
+        return trang_thai_thanh_toan != null ? trang_thai_thanh_toan : "";
     }
 
     public BillInfo getBillInfo() {
         return medical_record != null ? medical_record.getBill() : null;
     }
 
-    public long getPhi_kham() { 
-        return phi_kham; 
+    public long getPhi_kham() {
+        return phi_kham;
+    }
+
+    public double getBillTongThanhToan() {
+        return tong_thanh_toan != null ? tong_thanh_toan : 0;
     }
 
     public double getTongThanhToan() {

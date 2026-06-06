@@ -2,7 +2,6 @@ package com.example.nhom08_quanlyphongkham.admin_reports;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
@@ -10,11 +9,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.ContextThemeWrapper;
-import android.widget.Button;
-import android.widget.DatePicker;
-import android.widget.EditText;
+import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,50 +24,45 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.nhom08_quanlyphongkham.BaseActivity;
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
-import com.google.android.material.button.MaterialButton;
 
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
+import dashboard_fragment.RevenueChartView;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class ReportsActivity_Admin extends BaseActivity {
 
-    private static final int TAB_PHIEU_KHAM = 0;
-    private static final int TAB_BILL = 1;
+    private static final int TIEU_CHI_DOANH_THU = 0;
+    private static final int TIEU_CHI_BENH_NHAN_MOI = 1;
+    private static final int TIEU_CHI_PHIEU_KHAM = 2;
 
-    private final List<DonKham> danhSachGoc = new ArrayList<>();
-    private final List<DonKham> danhSachKetQua = new ArrayList<>();
-    private final List<BillThongKe> danhSachBillGoc = new ArrayList<>();
-    private final List<BillThongKe> danhSachBillKetQua = new ArrayList<>();
+    private final List<ThongKeThang> danhSachThongKe = new ArrayList<>();
+    private final String[] tenTieuChi = {"Doanh thu", "Bệnh nhân mới", "Phiếu khám bệnh"};
 
-    private ReportsAdapter adapter;
-    private BillReportsAdapter billAdapter;
+    private MonthlyReportsAdapter adapter;
     private ReportApiService apiService;
+    private RevenueChartView chartMonthlyReport;
 
-    private int currentTab = TAB_PHIEU_KHAM;
-    private boolean isAscNgay = true;
-    private boolean isAscTenBN = true;
-    private boolean isAscTrangThai = true;
-    private boolean isAscTongTien = true;
-    private boolean isAscBillId = true;
-    private boolean isAscBillDate = true;
-    private boolean isAscBillStatus = true;
-    private boolean isAscBillTotal = true;
-
-    private EditText etSearchInput;
-    private TextView tvNgayBD, tvNgayKT, tvTongSoHoaDon, tvTongDoanhThu, tvEmptyState;
-    private TextView tvSummaryCountLabel, tvSummaryRevenueLabel;
-    private TextView thNgay, thBenhNhan, thTrangThai, thTongTien;
-    private MaterialButton btnTabPhieuKham, btnTabBill;
+    private TextView tvSelectedCriterion, tvFromMonth, tvFromYear, tvToMonth, tvToYear;
+    private TextView tvSummaryLabel, tvSummaryValue, tvChartTitle, tvTableTitle, tvTableValueHeader, tvEmptyState;
     private RecyclerView rvDanhSach;
+
+    private int selectedCriterion = TIEU_CHI_DOANH_THU;
+    private int fromMonth = 1;
+    private int fromYear;
+    private int toMonth;
+    private int toYear;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,30 +74,34 @@ public class ReportsActivity_Admin extends BaseActivity {
 
         setContentView(R.layout.activity_reports_fragment_admin);
 
+        Calendar now = Calendar.getInstance();
+        fromYear = now.get(Calendar.YEAR);
+        toYear = now.get(Calendar.YEAR);
+        toMonth = now.get(Calendar.MONTH) + 1;
+
         apiService = SupabaseClientProvider.getClient(this).create(ReportApiService.class);
         bindViews();
         setupRecyclerView();
         setupListeners();
-        switchReportTab(TAB_PHIEU_KHAM);
+        updateFilterText();
+        fetchReports();
     }
 
     private void bindViews() {
         ImageButton btnBackCreate = findViewById(R.id.btnBackCreate);
-        etSearchInput = findViewById(R.id.et_ten_benh_nhan);
-        tvNgayBD = findViewById(R.id.tv_tu_ngay);
-        tvNgayKT = findViewById(R.id.tv_den_ngay);
+        tvSelectedCriterion = findViewById(R.id.tv_selected_criterion);
+        tvFromMonth = findViewById(R.id.tv_from_month);
+        tvFromYear = findViewById(R.id.tv_from_year);
+        tvToMonth = findViewById(R.id.tv_to_month);
+        tvToYear = findViewById(R.id.tv_to_year);
+        tvSummaryLabel = findViewById(R.id.tv_summary_label);
+        tvSummaryValue = findViewById(R.id.tv_summary_value);
+        tvChartTitle = findViewById(R.id.tv_chart_title);
+        tvTableTitle = findViewById(R.id.tv_table_title);
+        tvTableValueHeader = findViewById(R.id.tv_table_value_header);
         tvEmptyState = findViewById(R.id.tv_empty_state);
+        chartMonthlyReport = findViewById(R.id.chart_monthly_report);
         rvDanhSach = findViewById(R.id.rv_danh_sach_doanh_thu);
-        tvTongSoHoaDon = findViewById(R.id.tv_tong_so_hoa_don);
-        tvTongDoanhThu = findViewById(R.id.tv_tong_doanh_thu);
-        tvSummaryCountLabel = findViewById(R.id.tv_summary_count_label);
-        tvSummaryRevenueLabel = findViewById(R.id.tv_summary_revenue_label);
-        btnTabPhieuKham = findViewById(R.id.btn_tab_phieu_kham);
-        btnTabBill = findViewById(R.id.btn_tab_bill);
-        thNgay = findViewById(R.id.th_ngay);
-        thBenhNhan = findViewById(R.id.th_benh_nhan);
-        thTrangThai = findViewById(R.id.th_trang_thai);
-        thTongTien = findViewById(R.id.th_tong_tien);
 
         if (btnBackCreate != null) {
             btnBackCreate.setOnClickListener(v -> finish());
@@ -113,360 +111,395 @@ public class ReportsActivity_Admin extends BaseActivity {
     private void setupRecyclerView() {
         if (rvDanhSach == null) return;
         rvDanhSach.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new ReportsAdapter(danhSachKetQua);
-        billAdapter = new BillReportsAdapter(danhSachBillKetQua);
+        adapter = new MonthlyReportsAdapter(danhSachThongKe);
+        adapter.setCriterion(selectedCriterion);
         rvDanhSach.setAdapter(adapter);
     }
 
     private void setupListeners() {
-        if (tvNgayBD != null) tvNgayBD.setOnClickListener(v -> hienThiLich(tvNgayBD));
-        if (tvNgayKT != null) tvNgayKT.setOnClickListener(v -> hienThiLich(tvNgayKT));
-        if (btnTabPhieuKham != null) btnTabPhieuKham.setOnClickListener(v -> switchReportTab(TAB_PHIEU_KHAM));
-        if (btnTabBill != null) btnTabBill.setOnClickListener(v -> switchReportTab(TAB_BILL));
+        if (tvSelectedCriterion != null) tvSelectedCriterion.setOnClickListener(v -> showCriterionDialog());
+        if (tvFromMonth != null) tvFromMonth.setOnClickListener(v -> showMonthPicker(true));
+        if (tvFromYear != null) tvFromYear.setOnClickListener(v -> showYearPicker(true));
+        if (tvToMonth != null) tvToMonth.setOnClickListener(v -> showMonthPicker(false));
+        if (tvToYear != null) tvToYear.setOnClickListener(v -> showYearPicker(false));
+    }
 
-        if (thNgay != null) thNgay.setOnClickListener(v -> sapXepTheoCot("NGAY"));
-        if (thBenhNhan != null) thBenhNhan.setOnClickListener(v -> sapXepTheoCot("TEN_BN"));
-        if (thTrangThai != null) thTrangThai.setOnClickListener(v -> sapXepTheoCot("TRANG_THAI"));
-        if (thTongTien != null) thTongTien.setOnClickListener(v -> sapXepTheoCot("TONG_TIEN"));
+    private void showCriterionDialog() {
+        AlertDialog dialog = new AlertDialog.Builder(this).create();
+        LinearLayout container = new LinearLayout(this);
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.setPadding(dp(18), dp(18), dp(18), dp(14));
+        container.setBackground(taoNenBoGoc("#FFFFFF", 22));
 
-        Button btnTimKiem = findViewById(R.id.btn_tim_kiem);
-        if (btnTimKiem != null) {
-            btnTimKiem.setOnClickListener(v -> {
-                String input = etSearchInput != null ? etSearchInput.getText().toString().trim() : "";
-                String tuNgay = tvNgayBD != null ? tvNgayBD.getText().toString().trim() : "";
-                String denNgay = tvNgayKT != null ? tvNgayKT.getText().toString().trim() : "";
-                if (currentTab == TAB_BILL) {
-                    fetchBillDataAndFilter(input, tuNgay, denNgay);
-                } else {
-                    fetchDataAndFilter(input, tuNgay, denNgay);
-                }
-            });
+        TextView title = new TextView(this);
+        title.setText("Tiêu chí thống kê");
+        title.setTextColor(Color.parseColor("#0D3F6E"));
+        title.setTextSize(19);
+        title.setTypeface(null, android.graphics.Typeface.BOLD);
+        container.addView(title);
+
+        container.addView(createCriterionRow(dialog, TIEU_CHI_DOANH_THU));
+        container.addView(createCriterionRow(dialog, TIEU_CHI_BENH_NHAN_MOI));
+        container.addView(createCriterionRow(dialog, TIEU_CHI_PHIEU_KHAM));
+
+        dialog.setView(container);
+        dialog.show();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
     }
 
-    private void switchReportTab(int tab) {
-        currentTab = tab;
-        boolean isBillTab = tab == TAB_BILL;
+    private View createCriterionRow(AlertDialog dialog, int criterion) {
+        boolean selected = selectedCriterion == criterion;
 
-        bindTabButton(btnTabPhieuKham, !isBillTab);
-        bindTabButton(btnTabBill, isBillTab);
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setPadding(dp(12), dp(10), dp(12), dp(10));
+        row.setBackground(taoNenBoGoc(selected ? "#EAF6FF" : "#FFFFFF", 14));
 
-        if (rvDanhSach != null) {
-            rvDanhSach.setAdapter(isBillTab ? billAdapter : adapter);
-        }
-        if (etSearchInput != null) {
-            etSearchInput.setText("");
-            etSearchInput.setHint(isBillTab ? "Mã hóa đơn" : "Mã BN/Tên BN/CCCD");
-        }
-        if (thNgay != null) thNgay.setText(isBillTab ? "Mã hóa đơn" : "Ngày");
-        if (thBenhNhan != null) thBenhNhan.setText(isBillTab ? "Ngày tạo" : "Bệnh nhân");
-        if (thTrangThai != null) thTrangThai.setText("Trạng thái");
-        if (thTongTien != null) thTongTien.setText("Tổng tiền");
-        if (tvSummaryCountLabel != null) tvSummaryCountLabel.setText(isBillTab ? "Số hóa đơn" : "Số phiếu khám");
-        if (tvSummaryRevenueLabel != null) tvSummaryRevenueLabel.setText(isBillTab ? "Tổng thanh toán" : "Tổng thu");
+        LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(62)
+        );
+        rowParams.topMargin = dp(10);
+        row.setLayoutParams(rowParams);
 
-        if (isBillTab) {
-            capNhatTongKetBill(danhSachBillKetQua);
-        } else {
-            capNhatTongKet(danhSachKetQua, tvTongSoHoaDon, tvTongDoanhThu);
+        ImageView icon = new ImageView(this);
+        icon.setImageResource(getCriterionIcon(criterion));
+        icon.setColorFilter(Color.parseColor(selected ? "#0D5FA8" : "#64748B"));
+        icon.setPadding(dp(8), dp(8), dp(8), dp(8));
+        icon.setBackground(taoNenBoGoc(selected ? "#D8EDFF" : "#F1F5F9", 12));
+        row.addView(icon, new LinearLayout.LayoutParams(dp(42), dp(42)));
+
+        TextView label = new TextView(this);
+        label.setText(tenTieuChi[criterion]);
+        label.setTextColor(Color.parseColor(selected ? "#0D3F6E" : "#1E293B"));
+        label.setTextSize(16);
+        label.setTypeface(null, selected ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
+        LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1);
+        labelParams.leftMargin = dp(14);
+        row.addView(label, labelParams);
+
+        TextView check = new TextView(this);
+        check.setText(selected ? "\u2713" : "");
+        check.setGravity(Gravity.CENTER);
+        check.setTextColor(Color.parseColor("#0D5FA8"));
+        check.setTextSize(22);
+        check.setTypeface(null, android.graphics.Typeface.BOLD);
+        row.addView(check, new LinearLayout.LayoutParams(dp(28), dp(28)));
+
+        row.setOnClickListener(v -> {
+            selectedCriterion = criterion;
+            dialog.dismiss();
+            updateFilterText();
+            updateSelectedCriterionView();
+        });
+
+        return row;
+    }
+
+    private int getCriterionIcon(int criterion) {
+        if (criterion == TIEU_CHI_BENH_NHAN_MOI) return R.drawable.ic_manage_patient;
+        if (criterion == TIEU_CHI_PHIEU_KHAM) return R.drawable.ic_manage_exform;
+        return R.drawable.dashboard_icon_report;
+    }
+
+    private void showMonthPicker(boolean isFrom) {
+        String[] months = new String[12];
+        for (int i = 0; i < 12; i++) months[i] = "Tháng " + (i + 1);
+        int current = isFrom ? fromMonth : toMonth;
+        new AlertDialog.Builder(this)
+                .setTitle(isFrom ? "Chọn tháng bắt đầu" : "Chọn tháng kết thúc")
+                .setSingleChoiceItems(months, current - 1, (dialog, which) -> {
+                    if (isFrom) fromMonth = which + 1;
+                    else toMonth = which + 1;
+                    dialog.dismiss();
+                    applyRangeChange();
+                })
+                .show();
+    }
+
+    private void showYearPicker(boolean isFrom) {
+        NumberPicker picker = new NumberPicker(new ContextThemeWrapper(this, android.R.style.Theme_Material_Light_Dialog_Alert));
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        picker.setMinValue(currentYear - 5);
+        picker.setMaxValue(currentYear + 1);
+        picker.setValue(isFrom ? fromYear : toYear);
+        picker.setWrapSelectorWheel(false);
+
+        new AlertDialog.Builder(this)
+                .setTitle(isFrom ? "Chọn năm bắt đầu" : "Chọn năm kết thúc")
+                .setView(picker)
+                .setPositiveButton("Áp dụng", (dialog, which) -> {
+                    if (isFrom) fromYear = picker.getValue();
+                    else toYear = picker.getValue();
+                    applyRangeChange();
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void applyRangeChange() {
+        if (getFromKey() > getToKey()) {
+            Toast.makeText(this, "Thời gian bắt đầu không được sau thời gian kết thúc", Toast.LENGTH_SHORT).show();
+            return;
         }
+        updateFilterText();
+        fetchReports();
+    }
+
+    private void updateFilterText() {
+        if (tvSelectedCriterion != null) tvSelectedCriterion.setText(tenTieuChi[selectedCriterion]);
+        if (tvFromMonth != null) tvFromMonth.setText("Tháng " + fromMonth);
+        if (tvFromYear != null) tvFromYear.setText("Năm " + fromYear);
+        if (tvToMonth != null) tvToMonth.setText("Tháng " + toMonth);
+        if (tvToYear != null) tvToYear.setText("Năm " + toYear);
+    }
+
+    private void fetchReports() {
+        ProgressDialog pd = createProgressDialog();
+        apiService.getThongKePatient().enqueue(new Callback<List<ReportItem>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<ReportItem>> call, @NonNull Response<List<ReportItem>> patientResponse) {
+                if (!patientResponse.isSuccessful() || patientResponse.body() == null) {
+                    pd.dismiss();
+                    Toast.makeText(ReportsActivity_Admin.this, "Không thể lấy dữ liệu bệnh nhân", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                fetchBills(patientResponse.body(), pd);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<ReportItem>> call, @NonNull Throwable t) {
+                pd.dismiss();
+                Log.e("REPORT_PATIENT", "Error: " + t.getMessage());
+                Toast.makeText(ReportsActivity_Admin.this, "Lỗi kết nối dữ liệu bệnh nhân", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void fetchBills(List<ReportItem> patients, ProgressDialog pd) {
+        apiService.getThongKeBill().enqueue(new Callback<List<ReportItem>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<ReportItem>> call, @NonNull Response<List<ReportItem>> billResponse) {
+                if (!billResponse.isSuccessful() || billResponse.body() == null) {
+                    pd.dismiss();
+                    Toast.makeText(ReportsActivity_Admin.this, "Không thể lấy dữ liệu hóa đơn", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                fetchExaminationForms(patients, billResponse.body(), pd);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<ReportItem>> call, @NonNull Throwable t) {
+                pd.dismiss();
+                Log.e("REPORT_BILL", "Error: " + t.getMessage());
+                Toast.makeText(ReportsActivity_Admin.this, "Lỗi kết nối dữ liệu hóa đơn", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void fetchExaminationForms(List<ReportItem> patients, List<ReportItem> bills, ProgressDialog pd) {
+        apiService.getThongKePhieuKham().enqueue(new Callback<List<ReportItem>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<ReportItem>> call, @NonNull Response<List<ReportItem>> formResponse) {
+                pd.dismiss();
+                if (!formResponse.isSuccessful() || formResponse.body() == null) {
+                    Toast.makeText(ReportsActivity_Admin.this, "Không thể lấy dữ liệu phiếu khám", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                buildMonthlyReport(patients, bills, formResponse.body());
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<ReportItem>> call, @NonNull Throwable t) {
+                pd.dismiss();
+                Log.e("REPORT_FORM", "Error: " + t.getMessage());
+                Toast.makeText(ReportsActivity_Admin.this, "Lỗi kết nối dữ liệu phiếu khám", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void buildMonthlyReport(List<ReportItem> patients, List<ReportItem> bills, List<ReportItem> forms) {
+        Map<Integer, ThongKeThang> monthlyMap = createEmptyMonthMap();
+
+        for (ReportItem patient : patients) {
+            Integer key = getMonthKey(parseServerDate(patient.getCreated_at()));
+            if (!isKeyInRange(key)) continue;
+            monthlyMap.get(key).soBenhNhanMoi++;
+        }
+
+        for (ReportItem bill : bills) {
+            Integer key = getMonthKey(parseServerDate(bill.getCreated_at()));
+            if (!isKeyInRange(key)) continue;
+            monthlyMap.get(key).doanhThu += Math.round(bill.getBillTongThanhToan());
+        }
+
+        for (ReportItem form : forms) {
+            Integer key = getMonthKey(parseServerDate(form.getNgay_kham()));
+            if (!isKeyInRange(key)) continue;
+            if (!isCancelledStatus(form.getTrang_thai())) {
+                monthlyMap.get(key).soPhieuKham++;
+            }
+        }
+
+        danhSachThongKe.clear();
+        danhSachThongKe.addAll(monthlyMap.values());
+
+        if (adapter != null) {
+            adapter.setCriterion(selectedCriterion);
+            adapter.notifyDataSetChanged();
+        }
+        updateSelectedCriterionView();
         updateUIState();
     }
 
-    private void bindTabButton(MaterialButton button, boolean selected) {
-        if (button == null) return;
-        button.setTextColor(Color.parseColor(selected ? "#FFFFFF" : "#0D3F6E"));
-        button.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor(selected ? "#0D3F6E" : "#FFFFFF")));
-        button.setStrokeColor(ColorStateList.valueOf(Color.parseColor("#0D3F6E")));
-        button.setStrokeWidth(dp(selected ? 0 : 1));
+    private Map<Integer, ThongKeThang> createEmptyMonthMap() {
+        Map<Integer, ThongKeThang> monthlyMap = new LinkedHashMap<>();
+        Calendar cursor = Calendar.getInstance();
+        cursor.clear();
+        cursor.set(Calendar.YEAR, fromYear);
+        cursor.set(Calendar.MONTH, fromMonth - 1);
+        cursor.set(Calendar.DAY_OF_MONTH, 1);
+
+        while (true) {
+            int month = cursor.get(Calendar.MONTH) + 1;
+            int year = cursor.get(Calendar.YEAR);
+            int key = year * 100 + month;
+            monthlyMap.put(key, new ThongKeThang(key, month, year));
+            if (key == getToKey()) break;
+            cursor.add(Calendar.MONTH, 1);
+        }
+        return monthlyMap;
     }
 
-    private void fetchDataAndFilter(String input, String tuNgay, String denNgay) {
-        ProgressDialog pd = createProgressDialog();
-        apiService.getDanhSachDonKham().enqueue(new Callback<List<ReportItem>>() {
-            @Override
-            public void onResponse(@NonNull Call<List<ReportItem>> call, @NonNull Response<List<ReportItem>> response) {
-                pd.dismiss();
-                if (response.isSuccessful() && response.body() != null) {
-                    danhSachGoc.clear();
-                    for (ReportItem item : response.body()) {
-                        danhSachGoc.add(new DonKham(
-                                item.getId(),
-                                item.getPatientName(),
-                                item.getPatientId(),
-                                item.getPatientCccd(),
-                                formatDateString(item.getNgay_kham()),
-                                item.getTrang_thai(),
-                                item.getPhi_kham()
-                        ));
-                    }
-                    thucHienLocDuLieu(input, tuNgay, denNgay);
-                } else {
-                    Toast.makeText(ReportsActivity_Admin.this, "Khong the lay du lieu moi nhat", Toast.LENGTH_SHORT).show();
-                }
-            }
+    private void updateSelectedCriterionView() {
+        if (adapter != null) {
+            adapter.setCriterion(selectedCriterion);
+            adapter.notifyDataSetChanged();
+        }
 
-            @Override
-            public void onFailure(@NonNull Call<List<ReportItem>> call, @NonNull Throwable t) {
-                pd.dismiss();
-                Log.e("REPORTS_API", "Error: " + t.getMessage());
-                Toast.makeText(ReportsActivity_Admin.this, "Loi ket noi mang", Toast.LENGTH_SHORT).show();
+        long total = 0;
+        String[] labels = new String[danhSachThongKe.size()];
+        float[] values = new float[danhSachThongKe.size()];
+
+        for (int i = 0; i < danhSachThongKe.size(); i++) {
+            ThongKeThang row = danhSachThongKe.get(i);
+            labels[i] = "T" + row.getThangSo() + "/" + String.valueOf(row.getNam()).substring(2);
+            if (selectedCriterion == TIEU_CHI_DOANH_THU) {
+                total += row.getDoanhThu();
+                values[i] = row.getDoanhThu() / 1_000_000f;
+            } else if (selectedCriterion == TIEU_CHI_BENH_NHAN_MOI) {
+                total += row.getSoBenhNhanMoi();
+                values[i] = row.getSoBenhNhanMoi();
+            } else {
+                total += row.getSoPhieuKham();
+                values[i] = row.getSoPhieuKham();
             }
-        });
+        }
+
+        String title = tenTieuChi[selectedCriterion];
+        int monthCount = danhSachThongKe.size();
+        if (tvSummaryLabel != null) tvSummaryLabel.setText(getSummaryLabel(title, monthCount));
+        if (tvSummaryValue != null) tvSummaryValue.setText(formatSelectedValue(total));
+        if (tvChartTitle != null) tvChartTitle.setText("Biểu đồ " + title.toLowerCase(Locale.getDefault()));
+        if (tvTableTitle != null) tvTableTitle.setText(title + " theo tháng");
+        if (tvTableValueHeader != null) tvTableValueHeader.setText(title);
+        if (chartMonthlyReport != null) chartMonthlyReport.setData(labels, values);
     }
 
-    private void fetchBillDataAndFilter(String input, String tuNgay, String denNgay) {
-        ProgressDialog pd = createProgressDialog();
-        apiService.getDanhSachBill().enqueue(new Callback<List<ReportItem>>() {
-            @Override
-            public void onResponse(@NonNull Call<List<ReportItem>> call, @NonNull Response<List<ReportItem>> response) {
-                pd.dismiss();
-                if (response.isSuccessful() && response.body() != null) {
-                    danhSachBillGoc.clear();
-                    for (ReportItem item : response.body()) {
-                        ReportItem.BillInfo bill = item.getBillInfo();
-                        if (bill == null || bill.getId() == null) continue;
+    private String getSummaryLabel(String title, int monthCount) {
+        if (selectedCriterion == TIEU_CHI_DOANH_THU) {
+            return "Tổng doanh thu (" + monthCount + " tháng)";
+        }
+        return "Tổng " + title.toLowerCase(Locale.getDefault()) + " (" + monthCount + " tháng)";
+    }
 
-                        String displayDate = formatDateString(bill.getCreated_at());
-                        if (displayDate == null || displayDate.isEmpty()) {
-                            displayDate = formatDateString(item.getNgay_kham());
-                        }
-                        long total = bill.getTong_thanh_toan() != null ? Math.round(bill.getTong_thanh_toan()) : 0L;
-                        danhSachBillGoc.add(new BillThongKe(
-                                String.valueOf(bill.getId()),
-                                displayDate,
-                                bill.getTrang_thai_thanh_toan(),
-                                bill.getPhuong_thuc_thanh_toan(),
-                                total
-                        ));
-                    }
-                    thucHienLocBill(input, tuNgay, denNgay);
-                } else {
-                    Toast.makeText(ReportsActivity_Admin.this, "Khong the lay du lieu bill", Toast.LENGTH_SHORT).show();
-                }
-            }
+    private String formatSelectedValue(long value) {
+        if (selectedCriterion == TIEU_CHI_DOANH_THU) return formatCurrency(value);
+        return NumberFormat.getInstance(new Locale("vi", "VN")).format(value);
+    }
 
-            @Override
-            public void onFailure(@NonNull Call<List<ReportItem>> call, @NonNull Throwable t) {
-                pd.dismiss();
-                Log.e("REPORTS_BILL_API", "Error: " + t.getMessage());
-                Toast.makeText(ReportsActivity_Admin.this, "Loi ket noi mang", Toast.LENGTH_SHORT).show();
-            }
-        });
+    private void updateUIState() {
+        boolean empty = danhSachThongKe.isEmpty();
+        if (rvDanhSach != null) rvDanhSach.setVisibility(empty ? android.view.View.GONE : android.view.View.VISIBLE);
+        if (tvEmptyState != null) {
+            tvEmptyState.setVisibility(empty ? android.view.View.VISIBLE : android.view.View.GONE);
+            tvEmptyState.setText("Chưa có dữ liệu thống kê");
+        }
     }
 
     private ProgressDialog createProgressDialog() {
         ProgressDialog pd = new ProgressDialog(this);
-        pd.setMessage("Dang truy xuat du lieu tu may chu...");
+        pd.setMessage("Đang truy xuất dữ liệu thống kê...");
         pd.setCancelable(false);
         pd.show();
         return pd;
     }
 
-    private void thucHienLocDuLieu(String input, String tuNgay, String denNgay) {
-        DateRange range = parseDateRange(tuNgay, denNgay);
-        if (!range.valid) return;
-
-        danhSachKetQua.clear();
-        String queryLower = input.toLowerCase(Locale.getDefault());
-
-        for (DonKham dk : danhSachGoc) {
-            boolean matchInput = input.isEmpty()
-                    || input.equalsIgnoreCase(dk.getPatientId())
-                    || input.equals(dk.getPatientCccd())
-                    || dk.getTenBN().toLowerCase(Locale.getDefault()).contains(queryLower);
-
-            if (matchInput && isDateInRange(dk.getNgayKham(), range)) {
-                danhSachKetQua.add(dk);
-            }
-        }
-
-        adapter.notifyDataSetChanged();
-        capNhatTongKet(danhSachKetQua, tvTongSoHoaDon, tvTongDoanhThu);
-        updateUIState();
-    }
-
-    private void thucHienLocBill(String input, String tuNgay, String denNgay) {
-        DateRange range = parseDateRange(tuNgay, denNgay);
-        if (!range.valid) return;
-
-        danhSachBillKetQua.clear();
-        for (BillThongKe bill : danhSachBillGoc) {
-            boolean matchInput = input.isEmpty() || bill.getMaBill().equalsIgnoreCase(input);
-            if (matchInput && isDateInRange(bill.getNgayTao(), range)) {
-                danhSachBillKetQua.add(bill);
-            }
-        }
-
-        billAdapter.notifyDataSetChanged();
-        capNhatTongKetBill(danhSachBillKetQua);
-        updateUIState();
-    }
-
-    private DateRange parseDateRange(String tuNgay, String denNgay) {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        DateRange range = new DateRange();
+    private Date parseServerDate(String raw) {
+        if (raw == null || raw.length() < 10) return null;
         try {
-            if (isSelectedDate(tuNgay)) range.from = sdf.parse(tuNgay);
-            if (isSelectedDate(denNgay)) range.to = sdf.parse(denNgay);
-            if (range.from != null && range.to != null && range.from.after(range.to)) {
-                Toast.makeText(this, "Ngay bat dau khong duoc sau ngay ket thuc!", Toast.LENGTH_LONG).show();
-                range.valid = false;
-            }
-        } catch (Exception e) {
-            Toast.makeText(this, "Dinh dang ngay chua chuan!", Toast.LENGTH_SHORT).show();
-            range.valid = false;
-        }
-        return range;
-    }
-
-    private boolean isSelectedDate(String value) {
-        return value != null && value.contains("/");
-    }
-
-    private boolean isDateInRange(String displayDate, DateRange range) {
-        Date dateInList = null;
-        try {
-            dateInList = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(displayDate);
-        } catch (Exception ignored) {}
-
-        boolean matchFrom = range.from == null || (dateInList != null && !dateInList.before(range.from));
-        boolean matchTo = range.to == null || (dateInList != null && !dateInList.after(range.to));
-        return matchFrom && matchTo;
-    }
-
-    private void updateUIState() {
-        boolean empty = currentTab == TAB_BILL ? danhSachBillKetQua.isEmpty() : danhSachKetQua.isEmpty();
-        if (rvDanhSach != null) rvDanhSach.setVisibility(empty ? android.view.View.GONE : android.view.View.VISIBLE);
-        if (tvEmptyState != null) {
-            tvEmptyState.setVisibility(empty ? android.view.View.VISIBLE : android.view.View.GONE);
-            tvEmptyState.setText(currentTab == TAB_BILL ? "Chưa có dữ liệu thống kê" : "Chưa có dữ liệu thống kê");
+            return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(raw.substring(0, 10));
+        } catch (Exception ignored) {
+            return null;
         }
     }
 
-    private void sapXepTheoCot(String loaiCot) {
-        if (currentTab == TAB_BILL) {
-            sapXepBillTheoCot(loaiCot);
-            return;
-        }
-        if (danhSachKetQua.isEmpty()) return;
-        Collections.sort(danhSachKetQua, (dk1, dk2) -> {
-            switch (loaiCot) {
-                case "NGAY":
-                    return compareDisplayDate(dk1.getNgayKham(), dk2.getNgayKham(), isAscNgay);
-                case "TEN_BN":
-                    return isAscTenBN ? dk1.getTenBN().compareToIgnoreCase(dk2.getTenBN()) : dk2.getTenBN().compareToIgnoreCase(dk1.getTenBN());
-                case "TRANG_THAI":
-                    return isAscTrangThai ? dk1.getTrangThai().compareToIgnoreCase(dk2.getTrangThai()) : dk2.getTrangThai().compareToIgnoreCase(dk1.getTrangThai());
-                case "TONG_TIEN":
-                    return isAscTongTien ? Long.compare(dk1.getTongTien(), dk2.getTongTien()) : Long.compare(dk2.getTongTien(), dk1.getTongTien());
-                default:
-                    return 0;
-            }
-        });
-
-        if (loaiCot.equals("NGAY")) isAscNgay = !isAscNgay;
-        if (loaiCot.equals("TEN_BN")) isAscTenBN = !isAscTenBN;
-        if (loaiCot.equals("TRANG_THAI")) isAscTrangThai = !isAscTrangThai;
-        if (loaiCot.equals("TONG_TIEN")) isAscTongTien = !isAscTongTien;
-        adapter.notifyDataSetChanged();
+    private Integer getMonthKey(Date date) {
+        if (date == null) return null;
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return calendar.get(Calendar.YEAR) * 100 + calendar.get(Calendar.MONTH) + 1;
     }
 
-    private void sapXepBillTheoCot(String loaiCot) {
-        if (danhSachBillKetQua.isEmpty()) return;
-        Collections.sort(danhSachBillKetQua, (b1, b2) -> {
-            switch (loaiCot) {
-                case "NGAY":
-                    return isAscBillId ? compareLongString(b1.getMaBill(), b2.getMaBill()) : compareLongString(b2.getMaBill(), b1.getMaBill());
-                case "TEN_BN":
-                    return compareDisplayDate(b1.getNgayTao(), b2.getNgayTao(), isAscBillDate);
-                case "TRANG_THAI":
-                    return isAscBillStatus ? b1.getTrangThai().compareToIgnoreCase(b2.getTrangThai()) : b2.getTrangThai().compareToIgnoreCase(b1.getTrangThai());
-                case "TONG_TIEN":
-                    return isAscBillTotal ? Long.compare(b1.getTongTien(), b2.getTongTien()) : Long.compare(b2.getTongTien(), b1.getTongTien());
-                default:
-                    return 0;
-            }
-        });
-
-        if (loaiCot.equals("NGAY")) isAscBillId = !isAscBillId;
-        if (loaiCot.equals("TEN_BN")) isAscBillDate = !isAscBillDate;
-        if (loaiCot.equals("TRANG_THAI")) isAscBillStatus = !isAscBillStatus;
-        if (loaiCot.equals("TONG_TIEN")) isAscBillTotal = !isAscBillTotal;
-        billAdapter.notifyDataSetChanged();
+    private boolean isKeyInRange(Integer key) {
+        return key != null && key >= getFromKey() && key <= getToKey();
     }
 
-    private int compareLongString(String left, String right) {
-        try {
-            return Long.compare(Long.parseLong(left), Long.parseLong(right));
-        } catch (NumberFormatException e) {
-            return left.compareToIgnoreCase(right);
-        }
+    private int getFromKey() {
+        return fromYear * 100 + fromMonth;
     }
 
-    private int compareDisplayDate(String left, String right, boolean ascending) {
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-            Date n1 = sdf.parse(left);
-            Date n2 = sdf.parse(right);
-            return ascending ? n1.compareTo(n2) : n2.compareTo(n1);
-        } catch (Exception e) {
-            return 0;
-        }
-    }
-
-    private void capNhatTongKet(List<DonKham> danhSach, TextView tvTongSoHoaDon, TextView tvTongDoanhThu) {
-        int soPhieuKham = danhSach.size();
-        long tongDoanhThu = 0;
-        for (DonKham dk : danhSach) {
-            if (!isCancelledStatus(dk.getTrangThai())) {
-                tongDoanhThu += dk.getTongTien();
-            }
-        }
-        if (tvTongSoHoaDon != null) tvTongSoHoaDon.setText(String.valueOf(soPhieuKham));
-        if (tvTongDoanhThu != null) tvTongDoanhThu.setText(formatCurrency(tongDoanhThu));
-    }
-
-    private void capNhatTongKetBill(List<BillThongKe> danhSach) {
-        long tongBill = 0;
-        for (BillThongKe bill : danhSach) {
-            tongBill += bill.getTongTien();
-        }
-        if (tvTongSoHoaDon != null) tvTongSoHoaDon.setText(String.valueOf(danhSach.size()));
-        if (tvTongDoanhThu != null) tvTongDoanhThu.setText(formatCurrency(tongBill));
+    private int getToKey() {
+        return toYear * 100 + toMonth;
     }
 
     private String formatCurrency(long amount) {
         NumberFormat fmt = NumberFormat.getInstance(new Locale("vi", "VN"));
-        return fmt.format(amount) + " \u0111";
+        return fmt.format(amount) + " đ";
     }
 
     private boolean isCancelledStatus(String status) {
-        return "\u0110\u00e3 h\u1ee7y".equalsIgnoreCase(status)
-                || "Da huy".equalsIgnoreCase(status);
+        return "Đã hủy".equalsIgnoreCase(status) || "Da huy".equalsIgnoreCase(status);
     }
 
-    private String formatDateString(String raw) {
-        if (raw == null || raw.isEmpty()) return "";
-        String[] patterns = {
-                "yyyy-MM-dd'T'HH:mm:ss.SSSX",
-                "yyyy-MM-dd'T'HH:mm:ssX",
-                "yyyy-MM-dd'T'HH:mm:ss",
-                "yyyy-MM-dd"
-        };
-        for (String pattern : patterns) {
-            try {
-                Date parsed = new SimpleDateFormat(pattern, Locale.getDefault()).parse(raw);
-                if (parsed != null) {
-                    return new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(parsed);
-                }
-            } catch (Exception ignored) {}
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
+    public static class ThongKeThang {
+        private final int monthKey;
+        private final int thangSo;
+        private final int nam;
+        private long doanhThu;
+        private int soBenhNhanMoi;
+        private int soPhieuKham;
+
+        public ThongKeThang(int monthKey, int thangSo, int nam) {
+            this.monthKey = monthKey;
+            this.thangSo = thangSo;
+            this.nam = nam;
         }
-        if (raw.length() >= 10 && raw.charAt(4) == '-' && raw.charAt(7) == '-') {
-            String[] parts = raw.substring(0, 10).split("-");
-            if (parts.length == 3) return parts[2] + "/" + parts[1] + "/" + parts[0];
-        }
-        return raw;
+
+        public int getMonthKey() { return monthKey; }
+        public int getThangSo() { return thangSo; }
+        public int getNam() { return nam; }
+        public String getThang() { return "Tháng " + thangSo; }
+        public long getDoanhThu() { return doanhThu; }
+        public int getSoBenhNhanMoi() { return soBenhNhanMoi; }
+        public int getSoPhieuKham() { return soPhieuKham; }
     }
 
     public static class DonKham {
@@ -511,61 +544,11 @@ public class ReportsActivity_Admin extends BaseActivity {
         public long getTongTien() { return TongTien; }
     }
 
-    private static class DateRange {
-        private Date from;
-        private Date to;
-        private boolean valid = true;
-    }
-
-    private void hienThiLich(TextView tv) {
-        java.util.Calendar calendar = java.util.Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        try {
-            String txt = tv.getText().toString().trim();
-            if (txt.contains("/")) calendar.setTime(sdf.parse(txt));
-        } catch (Exception ignored) {}
-
-        AlertDialog dialog = new AlertDialog.Builder(this).create();
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(dp(24), dp(22), dp(24), dp(18));
-        layout.setBackground(taoNenBoGoc("#FFFFFF", 24));
-
-        DatePicker datePicker = new DatePicker(new ContextThemeWrapper(this, R.style.ReportDatePickerTheme));
-        datePicker.init(calendar.get(java.util.Calendar.YEAR), calendar.get(java.util.Calendar.MONTH), calendar.get(java.util.Calendar.DAY_OF_MONTH), null);
-        layout.addView(datePicker);
-
-        TextView btnApDung = taoNutLich("Ap dung");
-        btnApDung.setOnClickListener(v -> {
-            tv.setText(String.format(Locale.getDefault(), "%02d/%02d/%04d", datePicker.getDayOfMonth(), datePicker.getMonth() + 1, datePicker.getYear()));
-            tv.setTextColor(Color.parseColor("#1E293B"));
-            dialog.dismiss();
-        });
-        layout.addView(btnApDung);
-
-        dialog.setView(layout);
-        dialog.show();
-        if (dialog.getWindow() != null) dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-    }
-
-    private int dp(int value) {
-        return Math.round(value * getResources().getDisplayMetrics().density);
-    }
-
-    private TextView taoNutLich(String text) {
-        TextView button = new TextView(this);
-        button.setText(text);
-        button.setTextColor(Color.WHITE);
-        button.setGravity(Gravity.CENTER);
-        button.setMinHeight(dp(48));
-        button.setBackground(taoNenBoGoc("#0D3F6E", 12));
-        return button;
-    }
-
     private GradientDrawable taoNenBoGoc(String color, int radius) {
         GradientDrawable drawable = new GradientDrawable();
         drawable.setColor(Color.parseColor(color));
-        drawable.setCornerRadius(dp(radius));
+        drawable.setCornerRadius(Math.round(radius * getResources().getDisplayMetrics().density));
         return drawable;
     }
 }
+
