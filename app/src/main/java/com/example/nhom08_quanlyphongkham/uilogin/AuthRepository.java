@@ -2,11 +2,11 @@ package com.example.nhom08_quanlyphongkham.uilogin;
 
 import android.content.Context;
 
-import com.example.nhom08_quanlyphongkham.R;
-
 import dashboard_fragment.account_change_password_request.UpdatePasswordRequest;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
+
+import static com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider.SUPABASE_ANON_KEY;
 
 public class AuthRepository {
     private final AuthApiService authApiService;
@@ -15,7 +15,7 @@ public class AuthRepository {
 
     public AuthRepository(Context context) {
         this.context = context;
-        this.apiKey = context.getString(R.string.abAIkey);
+        this.apiKey = SUPABASE_ANON_KEY;
         this.authApiService = SupabaseClientProvider
                 .getClient(context)
                 .create(AuthApiService.class);
@@ -33,7 +33,7 @@ public class AuthRepository {
     }
     public Call<LoginResponse> refreshToken(String refreshToken) {
         return authApiService.refreshToken(
-                context.getString(R.string.abAIkey),
+                SUPABASE_ANON_KEY,
                 new RefreshTokenRequest(refreshToken)
         );
     }

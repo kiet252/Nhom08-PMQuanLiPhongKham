@@ -13,3 +13,10 @@
 .externalNativeBuild
 .cxx
 local.properties
+.env
+.env.*
+secrets.properties
+*.jks
+*.keystore
+*.p12
+*.pem
