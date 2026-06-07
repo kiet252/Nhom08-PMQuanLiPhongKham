@@ -29,6 +29,7 @@ import java.util.Locale;
 import coil.Coil;
 import coil.request.ImageRequest;
 
+import dashboard_fragment.account_chatbot.ChatbotBottomSheetFragment;
 import dashboard_fragment.doctor_create_appointment.CreateAppointment_doctor;
 import dashboard_fragment.doctor_examination_list.ExaminationList_doctor;
 import dashboard_fragment.staff_create_examination_form.ExaminationFormRepository;
@@ -94,11 +95,13 @@ public class HomeFragment_doctor extends Fragment {
         ic_ChoKham = view.findViewById(R.id.txtChoKham);
         btnTimekeeping = view.findViewById(R.id.btnTimekeeping);
 
-        ChatbotFloatingButton chatbotButton = rootView.findViewById(R.id.chatbot_floating_button);
-        chatbotButton.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Mở chatbot hướng dẫn", Toast.LENGTH_SHORT).show();
-            // TODO: thay bằng Intent sang màn chatbot
-        });
+        View chatbotView = rootView.findViewById(R.id.chatbot_floating_button);
+        if (chatbotView != null) {
+            chatbotView.setOnClickListener(v ->
+                    ChatbotBottomSheetFragment.newInstance(UserRole.BAC_SI.name())
+                            .show(getParentFragmentManager(), "chatbot")
+            );
+        }
 
     }
 

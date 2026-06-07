@@ -30,6 +30,7 @@ import java.util.Locale;
 
 import coil.Coil;
 import coil.request.ImageRequest;
+import dashboard_fragment.account_chatbot.ChatbotBottomSheetFragment;
 import dashboard_fragment.doctor_examination_list.DoctorExaminationFormAdapter;
 import dashboard_fragment.staff_add_update_patient.AddUpdatePatientInfo_staff;
 import dashboard_fragment.staff_create_examination_form.CreateExaminationForm_staff;
@@ -110,11 +111,13 @@ public class HomeFragment_staff extends Fragment {
         layoutTodayExFormsContainer = view.findViewById(R.id.layoutTodayExFormsContainer);
         tvTodayExFormsEmpty = view.findViewById(R.id.tvTodayExFormsEmpty);
 
-        ChatbotFloatingButton chatbotButton = view.findViewById(R.id.chatbot_floating_button);
-        chatbotButton.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Mở chatbot hướng dẫn", Toast.LENGTH_SHORT).show();
-            // TODO: thay bằng Intent sang màn chatbot
-        });
+        View chatbotView = view.findViewById(R.id.chatbot_floating_button);
+        if (chatbotView != null) {
+            chatbotView.setOnClickListener(v ->
+                    ChatbotBottomSheetFragment.newInstance(UserRole.NHAN_VIEN.name())
+                            .show(getParentFragmentManager(), "chatbot")
+            );
+        }
     }
 
     private void setupListeners(View view) {

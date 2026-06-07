@@ -33,6 +33,7 @@ import java.util.Map;
 
 import coil.Coil;
 import coil.request.ImageRequest;
+import dashboard_fragment.account_chatbot.ChatbotBottomSheetFragment;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -122,11 +123,13 @@ public class HomeFragment_admin extends Fragment {
         chartRevenue = view.findViewById(R.id.chart_admin_revenue);
         reportApiService = SupabaseClientProvider.getClient(requireContext()).create(ReportApiService.class);
 
-        ChatbotFloatingButton chatbotButton = view.findViewById(R.id.chatbot_floating_button);
-        chatbotButton.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Mở chatbot hướng dẫn", Toast.LENGTH_SHORT).show();
-            // TODO: thay bằng Intent sang màn chatbot
-        });
+        View chatbotView = view.findViewById(R.id.chatbot_floating_button);
+        if (chatbotView != null) {
+            chatbotView.setOnClickListener(v ->
+                    ChatbotBottomSheetFragment.newInstance(UserRole.ADMIN.name())
+                            .show(getParentFragmentManager(), "chatbot")
+            );
+        }
 
         // Lấy tên người dùng từ SharedPrefManager
         SharedPrefManager prefManager = SharedPrefManager.getInstance(requireContext());
