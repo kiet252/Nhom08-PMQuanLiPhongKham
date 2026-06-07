@@ -1,7 +1,7 @@
 package com.example.nhom08_quanlyphongkham.uilogin;
 
 import android.content.Context;
-import com.example.nhom08_quanlyphongkham.R;
+import com.example.nhom08_quanlyphongkham.BuildConfig;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -10,6 +10,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class SupabaseClientProvider {
     public static final String SUPABASE_URL = "https://waiuciilyysobnvcwshd.supabase.co/";
+    public static final String SUPABASE_ANON_KEY = BuildConfig.SUPABASE_ANON_KEY;
     private static Retrofit retrofit;
 
     public static Retrofit getClient(Context context) {
@@ -25,7 +26,7 @@ public class SupabaseClientProvider {
 
                         Request.Builder requestBuilder = original.newBuilder()
                                 .header("Content-Type", "application/json")
-                                .header("apikey", context.getString(R.string.abAIkey));
+                                .header("apikey", SUPABASE_ANON_KEY);
 
                         if (token != null && !token.isEmpty() && !original.url().toString().contains("auth/v1/token")) {
                             requestBuilder.header("Authorization", "Bearer " + token);
@@ -45,7 +46,7 @@ public class SupabaseClientProvider {
                                     .create(AuthApiService.class);
 
                             retrofit2.Response<LoginResponse> refreshRes = authApi.refreshToken(
-                                    context.getString(R.string.abAIkey),
+                                    SUPABASE_ANON_KEY,
                                     new RefreshTokenRequest(refreshToken)
                             ).execute();
 
@@ -57,7 +58,7 @@ public class SupabaseClientProvider {
 
                                 return response.request().newBuilder()
                                         .header("Authorization", "Bearer " + newToken)
-                                        .header("apikey", context.getString(R.string.abAIkey))
+                                        .header("apikey", SUPABASE_ANON_KEY)
                                         .build();
                             }
                         }

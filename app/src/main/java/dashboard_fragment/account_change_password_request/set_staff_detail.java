@@ -1,5 +1,6 @@
 package dashboard_fragment.account_change_password_request;
 
+import static com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider.SUPABASE_ANON_KEY;
 import static com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider.SUPABASE_URL;
 
 import android.app.Activity;
@@ -59,14 +60,14 @@ public class set_staff_detail extends BaseActivity {
     private UserProfile userProfile;
     private Uri selectedImageUri;
     private ProfileRepository profileRepository;
-    private String SUPABASE_ANON_KEY;
+    private String supabaseAnonKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_set_staff_detail);
 
-        SUPABASE_ANON_KEY = getString(R.string.abAIkey);
+        supabaseAnonKey = SUPABASE_ANON_KEY;
         profileRepository = new ProfileRepository(this);
 
         initViews();
@@ -189,8 +190,8 @@ public class set_staff_detail extends BaseActivity {
         Request request = new Request.Builder()
                 .url(uploadUrl)
                 .post(RequestBody.create(bytes, MediaType.parse(getContentResolver().getType(uri))))
-                .addHeader("apikey", SUPABASE_ANON_KEY)
-                .addHeader("Authorization", "Bearer " + SUPABASE_ANON_KEY)
+                .addHeader("apikey", supabaseAnonKey)
+                .addHeader("Authorization", "Bearer " + supabaseAnonKey)
                 .build();
 
         try (okhttp3.Response response = client.newCall(request).execute()) {

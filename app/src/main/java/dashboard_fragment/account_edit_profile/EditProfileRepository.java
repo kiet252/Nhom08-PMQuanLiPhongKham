@@ -2,12 +2,13 @@ package dashboard_fragment.account_edit_profile;
 
 import android.content.Context;
 
-import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 
 import dashboard_fragment.account_edit_profile.update_profile_logic.ProfileApiPatchService;
 import dashboard_fragment.account_edit_profile.update_profile_logic.UpdateProfileRequest;
 import retrofit2.Call;
+
+import static com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider.SUPABASE_ANON_KEY;
 
 public class EditProfileRepository {
 
@@ -27,7 +28,7 @@ public class EditProfileRepository {
             UpdateProfileRequest request
     ) {
         return profileApiPatchService.updateProfile(
-                context.getString(R.string.abAIkey),
+                SUPABASE_ANON_KEY,
                 "Bearer " + accessToken,
                 "return=representation",
                 "eq." + userId,

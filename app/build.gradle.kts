@@ -1,10 +1,47 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
 }
 
+fun String.escapeForBuildConfig(): String {
+    return replace("\\", "\\\\").replace("\"", "\\\"")
+}
+
+fun String.normalizeSecretValue(): String {
+    val trimmed = trim()
+    return if (
+        trimmed.length >= 2 &&
+        ((trimmed.startsWith("\"") && trimmed.endsWith("\"")) ||
+         (trimmed.startsWith("'") && trimmed.endsWith("'")))
+    ) {
+        trimmed.substring(1, trimmed.length - 1).trim()
+    } else {
+        trimmed
+    }
+}
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use { load(it) }
+    }
+}
+
+val supabaseAnonKey = listOfNotNull(
+    System.getenv("SUPABASE_ANON_KEY"),
+    localProperties.getProperty("SUPABASE_ANON_KEY"),
+    localProperties.getProperty("abAIkey")
+).firstOrNull { it.isNotBlank() }?.normalizeSecretValue()
+    ?: error("Missing SUPABASE_ANON_KEY. Add it to local.properties or set the SUPABASE_ANON_KEY environment variable.")
+
 android {
     namespace = "com.example.nhom08_quanlyphongkham"
     compileSdk = 36
+
+    buildFeatures {
+        buildConfig = true
+    }
 
     defaultConfig {
         applicationId = "com.example.nhom08_quanlyphongkham"
@@ -12,6 +49,8 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${supabaseAnonKey.escapeForBuildConfig()}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
