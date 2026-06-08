@@ -16,6 +16,8 @@ public class UserProfile implements Serializable {
 
     private String anh_dai_dien;
     private String trang_thai_hoat_dong;
+    private String face_id;
+    private String android_id;
 
     private Date created_at;
     private String id;
@@ -66,6 +68,8 @@ public class UserProfile implements Serializable {
     }
     public String getAnh_dai_dien() {return anh_dai_dien; }
     public Date getCreated_at() {return created_at; }
+    public String getFace_id() { return face_id; }
+    public String getAndroid_id() { return android_id; }
 
     public String getTrang_thai_hoat_dong() {
         return trang_thai_hoat_dong;

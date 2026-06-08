@@ -76,7 +76,8 @@
         <activity
             android:name=".admin_reports.ReportsActivity_Admin"
             android:exported="false" />
-        <activity android:name="dashboard_fragment.timekeeping"/>
+        <activity android:name="dashboard_fragment.Timekeeping"/>
+        <activity android:name="dashboard_fragment.FaceSignupActivity"/>
     </application>
 
 </manifest>

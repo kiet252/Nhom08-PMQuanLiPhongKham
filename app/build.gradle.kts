@@ -94,6 +94,14 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:${camerax_version}")
     implementation("androidx.camera:camera-view:${camerax_version}")
 
+    // ML Kit Face Detection
+    implementation("com.google.mlkit:face-detection:16.1.5")
+
+    // TensorFlow Lite (for embedding model inference)
+    implementation("org.tensorflow:tensorflow-lite:2.16.1")
+    // Use the support API artifact only to avoid manifest namespace duplication between AARs
+    implementation("org.tensorflow:tensorflow-lite-support-api:0.4.4")
+
     implementation("io.coil-kt:coil:2.4.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

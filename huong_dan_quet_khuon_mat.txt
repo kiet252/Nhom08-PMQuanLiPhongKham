@@ -1,0 +1,134 @@
+================================================================
+       HƯỚNG DẪN QUÉT KHUÔN MẶT
+       Hệ thống chấm công nhận diện khuôn mặt
+       Vui lòng đọc kỹ trước khi thực hiện lần đầu
+================================================================
+
+
+----------------------------------------------------------------
+1. VỊ TRÍ VÀ TƯ THẾ ĐÚNG
+----------------------------------------------------------------
+
+  [✔] Nhìn thẳng vào camera
+      Hai mắt ngang bằng nhau, không ngước lên, không cúi xuống.
+
+  [✔] Mặt nằm trong khung oval trên màn hình
+      Căn khuôn mặt vào giữa vòng oval hướng dẫn.
+
+  [✔] Đầu thẳng, không nghiêng
+      Không nghiêng đầu sang trái hoặc phải quá 15°.
+
+  [✗] Không đội mũ rộng vành
+      Mũ che trán làm mất đặc trưng khuôn mặt,
+      hệ thống sẽ không nhận ra.
+
+  [✗] Không đeo khẩu trang
+      Khẩu trang che mất 60% khuôn mặt,
+      không thể nhận diện.
+
+  [✗] Không nhìn xuống điện thoại
+      Hay xảy ra khi cầm máy thấp —
+      camera chỉ nhìn thấy trán.
+
+
+----------------------------------------------------------------
+2. KHOẢNG CÁCH VỚI CAMERA
+----------------------------------------------------------------
+
+  [✔] 30 – 50 cm  (TỐT NHẤT)
+      Bằng khoảng cách đọc tin nhắn bình thường.
+      Khuôn mặt chiếm khoảng 40–60% chiều cao khung hình.
+
+  [✗] Dưới 20 cm  (QUÁ GẦN)
+      Ảnh bị mờ, cắt mất trán hoặc cằm,
+      mô hình AI nhận diện sai.
+
+  [✗] Trên 60 cm  (QUÁ XA)
+      Khuôn mặt quá nhỏ,
+      hệ thống không phát hiện được.
+
+  Mẹo: Khi khuôn mặt vừa khít với oval XANH trên màn hình
+       = khoảng cách đúng, không cần đo thêm.
+
+
+----------------------------------------------------------------
+3. ĐIỀU KIỆN ÁNH SÁNG
+----------------------------------------------------------------
+
+  [✔] Ánh sáng từ phía trước mặt
+      Đứng quay mặt về hướng cửa sổ, đèn trần hoặc đèn bàn.
+      Mặt phải sáng hơn nền phía sau.
+
+  [✗] Không đứng ngược sáng
+      Cửa sổ hoặc đèn sau lưng → mặt tối hoàn toàn
+      → nhận diện thất bại.
+
+  [✗] Không quét trong bóng tối hoặc phòng quá tối
+      Ảnh nhiễu, hệ thống không phát hiện được khuôn mặt.
+
+  [✗] Không đeo kính phản sáng hoặc kính đổi màu
+      Che mắt, làm giảm độ chính xác đáng kể.
+
+  ⚠ Nếu màn hình hiện "Ánh sáng quá yếu":
+    Bước đến gần nguồn sáng hơn rồi thử lại.
+
+
+----------------------------------------------------------------
+4. CỬ ĐỘNG VÀ XOAY ĐẦU
+----------------------------------------------------------------
+
+  A. KHI ĐĂNG KÝ LẦN ĐẦU (chỉ làm 1 lần)
+  -----------------------------------------
+  Hệ thống hướng dẫn lần lượt 5 tư thế:
+
+    Bước 1 — Nhìn thẳng     : Nhìn trực tiếp vào camera, giữ yên ~2 giây.
+    Bước 2 — Xoay trái nhẹ  : Xoay đầu sang trái khoảng 15°.
+    Bước 3 — Xoay phải nhẹ  : Xoay đầu sang phải khoảng 15°.
+    Bước 4 — Cúi nhẹ xuống  : Cúi đầu xuống khoảng 10°.
+    Bước 5 — Ngước nhẹ lên  : Ngước đầu lên khoảng 10°.
+
+  B. KHI CHECK-IN HÀNG NGÀY
+  --------------------------
+  Chỉ cần 1 bước duy nhất:
+
+    Nhìn thẳng vào camera, giữ yên 1–2 giây.
+    Hệ thống tự động chụp và xác nhận.
+
+  ⚠ Không xoay đầu quá 30° — một mắt bị khuất làm
+    mô hình nhận diện kém chính xác.
+
+
+----------------------------------------------------------------
+5. XỬ LÝ KHI HỆ THỐNG BÁO LỖI
+----------------------------------------------------------------
+
+  Thông báo: "Không tìm thấy khuôn mặt"
+    → Kiểm tra: đủ sáng chưa / mặt có trong khung không /
+                có đeo khẩu trang không.
+
+  Thông báo: "Không nhận ra" hoặc xác minh thất bại
+    → Nhìn thẳng lại, kiểm tra ánh sáng, bỏ kính nếu đang đeo.
+       Thử lại tối đa 3 lần.
+
+  Thông báo: "Ảnh bị mờ"
+    → Giữ tay cầm máy ổn định, không đi lại.
+       Đứng yên cho đến khi nghe tiếng xác nhận.
+
+  Lỗi liên tục sau 3 lần:
+    → Liên hệ quản trị viên để đăng ký lại
+       hoặc dùng phương thức chấm công thay thế.
+
+
+================================================================
+  TÓM TẮT — 4 ĐIỀU CẦN NHỚ
+================================================================
+
+  1.  Nhìn thẳng vào camera, đầu thẳng, mặt vào giữa oval.
+  2.  Cầm máy ngang tầm mắt, cách 30–50 cm.
+  3.  Đứng nơi đủ sáng, quay mặt về phía nguồn sáng.
+  4.  Giữ yên 1–2 giây. Không lắc đầu, không đi lại.
+
+================================================================
+  Phiên bản 1.0  |  Hệ thống Quản lý Phòng Khám
+  nhom08_quanlyphongkham
+================================================================
