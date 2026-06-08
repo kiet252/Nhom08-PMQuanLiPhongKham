@@ -72,6 +72,15 @@
         <activity
             android:name=".admin_reports.ReportsActivity_Admin"
             android:exported="false" />
+        <activity
+            android:name="dashboard_fragment.admin_manage_medicine_clinical.AdminManageMedicineClinicalActivity"
+            android:exported="false" />
+        <activity
+            android:name="dashboard_fragment.admin_manage_medicine_clinical.AdminMedicineDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name="dashboard_fragment.admin_manage_medicine_clinical.AdminClinicalDetailActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
