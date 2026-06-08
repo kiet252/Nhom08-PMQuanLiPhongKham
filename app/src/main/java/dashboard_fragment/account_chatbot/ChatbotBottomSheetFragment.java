@@ -246,11 +246,22 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
 
         mainHandler.postDelayed(() -> {
             if (!isAdded()) return;
-            appendBotMessage(answerForDoctorQuery(message), nowTime());
+            appendBotMessage(answerQuery(message), nowTime());
         }, 300);
     }
 
-    private String answerForDoctorQuery(String rawMessage) {
+    private String answerQuery(String rawMessage) {
+
+        String query = normalize(rawMessage);
+
+        if (UserRole.BAC_SI.name().equals(roleName)) {
+            return answerDoctor(query);
+        }
+
+        return "Xin lỗi, tôi không hiểu câu hỏi này."; // Chỗ này Kiệt Cao sửa lại thêm 2 role kia vào nhé (answerAdmin với answerStaff)
+
+    }
+    private String answerDoctor(String rawMessage) {
         String query = normalize(rawMessage);
 
         if (containsAny(query,
@@ -326,7 +337,7 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
         }
 
         return "Mình chưa hiểu rõ câu hỏi này.\n\n" +
-                "Bạn có thể bấm một trong các câu gợi ý phía dưới hoặc nhập cụ thể chức năng bạn muốn xem.";
+                "Mình chỉ hỗ trợ các chức năng dành cho Bác sĩ. Bạn có thể bấm một trong các câu gợi ý phía dưới hoặc nhập cụ thể chức năng bạn muốn xem.";
     }
 
     private void appendUserMessage(String message, String time) {
