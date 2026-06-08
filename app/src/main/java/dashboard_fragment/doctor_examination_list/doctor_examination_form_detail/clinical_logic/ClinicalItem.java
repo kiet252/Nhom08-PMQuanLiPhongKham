@@ -5,6 +5,7 @@ public class ClinicalItem {
     private String ten_dich_vu;
     private String loai_dich_vu;
     private String mo_ta;
+    private Double don_gia;
 
     public int getId() {
         return id;
@@ -20,5 +21,13 @@ public class ClinicalItem {
 
     public String getMo_ta() {
         return mo_ta;
+    }
+
+    public Double getDon_gia() {
+        return don_gia;
+    }
+
+    public void setDon_gia(Double don_gia) {
+        this.don_gia = don_gia;
     }
 }

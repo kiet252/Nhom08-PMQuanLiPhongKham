@@ -224,6 +224,42 @@
                             <View
                                 android:layout_width="5dp"
                                 android:layout_height="match_parent"
+                                android:background="#9C27B0" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btn_mngMedicineClinical"
+                                style="@style/Widget.MaterialComponents.Button.TextButton"
+                                android:layout_width="match_parent"
+                                android:layout_height="80dp"
+                                android:gravity="center_vertical|start"
+                                android:text="QUẢN LÝ THUỐC &amp; DỊCH VỤ CLS"
+                                android:textColor="#1E293B"
+                                android:textSize="15sp"
+                                android:textStyle="bold"
+                                app:icon="@drawable/dashboard_icon_manage"
+                                app:iconPadding="16dp"
+                                app:iconSize="42dp"
+                                app:iconTint="@null" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="14dp"
+                        app:cardBackgroundColor="#FFFFFF"
+                        app:cardCornerRadius="18dp"
+                        app:cardElevation="2dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <View
+                                android:layout_width="5dp"
+                                android:layout_height="match_parent"
                                 android:background="#4CAF50" />
 
                             <com.google.android.material.button.MaterialButton
