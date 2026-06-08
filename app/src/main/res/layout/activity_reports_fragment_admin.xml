@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,64 +7,69 @@
     android:background="#F0F7FF"
     tools:context=".admin_reports.ReportsActivity_Admin">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        app:elevation="0dp">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="210dp"
-            android:background="@drawable/bg_gradient_dark_blue_header"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp">
+            android:layout_height="150dp"
+            android:background="@drawable/bg_gradient_dark_blue">
 
             <ImageButton
                 android:id="@+id/btnBackCreate"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginTop="30dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="start|center_vertical"
+                android:layout_marginStart="16dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Quay lại"
+                android:padding="12dp"
                 android:src="@drawable/ic_arrow_back"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
                 app:tint="@android:color/white" />
 
             <TextView
                 android:id="@+id/tv_report_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:paddingStart="72dp"
+                android:paddingEnd="72dp"
                 android:text="Thống kê"
                 android:textColor="@android:color/white"
-                android:textSize="28sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/btnBackCreate" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.material.appbar.AppBarLayout>
+                android:textSize="24sp"
+                android:textStyle="bold" />
+        </FrameLayout>
 
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:paddingBottom="28dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="-28dp"
+            android:layout_weight="1"
+            app:cardBackgroundColor="#FFFFFF"
+            app:cardCornerRadius="30dp"
+            app:cardElevation="0dp">
+
+            <androidx.core.widget.NestedScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingBottom="28dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingStart="20dp"
-            android:paddingTop="16dp"
+            android:paddingTop="28dp"
             android:paddingEnd="20dp"
             android:paddingBottom="36dp">
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="-36dp"
+                android:layout_marginTop="0dp"
                 app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="22dp"
                 app:cardElevation="3dp"
@@ -415,5 +420,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+            </androidx.core.widget.NestedScrollView>
+        </androidx.cardview.widget.CardView>
+    </LinearLayout>
+</FrameLayout>
