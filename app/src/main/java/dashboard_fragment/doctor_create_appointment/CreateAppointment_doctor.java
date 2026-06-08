@@ -8,6 +8,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.View;
@@ -178,7 +179,8 @@ public class CreateAppointment_doctor extends BaseActivity {
 
             @Override
             public void onFailure(@NonNull Call<List<PatientProfile>> call, @NonNull Throwable t) {
-                Toast.makeText(CreateAppointment_doctor.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(CreateAppointment_doctor.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }
@@ -376,6 +378,7 @@ public class CreateAppointment_doctor extends BaseActivity {
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
                 Toast.makeText(CreateAppointment_doctor.this, "Lỗi mạng!", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi mạng: " + t.getMessage());
                 btnConfirmAppointment.setEnabled(true);
             }
         });

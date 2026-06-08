@@ -66,14 +66,7 @@ public class StaffInvoiceAdapter extends RecyclerView.Adapter<StaffInvoiceAdapte
     }
 
     private void bindPaidState(InvoiceViewHolder holder, StaffInvoiceItem invoice) {
-        holder.statusIconContainer.setCardBackgroundColor(0xFFE8F5E9);
-        holder.imgStatus.setImageResource(R.drawable.ic_check_circle);
-        holder.imgStatus.setColorFilter(0xFF4CAF50);
-
-        holder.tvAmount.setTextColor(0xFF2D7A2F);
-        holder.tvStatusLabel.setText("Đã thanh toán");
-        holder.tvStatusLabel.setTextColor(0xFF4CAF50);
-        holder.tvStatusLabel.setBackgroundResource(R.drawable.bg_status_paid);
+        configureInvoiceUI(holder, 0xFFE8F5E9, R.drawable.ic_check_circle, 0xFF4CAF50, 0xFF2D7A2F, "Đã thanh toán", R.drawable.bg_status_paid);
 
         holder.layoutPaymentMethod.setVisibility(View.VISIBLE);
         String method = invoice.getPaymentMethod();
@@ -81,16 +74,19 @@ public class StaffInvoiceAdapter extends RecyclerView.Adapter<StaffInvoiceAdapte
     }
 
     private void bindUnpaidState(InvoiceViewHolder holder) {
-        holder.statusIconContainer.setCardBackgroundColor(0xFFFFF3E0);
-        holder.imgStatus.setImageResource(R.drawable.ic_clock);
-        holder.imgStatus.setColorFilter(0xFFFF9800);
-
-        holder.tvAmount.setTextColor(0xFFF97316);
-        holder.tvStatusLabel.setText("Chưa thanh toán");
-        holder.tvStatusLabel.setTextColor(0xFFFF9800);
-        holder.tvStatusLabel.setBackgroundResource(R.drawable.bg_status_unpaid);
-
+        configureInvoiceUI(holder, 0xFFFFF3E0, R.drawable.ic_clock, 0xFFFF9800, 0xFFF97316, "Chưa thanh toán", R.drawable.bg_status_unpaid);
         holder.layoutPaymentMethod.setVisibility(View.GONE);
+    }
+
+    private void configureInvoiceUI(InvoiceViewHolder holder, int containerBg, int iconRes, int statusColor, int amountColor, String statusText, int statusBgRes) {
+        holder.statusIconContainer.setCardBackgroundColor(containerBg);
+        holder.imgStatus.setImageResource(iconRes);
+        holder.imgStatus.setColorFilter(statusColor);
+
+        holder.tvAmount.setTextColor(amountColor);
+        holder.tvStatusLabel.setText(statusText);
+        holder.tvStatusLabel.setTextColor(statusColor);
+        holder.tvStatusLabel.setBackgroundResource(statusBgRes);
     }
 
     private String formatAmount(long amount) {

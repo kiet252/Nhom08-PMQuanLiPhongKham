@@ -56,20 +56,29 @@ public class HomeFragment_admin extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // Nạp đúng giao diện của màn hình Home
         View view = inflater.inflate(R.layout.fragment_home_admin, container, false);
+        // I. Nút XEM BÁO CÁO VÀ THỐNG KÊ
+        // 1. Tìm nút bấm XEM BÁO CÁO trên màn hình Home
         View btnXemBaoCao = view.findViewById(R.id.btn_xem_bao_cao);
+        // 2. Xử lý khi nhấn nút
         btnXemBaoCao.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Đang ở Home -> Chuyển sang ReportsActivity_Admin
                 Intent intent = new Intent(getActivity(), ReportsActivity_Admin.class);
                 startActivity(intent);
             }
         });
+        // II. Nút CÀI ĐẶT THÔNG BÁO CHUNG
+        // 1. Tìm nút bấm CÀI ĐẶT THÔNG BÁO CHUNG trên màn hình Home
         View btnCaiDatThongBao = view.findViewById(R.id.btn_cai_dat_thong_bao);
+        // 2. Xử lí khi nhấn nút
         btnCaiDatThongBao.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 NotificationSettingsFragment_Admin notificationsettingsFragment = new NotificationSettingsFragment_Admin();
+
                 getActivity().getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, notificationsettingsFragment)
                         .addToBackStack(null)
@@ -83,10 +92,12 @@ public class HomeFragment_admin extends Fragment {
         if (userprofile == null) return;
         ImageView avatar = view.findViewById(R.id.home_avatar_admin);
         String avatarUrl = userprofile.getAnh_dai_dien();
+
         if (avatarUrl != null && !avatarUrl.isEmpty()) {
             if (!avatarUrl.startsWith("http")) {
                 avatarUrl = "https://waiuciilyysobnvcwshd.supabase.co/storage/v1/object/public/avatars/" + avatarUrl;
             }
+
             ImageRequest request = new ImageRequest.Builder(requireContext())
                     .data(avatarUrl)
                     .target(avatar)
@@ -101,11 +112,22 @@ public class HomeFragment_admin extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        
         txtName = view.findViewById(R.id.admin_home_name);
         mngStaff = view.findViewById(R.id.btn_mngStaff);
         tvRevenueChange = view.findViewById(R.id.tv_admin_revenue_change);
         chartRevenue = view.findViewById(R.id.chart_admin_revenue);
         reportApiService = SupabaseClientProvider.getClient(requireContext()).create(ReportApiService.class);
+
+        View chatbotView = view.findViewById(R.id.chatbot_floating_button);
+        if (chatbotView != null) {
+            chatbotView.setOnClickListener(v ->
+                    ChatbotBottomSheetFragment.newInstance(UserRole.ADMIN.name())
+                            .show(getParentFragmentManager(), "chatbot")
+            );
+        }
+
+        // Lấy tên người dùng từ SharedPrefManager
         SharedPrefManager prefManager = SharedPrefManager.getInstance(requireContext());
         UserProfile profile = prefManager.getProfile();
         SetAvatar(view, profile);
@@ -214,6 +236,7 @@ public class HomeFragment_admin extends Fragment {
                 calendar.setTime(new SimpleDateFormat(pattern, Locale.getDefault()).parse(value.trim()));
                 return calendar;
             } catch (ParseException ignored) {
+
             }
         }
         return null;

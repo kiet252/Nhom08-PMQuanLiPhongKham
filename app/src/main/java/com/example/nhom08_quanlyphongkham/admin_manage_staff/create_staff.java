@@ -45,6 +45,9 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import static com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider.SUPABASE_ANON_KEY;
+import static com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider.SUPABASE_URL;
+
 public class create_staff extends BaseActivity {
 
     private ShapeableImageView ivAvatar;
@@ -57,7 +60,7 @@ public class create_staff extends BaseActivity {
     private ImageButton btnBack;
     private Uri selectedImageUri;
 
-    private String SUPABASE_ANON_KEY;
+    private String supabaseAnonKey;
     private ProgressDialog progressDialog;
 
     @Override
@@ -66,7 +69,7 @@ public class create_staff extends BaseActivity {
         currentToken = SharedPrefManager.getInstance(this).getToken();
         setContentView(R.layout.admin_create_staff);
 
-        SUPABASE_ANON_KEY = getString(R.string.abAIkey);
+        supabaseAnonKey = SUPABASE_ANON_KEY;
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Đang xử lý...");
         progressDialog.setCancelable(false);
@@ -239,8 +242,8 @@ public class create_staff extends BaseActivity {
                 Request uploadRequest = new Request.Builder()
                         .url(SUPABASE_URL + "/storage/v1/object/" + uploadPath)
                         .post(RequestBody.create(imageBytes, MediaType.parse(mimeType)))
-                        .addHeader("apikey", SUPABASE_ANON_KEY)
-                        .addHeader("Authorization", "Bearer " + SUPABASE_ANON_KEY)
+                        .addHeader("apikey", supabaseAnonKey)
+                        .addHeader("Authorization", "Bearer " + supabaseAnonKey)
                         .addHeader("x-upsert", "true")
                         .build();
 
@@ -259,7 +262,7 @@ public class create_staff extends BaseActivity {
                         .post(RequestBody.create(
                                 signUpBody.toString(),
                                 MediaType.parse("application/json")))
-                        .addHeader("apikey", SUPABASE_ANON_KEY)
+                        .addHeader("apikey", supabaseAnonKey)
                         .addHeader("Content-Type", "application/json")
                         .build();
 
@@ -293,7 +296,7 @@ public class create_staff extends BaseActivity {
                         .post(RequestBody.create(
                                 profileBody.toString(),
                                 MediaType.parse("application/json")))
-                        .addHeader("apikey", SUPABASE_ANON_KEY)
+                        .addHeader("apikey", supabaseAnonKey)
                         .addHeader("Authorization", "Bearer " + currentToken)
                         .addHeader("Content-Type", "application/json")
                         .addHeader("Prefer", "return=representation,resolution=merge-duplicates") // ← đổi dòng này
@@ -315,7 +318,7 @@ public class create_staff extends BaseActivity {
             } catch (Exception e) {
                 handler.post(() -> {
                     progressDialog.dismiss();
-                    Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Lỗi tạo nhân viên", Toast.LENGTH_LONG).show();
                     Log.e("SUPABASE", "Lỗi tạo nhân viên", e);
                 });
             }

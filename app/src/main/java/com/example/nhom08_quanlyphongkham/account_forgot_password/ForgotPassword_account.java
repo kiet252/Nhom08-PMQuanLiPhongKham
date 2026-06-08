@@ -1,6 +1,7 @@
 package com.example.nhom08_quanlyphongkham.account_forgot_password;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.ImageButton;
@@ -148,8 +149,9 @@ public class ForgotPassword_account extends AppCompatActivity {
             public void onFailure(@NonNull Call<List<UserProfile>> call, @NonNull Throwable t) {
                 setSendOtpLoading(false);
                 Toast.makeText(ForgotPassword_account.this,
-                        "Lỗi kết nối: " + t.getMessage(),
+                        "Lỗi kết nối",
                         Toast.LENGTH_SHORT).show();
+                Log.d("Connection Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }
@@ -182,8 +184,9 @@ public class ForgotPassword_account extends AppCompatActivity {
             public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
                 setSendOtpLoading(false);
                 Toast.makeText(ForgotPassword_account.this,
-                        "Lỗi kết nối: " + t.getMessage(),
+                        "Lỗi kết nối",
                         Toast.LENGTH_SHORT).show();
+                Log.d("Connection Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }
@@ -249,8 +252,9 @@ public class ForgotPassword_account extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Call<LoginResponse> call, @NonNull Throwable t) {
                 Toast.makeText(ForgotPassword_account.this,
-                        "Lỗi kết nối: " + t.getMessage(),
+                        "Lỗi kết nối",
                         Toast.LENGTH_SHORT).show();
+                Log.d("Connection Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }
@@ -307,8 +311,9 @@ public class ForgotPassword_account extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Call<LoginResponse> call, @NonNull Throwable t) {
                 Toast.makeText(ForgotPassword_account.this,
-                        "Lỗi kết nối: " + t.getMessage(),
+                        "Lỗi kết nối",
                         Toast.LENGTH_SHORT).show();
+                Log.d("Connection Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }

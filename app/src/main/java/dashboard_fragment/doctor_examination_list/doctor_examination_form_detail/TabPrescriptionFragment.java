@@ -2,6 +2,7 @@ package dashboard_fragment.doctor_examination_list.doctor_examination_form_detai
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -166,7 +167,7 @@ public class TabPrescriptionFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     openMedicineDialog(response.body());
                 } else {
-                    Toast.makeText(requireContext(), "Khong tai duoc danh sach thuoc", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Không tải được danh sách thuốc", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -175,7 +176,8 @@ public class TabPrescriptionFragment extends Fragment {
                 if (!isAdded()) {
                     return;
                 }
-                Toast.makeText(requireContext(), "Loi ket noi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Lỗi kết nối" + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }
@@ -511,14 +513,16 @@ public class TabPrescriptionFragment extends Fragment {
                     return;
                 }
 
-                String errorMessage = "Khong the luu benh an";
+                String errorMessage = "Không thể lưu bệnh án";
+
                 if (response.errorBody() != null) {
                     try {
                         errorMessage = response.errorBody().string();
                     } catch (IOException ignored) {
                     }
                 }
-                Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show();
+
+                Log.d("Unable to save record", errorMessage);
             }
 
             @Override
@@ -526,7 +530,8 @@ public class TabPrescriptionFragment extends Fragment {
                 if (!isAdded()) {
                     return;
                 }
-                Toast.makeText(requireContext(), "Loi ket noi khi luu benh an: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), "Lỗi kết nối", Toast.LENGTH_LONG).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }

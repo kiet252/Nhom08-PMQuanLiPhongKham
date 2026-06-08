@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.View;
@@ -96,14 +97,16 @@ public class ManageBill_staff extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
         if (edtSearchPatient != null && edtSearchPatient.getText() != null) {
             String keyword = edtSearchPatient.getText().toString().trim();
             if (!keyword.isEmpty()) {
                 searchInvoicesByPatient();
-            } else {
-                restoreDefaultInvoices();
+                return;
             }
         }
+
+        loadAllBills();
     }
 
     private void initializeViews() {
@@ -170,9 +173,7 @@ public class ManageBill_staff extends BaseActivity {
     }
 
     private void searchInvoicesByPatient() {
-        String keyword = edtSearchPatient.getText() != null
-                ? edtSearchPatient.getText().toString().trim()
-                : "";
+        String keyword = edtSearchPatient.getText() != null ? edtSearchPatient.getText().toString().trim() : "";
 
         hideSearchError();
         edtSearchPatient.setError(null);
@@ -184,8 +185,7 @@ public class ManageBill_staff extends BaseActivity {
 
         patientRepository.getProfileByIdOrCccd(keyword).enqueue(new Callback<List<PatientProfile>>() {
             @Override
-            public void onResponse(@NonNull Call<List<PatientProfile>> call,
-                                   @NonNull Response<List<PatientProfile>> response) {
+            public void onResponse(@NonNull Call<List<PatientProfile>> call, @NonNull Response<List<PatientProfile>> response) {
                 if (!response.isSuccessful()) {
                     showSearchError();
                     showApiError(response);
@@ -207,8 +207,8 @@ public class ManageBill_staff extends BaseActivity {
 
             @Override
             public void onFailure(@NonNull Call<List<PatientProfile>> call, @NonNull Throwable t) {
-                Toast.makeText(ManageBill_staff.this,
-                        "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ManageBill_staff.this, "Lỗi kết nối: ", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }
@@ -216,8 +216,7 @@ public class ManageBill_staff extends BaseActivity {
     private void loadBillsForPatient(PatientProfile patient) {
         billRepository.getBillsByPatientId(patient.getId()).enqueue(new Callback<List<ExamFormWithBillDto>>() {
             @Override
-            public void onResponse(@NonNull Call<List<ExamFormWithBillDto>> call,
-                                   @NonNull Response<List<ExamFormWithBillDto>> response) {
+            public void onResponse(@NonNull Call<List<ExamFormWithBillDto>> call, @NonNull Response<List<ExamFormWithBillDto>> response) {
                 if (!response.isSuccessful()) {
                     showApiError(response);
                     allInvoices.clear();
@@ -225,15 +224,12 @@ public class ManageBill_staff extends BaseActivity {
                     return;
                 }
 
-                List<ExamFormWithBillDto> forms = response.body() != null
-                        ? response.body()
-                        : new ArrayList<>();
+                List<ExamFormWithBillDto> forms = response.body() != null ? response.body() : new ArrayList<>();
 
                 List<StaffInvoiceItem> items = BillMapper.fromExamForms(forms);
 
                 if (items.isEmpty()) {
-                    Toast.makeText(ManageBill_staff.this,
-                            "Bệnh nhân chưa có hóa đơn nào", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ManageBill_staff.this, "Bệnh nhân chưa có hóa đơn nào", Toast.LENGTH_SHORT).show();
                     allInvoices.clear();
                     applyFilter();
                     return;
@@ -248,8 +244,8 @@ public class ManageBill_staff extends BaseActivity {
 
             @Override
             public void onFailure(@NonNull Call<List<ExamFormWithBillDto>> call, @NonNull Throwable t) {
-                Toast.makeText(ManageBill_staff.this,
-                        "Lỗi tải hóa đơn: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ManageBill_staff.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }
@@ -260,8 +256,7 @@ public class ManageBill_staff extends BaseActivity {
 
         billRepository.getAllBills().enqueue(new Callback<List<ExamFormWithBillDto>>() {
             @Override
-            public void onResponse(@NonNull Call<List<ExamFormWithBillDto>> call,
-                                   @NonNull Response<List<ExamFormWithBillDto>> response) {
+            public void onResponse(@NonNull Call<List<ExamFormWithBillDto>> call, @NonNull Response<List<ExamFormWithBillDto>> response) {
                 if (!response.isSuccessful()) {
                     showApiError(response);
                     defaultInvoices.clear();
@@ -270,9 +265,7 @@ public class ManageBill_staff extends BaseActivity {
                     return;
                 }
 
-                List<ExamFormWithBillDto> forms = response.body() != null
-                        ? response.body()
-                        : new ArrayList<>();
+                List<ExamFormWithBillDto> forms = response.body() != null ? response.body() : new ArrayList<>();
 
                 defaultInvoices.clear();
                 defaultInvoices.addAll(BillMapper.fromExamForms(forms));
@@ -284,8 +277,8 @@ public class ManageBill_staff extends BaseActivity {
 
             @Override
             public void onFailure(@NonNull Call<List<ExamFormWithBillDto>> call, @NonNull Throwable t) {
-                Toast.makeText(ManageBill_staff.this,
-                        "Lỗi tải hóa đơn: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ManageBill_staff.this, "Lỗi kết nối: ", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }

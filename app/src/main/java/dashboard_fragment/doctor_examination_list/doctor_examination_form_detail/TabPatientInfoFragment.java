@@ -1,6 +1,7 @@
 package dashboard_fragment.doctor_examination_list.doctor_examination_form_detail;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -195,7 +196,8 @@ public class TabPatientInfoFragment extends Fragment {
                     } else {
                         try {
                             String errorMsg = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
-                            Toast.makeText(requireContext(), "Lỗi cập nhật: " + response.code() + " " + errorMsg, Toast.LENGTH_LONG).show();
+                            Toast.makeText(requireContext(), "Lỗi cập nhật", Toast.LENGTH_LONG).show();
+                            Log.d("Error", "Lỗi kết nối: " + response.code() + " " + errorMsg);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -212,7 +214,8 @@ public class TabPatientInfoFragment extends Fragment {
                     if (!isAdded()) return;
                     
                     setStatusButtonsEnabled(true);
-                    Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                    Log.d("Error", "Lỗi kết nối: " + t.getMessage());
                 }, 500);
             }
         });

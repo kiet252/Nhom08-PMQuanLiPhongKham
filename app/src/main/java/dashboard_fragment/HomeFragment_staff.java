@@ -30,6 +30,7 @@ import java.util.Locale;
 
 import coil.Coil;
 import coil.request.ImageRequest;
+import dashboard_fragment.account_chatbot.ChatbotBottomSheetFragment;
 import dashboard_fragment.doctor_examination_list.DoctorExaminationFormAdapter;
 import dashboard_fragment.staff_add_update_patient.AddUpdatePatientInfo_staff;
 import dashboard_fragment.staff_create_examination_form.CreateExaminationForm_staff;
@@ -38,6 +39,9 @@ import dashboard_fragment.staff_manage_bill.ManageBill_staff;
 import dashboard_fragment.staff_manage_examination_form.ManageExaminationForm_staff;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import retrofit2.Call;
+
+import android.widget.Toast;
+import com.example.nhom08_quanlyphongkham.widget.ChatbotFloatingButton;
 
 public class HomeFragment_staff extends Fragment {
 
@@ -106,6 +110,14 @@ public class HomeFragment_staff extends Fragment {
         layoutTodayExFormsHeader = view.findViewById(R.id.layoutTodayExFormsHeader);
         layoutTodayExFormsContainer = view.findViewById(R.id.layoutTodayExFormsContainer);
         tvTodayExFormsEmpty = view.findViewById(R.id.tvTodayExFormsEmpty);
+
+        View chatbotView = view.findViewById(R.id.chatbot_floating_button);
+        if (chatbotView != null) {
+            chatbotView.setOnClickListener(v ->
+                    ChatbotBottomSheetFragment.newInstance(UserRole.NHAN_VIEN.name())
+                            .show(getParentFragmentManager(), "chatbot")
+            );
+        }
     }
 
     private void setupListeners(View view) {
@@ -248,18 +260,13 @@ public class HomeFragment_staff extends Fragment {
         dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.PatientBriefDto patient = form.getPatient();
 
         tvPatientName.setText("Họ tên: " + (patient != null ? patient.getHo_ten() : "--"));
-        tvBirthday.setText("Ngày sinh: " + (patient != null && patient.getNgay_sinh() != null
-                ? sdf.format(patient.getNgay_sinh()) : "--"));
+        tvBirthday.setText("Ngày sinh: " + (patient != null && patient.getNgay_sinh() != null ? sdf.format(patient.getNgay_sinh()) : "--"));
         tvAddress.setText("Địa chỉ: " + (patient != null ? patient.getDia_chi() : "--"));
-        tvExamDate.setText("Ngày khám: " + (form.getNgay_kham() != null
-                ? sdf.format(form.getNgay_kham()) : "--"));
-        tvExamTime.setText("Giờ dự kiến: " + (form.getGio_du_kien() != null
-                ? form.getGio_du_kien() : "--"));
+        tvExamDate.setText("Ngày khám: " + (form.getNgay_kham() != null ? sdf.format(form.getNgay_kham()) : "--"));
+        tvExamTime.setText("Giờ dự kiến: " + (form.getGio_du_kien() != null ? form.getGio_du_kien() : "--"));
         tvSequence.setText("Số tiếp nhận: " + form.getSo_tiep_nhan());
-        tvStatus.setText("Trạng thái: " + (form.getTrang_thai() != null
-                ? form.getTrang_thai() : "--"));
-        tvSymptoms.setText(form.getTrieu_chung_ban_dau() != null
-                ? form.getTrieu_chung_ban_dau() : "--");
+        tvStatus.setText("Trạng thái: " + (form.getTrang_thai() != null ? form.getTrang_thai() : "--"));
+        tvSymptoms.setText(form.getTrieu_chung_ban_dau() != null ? form.getTrieu_chung_ban_dau() : "--");
 
         AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setView(dialogView)
@@ -278,25 +285,21 @@ public class HomeFragment_staff extends Fragment {
 
     private void startAddUpdatePatientIntent() {
         Intent intentAddUpdatePatient = new Intent(getContext(), AddUpdatePatientInfo_staff.class);
-        intentAddUpdatePatient.putExtra("accessToken", currentToken);
         startActivity(intentAddUpdatePatient);
     }
 
     private void startCreateExaminationFormIntent() {
         Intent intentCreateExaminationForm = new Intent(getContext(), CreateExaminationForm_staff.class);
-        intentCreateExaminationForm.putExtra("accessToken", currentToken);
         startActivity(intentCreateExaminationForm);
     }
 
     private void startManageExaminationFormIntent() {
         Intent intentManageExaminationForm = new Intent(getContext(), ManageExaminationForm_staff.class);
-        intentManageExaminationForm.putExtra("accessToken", currentToken);
         startActivity(intentManageExaminationForm);
     }
 
     private void startManageBillIntent() {
         Intent intentManageBill = new Intent(getContext(), ManageBill_staff.class);
-        intentManageBill.putExtra("accessToken", currentToken);
         startActivity(intentManageBill);
     }
 }

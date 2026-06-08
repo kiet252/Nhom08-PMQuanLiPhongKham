@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.View;
@@ -52,6 +53,13 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import android.net.Uri;
+
+import java.text.Normalizer;
+
+import coil.Coil;
+import coil.request.ImageRequest;
+
 public class CreateExaminationForm_staff extends BaseActivity {
     private ImageButton BtnBackCreateSlip;
     private MaterialButton BtnSearchPatient, BtnCreateSlip, BtnDeleteSlip;
@@ -63,6 +71,11 @@ public class CreateExaminationForm_staff extends BaseActivity {
     private MaterialCardView CardLatestAppointmentItem;
     private ImageView ImgLatestAppointmentCheck;
     private TextView TvLatestAppointmentNote;
+    private ImageView ImgQRCode;
+
+    private static final String QR_BANK_ID = "970436"; // Vietcombank
+    private static final String QR_ACCOUNT_NO = "1015392878";
+    private static final int QR_AMOUNT = 100000;
 
     private ExaminationFormRepository ExFormRepository;
     private PatientRepository PaRepository;
@@ -132,6 +145,7 @@ public class CreateExaminationForm_staff extends BaseActivity {
         ActvPaymentMethod = findViewById(R.id.actvCreateExaminationFormPaymentMethod);
 
         LayoutQRCode = findViewById(R.id.layoutQRCode);
+        ImgQRCode = findViewById(R.id.imgQRCode);
     }
 
     private void setupListeners() {
@@ -145,8 +159,7 @@ public class CreateExaminationForm_staff extends BaseActivity {
 
         ActvPaymentMethod.setOnClickListener(v -> ActvPaymentMethod.showDropDown());
         ActvPaymentMethod.setOnItemClickListener((parent, view, position, id) -> {
-            String selectedMethod = parent.getItemAtPosition(position).toString();
-            LayoutQRCode.setVisibility("Chuyển khoản".equals(selectedMethod) ? View.VISIBLE : View.GONE);
+            updateVietQrSection();
         });
 
         CardLatestAppointmentItem.setOnClickListener(v -> toggleAppointmentSelection());
@@ -196,7 +209,8 @@ public class CreateExaminationForm_staff extends BaseActivity {
 
             @Override
             public void onFailure(@NonNull Call<List<UserProfile>> call, @NonNull Throwable t) {
-                Toast.makeText(CreateExaminationForm_staff.this, "Lỗi kết nối khi tải bác sĩ", Toast.LENGTH_SHORT).show();
+                Toast.makeText(CreateExaminationForm_staff.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }
@@ -213,6 +227,7 @@ public class CreateExaminationForm_staff extends BaseActivity {
         ActvPaymentMethod.setAdapter(adapter);
         ActvPaymentMethod.setText("Tiền mặt", false);
         LayoutQRCode.setVisibility(View.GONE);
+        updateVietQrSection();
     }
 
     private void sendPatientSearchRequest() {
@@ -249,7 +264,8 @@ public class CreateExaminationForm_staff extends BaseActivity {
 
             @Override
             public void onFailure(@NonNull Call<List<PatientProfile>> call, @NonNull Throwable t) {
-                Toast.makeText(CreateExaminationForm_staff.this, "Lỗi kết nối mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(CreateExaminationForm_staff.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }
@@ -375,8 +391,11 @@ public class CreateExaminationForm_staff extends BaseActivity {
     }
 
     private void fillFormFromAppointment(AppointmentItem appointmentItem) {
-        String displayDate = formatApiDateToDisplay(appointmentItem.getNgay_hen());
-        EdtDateExam.setText(displayDate);
+        if (shouldCopyAppointmentDate(appointmentItem)) {
+            String displayDate = formatApiDateToDisplay(appointmentItem.getNgay_hen());
+            EdtDateExam.setText(displayDate);
+        }
+
         updatePredictedReceptionNumber();
 
         selectedDoctorID = appointmentItem.getDoctor_id();
@@ -467,7 +486,7 @@ public class CreateExaminationForm_staff extends BaseActivity {
             EdtDateExam.setTextColor(Color.parseColor("#1E293B"));
             updatePredictedReceptionNumber();
 
-            if (selectedAppointment != null) {
+            if (selectedAppointment != null && shouldCopyAppointmentDate(selectedAppointment)) {
                 String appointmentDate = formatApiDateToDisplay(selectedAppointment.getNgay_hen());
                 if (!appointmentDate.equals(date)) {
                     clearSelectedAppointmentState();
@@ -629,11 +648,13 @@ public class CreateExaminationForm_staff extends BaseActivity {
 
                 @Override
                 public void onFailure(@NonNull Call<List<ExaminationForm>> call, @NonNull Throwable t) {
-                    Toast.makeText(CreateExaminationForm_staff.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(CreateExaminationForm_staff.this, "Lỗi kết nối", Toast.LENGTH_LONG).show();
+                    Log.d("Error", "Lỗi kết nối: " + t.getMessage());
                 }
             });
         } catch (Exception e) {
-            Toast.makeText(this, "Dữ liệu không hợp lệ: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Dữ liệu không hợp lệ", Toast.LENGTH_LONG).show();
+            Log.d("Invalid data", e.getMessage());
         }
     }
 
@@ -650,6 +671,7 @@ public class CreateExaminationForm_staff extends BaseActivity {
 
         TvBirthday.setText("Ngày sinh: " + formattedDate);
         updateTransferContent();
+        updateVietQrSection();
     }
 
     private void clearPatientInfo() {
@@ -660,12 +682,7 @@ public class CreateExaminationForm_staff extends BaseActivity {
     }
 
     private void updateTransferContent() {
-        if (foundPatient == null) {
-            TvTransferContent.setText("Nội dung: [MaBN] [HoTen]");
-            return;
-        }
-
-        TvTransferContent.setText("Nội dung: " + foundPatient.getId() + " " + safeText(foundPatient.getHo_ten()));
+        TvTransferContent.setText("Nội dung: " + buildTransferContentForQr());
     }
 
     private void updatePredictedReceptionNumber() {
@@ -738,6 +755,7 @@ public class CreateExaminationForm_staff extends BaseActivity {
 
         clearPatientInfo();
         resetLatestAppointmentCard();
+        updateVietQrSection();
     }
 
     private String findDoctorNameById(String doctorId) {
@@ -767,6 +785,103 @@ public class CreateExaminationForm_staff extends BaseActivity {
         } catch (Exception e) {
             return apiDate;
         }
+    }
+
+    private boolean shouldCopyAppointmentDate(AppointmentItem appointmentItem) {
+        Date appointmentDate = parseApiDate(appointmentItem != null ? appointmentItem.getNgay_hen() : null);
+        if (appointmentDate == null) return false;
+
+        Date today = getDateOnly(Calendar.getInstance().getTime());
+        Date appointmentDateOnly = getDateOnly(appointmentDate);
+
+        return !today.after(appointmentDateOnly);
+    }
+
+    private Date parseApiDate(String apiDate) {
+        if (apiDate == null || apiDate.trim().isEmpty()) return null;
+        try {
+            SimpleDateFormat input = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            input.setLenient(false);
+            return input.parse(apiDate.trim());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private Date getDateOnly(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
+    }
+
+    private void updateVietQrSection() {
+        String selectedMethod = ActvPaymentMethod.getText() != null
+                ? ActvPaymentMethod.getText().toString().trim()
+                : "";
+
+        boolean isTransfer = "Chuyển khoản".equals(selectedMethod);
+        LayoutQRCode.setVisibility(isTransfer ? View.VISIBLE : View.GONE);
+
+        if (!isTransfer) {
+            return;
+        }
+
+        String transferContent = buildTransferContentForQr();
+        TvTransferContent.setText("Nội dung: " + transferContent);
+
+        String qrUrl = buildVietQrImageUrl(transferContent);
+
+        ImgQRCode.setImageDrawable(null);
+
+        ImageRequest request = new ImageRequest.Builder(this)
+                .data(qrUrl)
+                .target(ImgQRCode)
+                .crossfade(true)
+                .build();
+
+        Coil.imageLoader(this).enqueue(request);
+    }
+
+    private String buildTransferContentForQr() {
+        if (foundPatient == null) {
+            return "[MaBN] [HoTen]";
+        }
+
+        String patientId = safeText(foundPatient.getId());
+        String patientName = removeVietnameseTones(safeText(foundPatient.getHo_ten()))
+                .replaceAll("\\s+", " ")
+                .trim();
+
+        if ("--".equals(patientId) || patientName.isEmpty() || "--".equals(patientName)) {
+            return "[MaBN] [HoTen]";
+        }
+
+        return patientId + " " + patientName;
+    }
+
+    private String buildVietQrImageUrl(String transferContent) {
+        return "https://img.vietqr.io/image/"
+                + QR_BANK_ID
+                + "-"
+                + QR_ACCOUNT_NO
+                + "-compact2.png?amount="
+                + QR_AMOUNT
+                + "&addInfo="
+                + Uri.encode(transferContent);
+    }
+
+    private String removeVietnameseTones(String input) {
+        if (input == null) return "";
+
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
+        normalized = normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        normalized = normalized.replace('đ', 'd').replace('Đ', 'D');
+
+        return normalized;
     }
 
     private String safeText(String value) {

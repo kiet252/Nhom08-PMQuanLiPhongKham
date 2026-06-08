@@ -117,7 +117,8 @@ public class ViewMedicalRecord_doctor extends BaseActivity {
 
             @Override
             public void onFailure(Call<List<PatientProfile>> call, Throwable t) {
-                Toast.makeText(ViewMedicalRecord_doctor.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ViewMedicalRecord_doctor.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                Log.d("Error", "Lỗi kết nối: " + t.getMessage());
             }
         });
     }
@@ -142,7 +143,8 @@ public class ViewMedicalRecord_doctor extends BaseActivity {
                     @Override
                     public void onFailure(Call<List<ExaminationFormHistoryResponse>> call, Throwable t) {
                         Log.e(TAG, "History request failed: " + t.getMessage(), t);
-                        Toast.makeText(ViewMedicalRecord_doctor.this, "Lỗi tải bệnh án: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ViewMedicalRecord_doctor.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                        Log.d("Error", "Lỗi kết nối: " + t.getMessage());
                     }
                 });
     }
