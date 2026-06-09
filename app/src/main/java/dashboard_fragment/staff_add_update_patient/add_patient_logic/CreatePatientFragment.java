@@ -1,5 +1,7 @@
 package dashboard_fragment.staff_add_update_patient.add_patient_logic;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,18 +15,23 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import com.example.nhom08_quanlyphongkham.R;
 
 import java.io.IOException;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 
 import dashboard_fragment.staff_add_update_patient.ExternalCall;
 import dashboard_fragment.staff_add_update_patient.PatientDatabaseConstraintsChecker;
@@ -37,13 +44,25 @@ public class CreatePatientFragment extends Fragment {
     private RadioGroup RgGender;
     private RadioButton selectedRadioButton;
     private Spinner SpnBirthDay, SpnBirthMonth, SpnBirthYear;
+    private CardView btnOCR;
     private PatientRepository repository;
+    private ActivityResultLauncher<Intent> ocrLauncher;
+
     public CreatePatientFragment() {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        ocrLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        updateUIWithOCR(result.getData());
+                    }
+                }
+        );
     }
 
     @Override
@@ -70,27 +89,53 @@ public class CreatePatientFragment extends Fragment {
         SpnBirthDay = view.findViewById(R.id.spnCreatePatientDay);
         SpnBirthMonth = view.findViewById(R.id.spnCreatePatientMonth);
         SpnBirthYear = view.findViewById(R.id.spnCreatePatientYear);
+
+        btnOCR = view.findViewById(R.id.btnOCR);
     }
 
     private void initializeValuesForMonthAndYearSpinners() {
-        // Years (e.g., 1900 to current year)
         List<Integer> years = new ArrayList<>();
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
-        for (int i = currentYear; i >= 1900; i--) years.add(i);
+        for (int i = currentYear; i >= 1900; i--) {
+            years.add(i);
+        }
 
-        // Months (1-12)
         List<Integer> months = new ArrayList<>();
-        for (int i = 1; i <= 12; i++) months.add(i);
+        for (int i = 1; i <= 12; i++) {
+            months.add(i);
+        }
 
-        ArrayAdapter<Integer> yearAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, years);
-        ArrayAdapter<Integer> monthAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, months);
+        ArrayAdapter<Integer> yearAdapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                years
+        );
+        yearAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        ArrayAdapter<Integer> monthAdapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                months
+        );
+        monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         SpnBirthYear.setAdapter(yearAdapter);
         SpnBirthMonth.setAdapter(monthAdapter);
+
+        SpnBirthYear.setSelection(0);
+        SpnBirthMonth.setSelection(0);
+        updateDaySpinner();
+        SpnBirthDay.setSelection(0);
     }
+
     private void setupListeners() {
         SpnBirthMonth.setOnItemSelectedListener(dateChangeListener);
         SpnBirthYear.setOnItemSelectedListener(dateChangeListener);
+
+        btnOCR.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), OCRCameraActivity.class);
+            ocrLauncher.launch(intent);
+        });
     }
 
     private final AdapterView.OnItemSelectedListener dateChangeListener = new AdapterView.OnItemSelectedListener() {
@@ -98,11 +143,15 @@ public class CreatePatientFragment extends Fragment {
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
             updateDaySpinner();
         }
+
         @Override
-        public void onNothingSelected(AdapterView<?> parent) {}
+        public void onNothingSelected(AdapterView<?> parent) {
+        }
     };
 
     private void updateDaySpinner() {
+        if (SpnBirthMonth == null || SpnBirthYear == null || SpnBirthDay == null) return;
+
         Object monthObj = SpnBirthMonth.getSelectedItem();
         Object yearObj = SpnBirthYear.getSelectedItem();
 
@@ -116,15 +165,17 @@ public class CreatePatientFragment extends Fragment {
 
         List<Integer> days = getDaysList(selectedMonth, selectedYear);
 
-        ArrayAdapter<Integer> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, days);
+        ArrayAdapter<Integer> adapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                days
+        );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         SpnBirthDay.setAdapter(adapter);
 
-        // If the previous day still exists (e.g., switching from Jan 31 to Mar 31), keep it
         if (currentSelectedDay <= days.size()) {
             SpnBirthDay.setSelection(currentSelectedDay - 1);
         } else {
-            // If it doesn't exist (e.g., Feb 31), cap it at the max (Feb 28/29)
             SpnBirthDay.setSelection(days.size() - 1);
         }
     }
@@ -160,8 +211,8 @@ public class CreatePatientFragment extends Fragment {
                     EdtCCCD.requestFocus();
                 } else {
                     try {
-                        Toast.makeText(requireContext(), "Lỗi: " + response.code() + (response.errorBody()).string(), Toast.LENGTH_SHORT).show();
-                        Log.d("Error", "Lỗi kết nối: " + response.code() + ", " + (response.errorBody()).string());
+                        Toast.makeText(requireContext(), "Lỗi: " + response.code() + " " + response.errorBody().string(), Toast.LENGTH_SHORT).show();
+                        Log.d("Error", "Lỗi kết nối: " + response.code() + ", " + response.errorBody().string());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -254,9 +305,7 @@ public class CreatePatientFragment extends Fragment {
         }
 
         selectedRadioButton = RgGender.findViewById(selectedRadioBtnId);
-        if (selectedRadioButton == null) return false;
-
-        return true;
+        return selectedRadioButton != null;
     }
 
     private boolean isValidBirthDate() {
@@ -322,4 +371,87 @@ public class CreatePatientFragment extends Fragment {
         SpnBirthDay.setSelection(0);
     }
 
+    private void updateUIWithOCR(Intent data) {
+        String fullName = trimToNull(data.getStringExtra("full_name"));
+        String idNumber = trimToNull(data.getStringExtra("id_number"));
+        String dob = trimToNull(data.getStringExtra("dob"));
+        String gender = trimToNull(data.getStringExtra("gender"));
+        String address = trimToNull(data.getStringExtra("address"));
+
+        if (fullName != null) EdtFullName.setText(fullName);
+        if (idNumber != null) EdtCCCD.setText(idNumber);
+        if (address != null) EdtAddress.setText(address);
+
+        if (gender != null) {
+            selectGender(gender);
+        }
+
+        if (dob != null && dob.contains("/")) {
+            String[] parts = dob.split("/");
+            if (parts.length == 3) {
+
+                setSpinnerValue(SpnBirthYear, parts[2]);
+                setSpinnerValue(SpnBirthMonth, parts[1]);
+
+                updateDaySpinner();
+
+                setSpinnerValue(SpnBirthDay, parts[0]);
+            }
+        }
+    }
+
+    private void selectGender(String gender) {
+        String normalizedGender = normalizeText(gender);
+
+        for (int i = 0; i < RgGender.getChildCount(); i++) {
+            View child = RgGender.getChildAt(i);
+            if (child instanceof RadioButton) {
+                RadioButton rb = (RadioButton) child;
+                String normalizedText = normalizeText(rb.getText().toString());
+
+                if (normalizedGender.contains("nam") && normalizedText.contains("nam")) {
+                    rb.setChecked(true);
+                    return;
+                }
+
+                if ((normalizedGender.contains("nu") || normalizedGender.contains("female"))
+                        && (normalizedText.contains("nu") || normalizedText.contains("khac") || normalizedText.contains("other"))) {
+                    if (normalizedText.contains("nu")) {
+                        rb.setChecked(true);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    private void setSpinnerValue(Spinner spinner, String value) {
+        try {
+            int val = Integer.parseInt(value.trim());
+            ArrayAdapter<?> adapter = (ArrayAdapter<?>) spinner.getAdapter();
+            if (adapter == null) return;
+
+            for (int i = 0; i < adapter.getCount(); i++) {
+                Object item = adapter.getItem(i);
+                if (item != null && item.toString().equals(String.valueOf(val))) {
+                    spinner.setSelection(i);
+                    return;
+                }
+            }
+        } catch (NumberFormatException e) {
+            Log.e("OCR_ERROR", "Cannot parse date value: " + value);
+        }
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String normalizeText(String text) {
+        String normalized = Normalizer.normalize(text, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
+        return normalized.toLowerCase(Locale.ROOT).trim();
+    }
 }

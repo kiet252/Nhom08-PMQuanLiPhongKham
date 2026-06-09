@@ -110,5 +110,12 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.viewpager2:viewpager2:1.1.0")
 
+    //Nhận diện OCR
+    implementation("androidx.camera:camera-camera2:1.3.4")
+    implementation("androidx.camera:camera-lifecycle:1.3.4")
+    implementation("androidx.camera:camera-view:1.3.4")
+
+    implementation("com.google.mlkit:text-recognition:16.0.1")
+
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }
