@@ -25,6 +25,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.camera.core.ExperimentalGetImage;
 
 import com.example.nhom08_quanlyphongkham.R;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -124,7 +125,7 @@ public class OCRCameraActivity extends AppCompatActivity {
             }
         }, ContextCompat.getMainExecutor(this));
     }
-
+    @ExperimentalGetImage
     private void takePhoto() {
         if (imageCapture == null) {
             Toast.makeText(this, "Camera chưa sẵn sàng", Toast.LENGTH_SHORT).show();
