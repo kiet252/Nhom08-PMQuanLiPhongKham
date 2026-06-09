@@ -40,7 +40,20 @@
     import retrofit2.Callback;
     import retrofit2.Response;
     import com.google.common.util.concurrent.ListenableFuture;
+    import android.graphics.Bitmap;
+    import com.google.mlkit.vision.common.InputImage;
+    import com.google.mlkit.vision.face.Face;
+    import com.google.mlkit.vision.face.FaceDetector;
+    import com.google.mlkit.vision.face.FaceDetectorOptions;
+    import com.google.mlkit.vision.face.FaceDetection;
+    import org.tensorflow.lite.Interpreter;
 
+    import java.io.FileInputStream;
+    import java.io.IOException;
+    import java.nio.ByteBuffer;
+    import java.nio.ByteOrder;
+    import java.nio.MappedByteBuffer;
+    import java.nio.channels.FileChannel;
     import java.text.SimpleDateFormat;
     import java.util.Calendar;
     import java.util.Locale;
@@ -56,18 +69,24 @@
         private ProfileRepository profileRepository;
         private UserProfile fetchedProfile;
         private String fetchedAndroidId;
+            private String fetchedFaceId;
 
         private final Handler timeHandler = new Handler(Looper.getMainLooper());
         private Runnable timeRunnable;
 
-        private final ActivityResultLauncher<String> requestPermissionLauncher =
-                registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                    if (isGranted) {
-                        startCamera();
-                    } else {
-                        Toast.makeText(this, "Bạn cần cấp quyền Camera để thực hiện chấm công!", Toast.LENGTH_LONG).show();
-                    }
-                });
+            private final ActivityResultLauncher<String> requestPermissionLauncher =
+                        registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                            if (isGranted) {
+                                startCamera();
+                            } else {
+                                Toast.makeText(this, "Bạn cần cấp quyền Camera để thực hiện chấm công!", Toast.LENGTH_LONG).show();
+                            }
+                        });
+
+            // ML / model fields for in-place verification
+            private FaceDetector detector;
+            private Interpreter tflite = null;
+            private final int MODEL_INPUT_SIZE = 160; // adjust to model
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {
@@ -90,9 +109,90 @@
             startTimeTracking();
 
             checkCameraPermission();
-            // Start profile/device check and face scan simulation
+            // Initialize ML Kit detector and try to load TFLite model for in-place verification
+            FaceDetectorOptions options = new FaceDetectorOptions.Builder()
+                    .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+                    .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_NONE)
+                    .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_NONE)
+                    .build();
+            detector = FaceDetection.getClient(options);
+            try {
+                tflite = new Interpreter(loadModelFile("facenet.tflite"));
+            } catch (Exception ex) {
+                Log.w("Timekeeping", "TFLite not loaded: " + ex.getMessage());
+                tflite = null;
+            }
+
+            // Start profile/device check
             profileRepository = new ProfileRepository(this);
             scanAndCheckProfile();
+        }
+
+        private java.nio.MappedByteBuffer loadModelFile(String modelFile) throws java.io.IOException {
+            java.io.FileInputStream is = null;
+            try {
+                android.content.res.AssetFileDescriptor afd = getAssets().openFd(modelFile);
+                is = new java.io.FileInputStream(afd.getFileDescriptor());
+                java.nio.channels.FileChannel fileChannel = is.getChannel();
+                long startOffset = afd.getStartOffset();
+                long declaredLength = afd.getDeclaredLength();
+                return fileChannel.map(java.nio.channels.FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
+            } finally {
+                if (is != null) try { is.close(); } catch (Exception ignored) {}
+            }
+        }
+
+        private float[] runModel(Bitmap bitmap) {
+            int inputSize = MODEL_INPUT_SIZE;
+            ByteBuffer input = ByteBuffer.allocateDirect(4 * inputSize * inputSize * 3);
+            input.order(ByteOrder.nativeOrder());
+
+            int[] intValues = new int[inputSize * inputSize];
+            bitmap.getPixels(intValues, 0, inputSize, 0, 0, inputSize, inputSize);
+
+            for (int i = 0; i < intValues.length; ++i) {
+                int val = intValues[i];
+                float r = ((val >> 16) & 0xFF);
+                float g = ((val >> 8) & 0xFF);
+                float b = (val & 0xFF);
+                input.putFloat((r - 128f) / 128f);
+                input.putFloat((g - 128f) / 128f);
+                input.putFloat((b - 128f) / 128f);
+            }
+            input.rewind();
+
+            float[][] output = new float[1][128];
+            if (tflite != null) tflite.run(input, output);
+            return output[0];
+        }
+
+        private java.util.List<Double> computeFaceVector(Bitmap bmp) {
+            try {
+                Bitmap small = Bitmap.createScaledBitmap(bmp, 16, 8, true);
+                java.util.List<Double> vec = new java.util.ArrayList<>(128);
+                for (int y = 0; y < 8; y++) {
+                    for (int x = 0; x < 16; x++) {
+                        int px = small.getPixel(x, y);
+                        int r = (px >> 16) & 0xff;
+                        int g = (px >> 8) & 0xff;
+                        int b = px & 0xff;
+                        double gray = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0;
+                        vec.add(gray * 2.0 - 1.0);
+                    }
+                }
+                return vec;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        private void l2Normalize(float[] v) {
+            double sum = 0.0;
+            for (float f : v) sum += f * f;
+            double norm = Math.sqrt(sum);
+            if (norm == 0) return;
+            for (int i = 0; i < v.length; i++) v[i] /= norm;
         }
 
         private void initializeViews() {
@@ -182,11 +282,13 @@
                     }
                     fetchedProfile = response.body().get(0);
                     fetchedAndroidId = fetchedProfile.getAndroid_id();
+                    // Read face_id from profile and decide whether to show dialog
+                    fetchedFaceId = fetchedProfile.getFace_id();
+                    android.util.Log.d("TimekeepingCheck", "Fetched profile id=" + fetchedProfile.getID() + " face_id='" + fetchedFaceId + "'");
 
-                    // Temporary feedback: Đã quét
-                    Toast.makeText(Timekeeping.this, "Đã quét", Toast.LENGTH_SHORT).show();
-
-                    if (fetchedAndroidId == null || fetchedAndroidId.trim().isEmpty()) {
+                    // Only show the "Chưa thiết lập khuôn mặt" dialog when face_id is null/empty
+                    if (fetchedFaceId == null || fetchedFaceId.trim().isEmpty()) {
+                        // Temporary feedback: Đã quét
                         showUnknownFaceIdDialog();
                     }
                 }
@@ -226,8 +328,45 @@
                             if (fetchedProfile != null && fetchedProfile.getID() != null) {
                                 it.putExtra("staff_id", fetchedProfile.getID());
                             }
-                            dialog.dismiss();
-                            startActivity(it);
+
+                            // Before opening FaceSignupActivity, check if there's already a pending request with status 'Chưa duyệt'
+                            if (fetchedProfile != null && fetchedProfile.getID() != null) {
+                                btnSend.setEnabled(false);
+                                TimekeepingRepository repo = new TimekeepingRepository(Timekeeping.this);
+                                repo.getRequestsByStaffIdAndStatus(fetchedProfile.getID(), "Chưa duyệt").enqueue(new retrofit2.Callback<java.util.List<java.util.Map<String, Object>>>() {
+                                    @Override
+                                    public void onResponse(retrofit2.Call<java.util.List<java.util.Map<String, Object>>> call, retrofit2.Response<java.util.List<java.util.Map<String, Object>>> response) {
+                                        btnSend.setEnabled(true);
+                                        boolean hasPending = false;
+                                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                                            hasPending = true;
+                                        }
+
+                                        if (hasPending) {
+                                            Toast.makeText(Timekeeping.this, "Bạn đã gửi yêu cầu trước đó, vui lòng chờ quản trị viên xét duyệt.", Toast.LENGTH_LONG).show();
+                                            dialog.dismiss();
+                                            finish();
+                                        } else {
+                                            dialog.dismiss();
+                                            startActivity(it);
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(retrofit2.Call<java.util.List<java.util.Map<String, Object>>> call, Throwable t) {
+                                        btnSend.setEnabled(true);
+                                        // Could not check; inform user and do not open scan to avoid duplicates
+                                        Toast.makeText(Timekeeping.this, "Không thể kiểm tra trạng thái yêu cầu, thử lại sau.", Toast.LENGTH_SHORT).show();
+                                        dialog.dismiss();
+                                    }
+                                });
+                                return;
+                            } else {
+                                // No profile id available: just open scanner (previous behavior)
+                                dialog.dismiss();
+                                startActivity(it);
+                                return;
+                            }
                         } catch (Exception ex) {
                             ex.printStackTrace();
                             Toast.makeText(Timekeeping.this, "Không thể mở chức năng quét khuôn mặt.", Toast.LENGTH_SHORT).show();
@@ -266,25 +405,32 @@
             // Ensure we have fetched profile info
             if (fetchedProfile == null) {
                 Toast.makeText(this, "Chưa có thông tin hồ sơ. Vui lòng chờ và thử lại.", Toast.LENGTH_SHORT).show();
+                android.util.Log.d("TimekeepingAction", "handleConfirmAction: no fetchedProfile yet");
                 return;
             }
 
             String deviceAndroidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
             String profileAndroidId = fetchedAndroidId;
 
-            if (profileAndroidId == null || profileAndroidId.trim().isEmpty()) {
-                // Unknown binding: prompt unknown dialog
+            // First, check device binding: if profile.android_id missing or different -> invalid device flow
+            android.util.Log.d("TimekeepingAction", "handleConfirmAction: deviceAndroidId=" + deviceAndroidId + " profileAndroidId=" + profileAndroidId);
+            if (profileAndroidId == null || profileAndroidId.trim().isEmpty() || !deviceAndroidId.equals(profileAndroidId)) {
+                android.util.Log.d("TimekeepingAction", "handleConfirmAction: device mismatch or not bound -> showInvalidDeviceDialogAndSendRequest");
+                showInvalidDeviceDialogAndSendRequest(deviceAndroidId);
+                return;
+            }
+
+            // Device check passed. Now ensure the staff has a face registered; if not, prompt setup dialog
+            if (fetchedFaceId == null || fetchedFaceId.trim().isEmpty()) {
+                android.util.Log.d("TimekeepingAction", "handleConfirmAction: profile has no face_id -> showUnknownFaceIdDialog");
                 showUnknownFaceIdDialog();
                 return;
             }
 
-            if (!deviceAndroidId.equals(profileAndroidId)) {
-                // Device id mismatch -> show invalid dialog and then send auth request
-                showInvalidDeviceDialogAndSendRequest(deviceAndroidId);
-            } else {
-                // Device matches: normal flow (not specified) -> show success toast
-                Toast.makeText(this, "Chấm công thành công.", Toast.LENGTH_SHORT).show();
-            }
+            // Device matches and face_id exists -> proceed to face verification
+            android.util.Log.d("TimekeepingAction", "handleConfirmAction: device matches and face_id present -> performing in-place face verification");
+            // perform verification inline in this activity
+            verifyFaceNow();
         }
 
         private void sendTimekeepingAuthRequest(String deviceAndroidId) {
@@ -304,6 +450,94 @@
                     Toast.makeText(Timekeeping.this, "Lỗi khi gửi yêu cầu: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
+        }
+
+        // In-place face verification: capture a frame from cameraPreview, detect face, compute embedding and compare
+        private void verifyFaceNow() {
+            try {
+                Bitmap bmp = cameraPreview.getBitmap();
+                if (bmp == null) {
+                    Toast.makeText(this, "Không thể lấy ảnh từ camera, thử lại.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                InputImage inputImage = InputImage.fromBitmap(bmp, 0);
+                detector.process(inputImage)
+                        .addOnSuccessListener(faces -> {
+                            if (faces == null || faces.isEmpty()) {
+                                Toast.makeText(Timekeeping.this, "Không tìm thấy khuôn mặt. Hãy căn đúng vào khung.", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+
+                            Face face = faces.get(0);
+                            android.graphics.Rect box = face.getBoundingBox();
+                            int left = Math.max(0, box.left);
+                            int top = Math.max(0, box.top);
+                            int right = Math.min(bmp.getWidth(), box.right);
+                            int bottom = Math.min(bmp.getHeight(), box.bottom);
+
+                            if (right - left <= 0 || bottom - top <= 0) {
+                                Toast.makeText(Timekeeping.this, "Khuôn mặt không hợp lệ, thử lại.", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+
+                            Bitmap faceBmp = Bitmap.createBitmap(bmp, left, top, right - left, bottom - top);
+                            Bitmap resized = Bitmap.createScaledBitmap(faceBmp, MODEL_INPUT_SIZE, MODEL_INPUT_SIZE, true);
+
+                            float[] emb;
+                            if (tflite != null) emb = runModel(resized);
+                            else {
+                                java.util.List<Double> fallback = computeFaceVector(resized);
+                                if (fallback == null) { Toast.makeText(Timekeeping.this, "Không thể tạo vector khuôn mặt.", Toast.LENGTH_SHORT).show(); return; }
+                                emb = new float[128];
+                                for (int i = 0; i < Math.min(128, fallback.size()); i++) emb[i] = fallback.get(i).floatValue();
+                            }
+
+                            if (emb == null || emb.length != 128) { Toast.makeText(Timekeeping.this, "Không thể xử lý khuôn mặt. Hãy thử lại.", Toast.LENGTH_SHORT).show(); return; }
+                            l2Normalize(emb);
+
+                            // parse expected face vector from fetchedFaceId
+                            java.util.List<Double> expectedVec = null;
+                            if (fetchedFaceId != null) {
+                                try {
+                                    com.google.gson.Gson gson = new com.google.gson.Gson();
+                                    java.lang.reflect.Type type = new com.google.gson.reflect.TypeToken<java.util.List<Double>>(){}.getType();
+                                    expectedVec = gson.fromJson(fetchedFaceId, type);
+                                } catch (Exception ex) {
+                                    try {
+                                        String s = fetchedFaceId.replaceAll("[\\[\\]]", "");
+                                        String[] parts = s.split(",");
+                                        expectedVec = new java.util.ArrayList<>();
+                                        for (String p : parts) { if (p.trim().isEmpty()) continue; expectedVec.add(Double.parseDouble(p.trim())); }
+                                    } catch (Exception ex2) { expectedVec = null; }
+                                }
+                            }
+
+                            double distance = -1.0;
+                            boolean match = false;
+                            if (expectedVec != null && expectedVec.size() >= emb.length) {
+                                float[] exp = new float[emb.length];
+                                for (int i = 0; i < emb.length; i++) exp[i] = expectedVec.get(i).floatValue();
+                                // normalize expected
+                                double sum = 0.0; for (float f : exp) sum += f*f; double norm = Math.sqrt(sum); if (norm != 0) for (int i=0;i<exp.length;i++) exp[i] /= norm;
+                                double s = 0.0; for (int i = 0; i < emb.length && i < exp.length; i++) { double diff = emb[i] - exp[i]; s += diff*diff; }
+                                distance = Math.sqrt(s);
+                                double THRESH = 0.9; if (distance <= THRESH) match = true;
+                            }
+
+                            android.util.Log.d("TimekeepingAction", "verifyFaceNow: match=" + match + " distance=" + distance);
+                            if (match) Toast.makeText(Timekeeping.this, "Xác thực khuôn mặt: thành công", Toast.LENGTH_SHORT).show();
+                            else Toast.makeText(Timekeeping.this, "Xác thực khuôn mặt: thất bại", Toast.LENGTH_SHORT).show();
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(Timekeeping.this, "Lỗi khi phát hiện khuôn mặt: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            Log.e("Timekeeping", "Face detection failed", e);
+                        });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(this, "Lỗi khi xác thực khuôn mặt.", Toast.LENGTH_SHORT).show();
+            }
         }
 
         private void startTimeTracking() {

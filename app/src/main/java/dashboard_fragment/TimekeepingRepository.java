@@ -71,5 +71,24 @@ public class TimekeepingRepository {
 
         return apiService.createAuthRequest("return=minimal", body);
     }
-}
 
+    // Return any requests that match the given staff_id (no type filter)
+    public Call<java.util.List<java.util.Map<String, Object>>> getRequestsByStaffId(String staffId) {
+        java.util.Map<String, String> queries = new java.util.HashMap<>();
+        queries.put("select", "*");
+        queries.put("staff_id", "eq." + staffId);
+
+        return apiService.getAuthRequests(queries);
+    }
+
+    // New: get requests by staff_id and exact status (e.g. "Chưa duyệt")
+    public Call<java.util.List<java.util.Map<String, Object>>> getRequestsByStaffIdAndStatus(String staffId, String status) {
+        java.util.Map<String, String> queries = new java.util.HashMap<>();
+        queries.put("select", "*");
+        queries.put("staff_id", "eq." + staffId);
+        queries.put("status", "eq." + status);
+        Log.e("CHECK_PENDING", "query staff_id: [" + staffId + "]");
+        Log.e("CHECK_PENDING", "query status: [" + status + "]");
+        return apiService.getAuthRequests(queries);
+    }
+}

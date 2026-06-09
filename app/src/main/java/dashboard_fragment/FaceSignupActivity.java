@@ -139,6 +139,12 @@ public class FaceSignupActivity extends BaseActivity {
                         List<Double> vector = new ArrayList<>();
                         for (float f : emb) vector.add((double) f);
 
+                        // Determine if we're running in verify mode
+                        boolean isVerifyMode = false;
+                        String mode = null;
+                        try { mode = getIntent().getStringExtra("mode"); } catch (Exception ignored) {}
+                        if (mode != null && mode.equals("verify")) isVerifyMode = true;
+
                         // Determine staff id (make final so it can be used inside inner classes)
                         String staffIdTemp = staffIdFromIntent;
                         if (staffIdTemp == null || staffIdTemp.isEmpty()) {
@@ -157,67 +163,57 @@ public class FaceSignupActivity extends BaseActivity {
                                 "2. KHOẢNG CÁCH: 30–50 cm là tốt nhất.\n" +
                                 "3. ÁNH SÁNG: Đảm bảo ánh sáng từ phía trước, tránh ngược sáng.\n" +
                                 "4. CỬ ĐỘNG VÀ XOAY: Khi check-in chỉ cần nhìn thẳng và giữ yên 1–2 giây.";
+                        // If running in verify mode, compare the captured vector with expected face from profile
+                        if (isVerifyMode) {
+                            String expectedFaceRaw = null;
+                            try { expectedFaceRaw = getIntent().getStringExtra("expected_face"); } catch (Exception ignored) {}
 
-                        TimekeepingRepository repo = new TimekeepingRepository(FaceSignupActivity.this);
-                        Call<ResponseBody> call = repo.sendFaceAuthRequest(staffId, vector, details);
-                        btnConfirm.setEnabled(false);
-                        call.enqueue(new Callback<ResponseBody>() {
-                            @Override
-                            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                                btnConfirm.setEnabled(true);
-                                if (response.isSuccessful()) {
-                                    Toast.makeText(FaceSignupActivity.this, "Đã gửi yêu cầu quét khuôn mặt.", Toast.LENGTH_SHORT).show();
-                                    finish();
-                                } else {
-                                    // Read error body for diagnosis
-                                    String err = "";
+                            List<Double> expectedVec = null;
+                            if (expectedFaceRaw != null) {
+                                try {
+                                    com.google.gson.Gson gson = new com.google.gson.Gson();
+                                    java.lang.reflect.Type type = new com.google.gson.reflect.TypeToken<java.util.List<Double>>(){}.getType();
+                                    expectedVec = gson.fromJson(expectedFaceRaw, type);
+                                } catch (Exception ex) {
+                                    // try to parse as simple comma separated if not JSON
                                     try {
-                                        if (response.errorBody() != null) {
-                                            err = response.errorBody().string();
+                                        String s = expectedFaceRaw.replaceAll("[\\[\\]]", "");
+                                        String[] parts = s.split(",");
+                                        expectedVec = new ArrayList<>();
+                                        for (String p : parts) {
+                                            if (p.trim().isEmpty()) continue;
+                                            expectedVec.add(Double.parseDouble(p.trim()));
                                         }
-                                    } catch (Exception e) {
-                                        err = "(could not read error body: " + e.getMessage() + ")";
-                                    }
-                                    Log.e("FaceSignup", "Face auth request failed. code=" + response.code() + " url=" + call.request().url() + " body=" + err);
-                                    Toast.makeText(FaceSignupActivity.this, "Không thể gửi yêu cầu (mã: " + response.code() + ")", Toast.LENGTH_LONG).show();
-
-                                    // If 400 (bad request), try sending the face vector as a JSON string (fallback)
-                                    if (response.code() == 400) {
-                                        Toast.makeText(FaceSignupActivity.this, "Gửi lại dưới dạng chuỗi (thử nghiệm)...", Toast.LENGTH_SHORT).show();
-                                        TimekeepingRepository repo2 = new TimekeepingRepository(FaceSignupActivity.this);
-                                        Call<ResponseBody> fallbackCall = repo2.sendFaceAuthRequestAsString(staffId, vector, details);
-                                        fallbackCall.enqueue(new Callback<ResponseBody>() {
-                                            @Override
-                                            public void onResponse(Call<ResponseBody> call2, Response<ResponseBody> resp2) {
-                                                btnConfirm.setEnabled(true);
-                                                if (resp2.isSuccessful()) {
-                                                    Toast.makeText(FaceSignupActivity.this, "Đã gửi yêu cầu (fallback).", Toast.LENGTH_SHORT).show();
-                                                    finish();
-                                                } else {
-                                                    String err2 = "";
-                                                    try { if (resp2.errorBody() != null) err2 = resp2.errorBody().string(); } catch (Exception ex) { err2 = ex.getMessage(); }
-                                                    Log.e("FaceSignup", "Fallback send failed. code=" + resp2.code() + " body=" + err2);
-                                                    Toast.makeText(FaceSignupActivity.this, "Fallback thất bại (mã: " + resp2.code() + ")", Toast.LENGTH_LONG).show();
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onFailure(Call<ResponseBody> call2, Throwable t2) {
-                                                btnConfirm.setEnabled(true);
-                                                Log.e("FaceSignup", "Fallback send error", t2);
-                                                Toast.makeText(FaceSignupActivity.this, "Lỗi khi gửi yêu cầu (fallback): " + t2.getMessage(), Toast.LENGTH_LONG).show();
-                                            }
-                                        });
+                                    } catch (Exception ex2) {
+                                        expectedVec = null;
                                     }
                                 }
                             }
 
-                            @Override
-                            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                                btnConfirm.setEnabled(true);
-                                Toast.makeText(FaceSignupActivity.this, "Lỗi khi gửi yêu cầu: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                            double distance = -1.0;
+                            boolean match = false;
+                            if (expectedVec != null && expectedVec.size() >= vector.size()) {
+                                // convert expectedVec to float[] and l2 norm
+                                float[] exp = new float[vector.size()];
+                                for (int i = 0; i < vector.size(); i++) exp[i] = expectedVec.get(i).floatValue();
+                                // normalize both
+                                l2Normalize(emb);
+                                // convert captured emb to float[] (already emb)
+                                // ensure expected is normalized
+                                float sum = 0f; for (float f : exp) sum += f*f; double norm = Math.sqrt(sum); if (norm != 0) for (int i=0;i<exp.length;i++) exp[i] /= norm;
+                                double s = 0.0; for (int i = 0; i < emb.length && i < exp.length; i++) { double diff = emb[i] - exp[i]; s += diff * diff; }
+                                distance = Math.sqrt(s);
+                                double THRESH = 0.9; // tunable
+                                if (distance <= THRESH) match = true;
                             }
-                        });
+
+                            android.content.Intent out = new android.content.Intent();
+                            out.putExtra("face_match", match);
+                            out.putExtra("face_distance", distance);
+                            setResult(RESULT_OK, out);
+                            finish();
+                            return;
+                        }
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(FaceSignupActivity.this, "Lỗi khi phát hiện khuôn mặt: " + e.getMessage(), Toast.LENGTH_SHORT).show();
