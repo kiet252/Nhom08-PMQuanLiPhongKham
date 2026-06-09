@@ -125,7 +125,7 @@ public class OCRCameraActivity extends AppCompatActivity {
             }
         }, ContextCompat.getMainExecutor(this));
     }
-    @ExperimentalGetImage
+    @androidx.annotation.OptIn(markerClass = ExperimentalGetImage.class)
     private void takePhoto() {
         if (imageCapture == null) {
             Toast.makeText(this, "Camera chưa sẵn sàng", Toast.LENGTH_SHORT).show();
@@ -166,10 +166,7 @@ public class OCRCameraActivity extends AppCompatActivity {
     }
 
     private void processImage(InputImage image, ImageProxy imageProxy) {
-        TextRecognizer recognizer =
-                TextRecognition.getClient(
-                        TextRecognizerOptions.DEFAULT_OPTIONS
-                );
+        TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
 
         recognizer.process(image)
                 .addOnSuccessListener(visionText -> {
@@ -177,17 +174,19 @@ public class OCRCameraActivity extends AppCompatActivity {
                     Log.d("OCR_RAW", rawText);
 
                     parseCCCDInfo(rawText);
+
                     imageProxy.close();
                     btnCapture.setEnabled(true);
                     recognizer.close();
                 })
                 .addOnFailureListener(e -> {
                     Log.e("OCR_ERROR", "OCR failed", e);
+
                     imageProxy.close();
                     btnCapture.setEnabled(true);
                     recognizer.close();
 
-                    Toast.makeText(this, "Lỗi OCR", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Lỗi phân tích hình ảnh", Toast.LENGTH_SHORT).show();
                 });
     }
 
