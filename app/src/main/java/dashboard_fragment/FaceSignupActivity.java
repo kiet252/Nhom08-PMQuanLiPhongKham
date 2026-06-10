@@ -203,7 +203,7 @@ public class FaceSignupActivity extends BaseActivity {
                                 float sum = 0f; for (float f : exp) sum += f*f; double norm = Math.sqrt(sum); if (norm != 0) for (int i=0;i<exp.length;i++) exp[i] /= norm;
                                 double s = 0.0; for (int i = 0; i < emb.length && i < exp.length; i++) { double diff = emb[i] - exp[i]; s += diff * diff; }
                                 distance = Math.sqrt(s);
-                                double THRESH = 0.9; // tunable
+                                double THRESH = 0.8; // tunable (relaxed from 0.9)
                                 if (distance <= THRESH) match = true;
                             }
 
@@ -214,6 +214,69 @@ public class FaceSignupActivity extends BaseActivity {
                             finish();
                             return;
                         }
+
+                        // Non-verify mode: send face registration/auth request to server
+                        // Disable confirm button to avoid duplicates and give user feedback
+                        try {
+                            btnConfirm.setEnabled(false);
+                            btnConfirm.setText("Đang gửi...");
+                        } catch (Exception ignore) {}
+
+                        TimekeepingRepository repo = new TimekeepingRepository(FaceSignupActivity.this);
+                        Log.e("FaceSignup", "Sending face auth request for staffId=" + staffId);
+                        repo.sendFaceAuthRequest(staffId, vector, details).enqueue(new Callback<ResponseBody>() {
+                            @Override
+                            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                try {
+                                    if (response.isSuccessful()) {
+                                        Toast.makeText(FaceSignupActivity.this, "Đã gửi yêu cầu quét khuôn mặt.", Toast.LENGTH_LONG).show();
+                                        finish();
+                                        return;
+                                    } else {
+                                        // If server returns 400, try fallback: send face as JSON string
+                                        int code = response.code();
+                                        String err = null;
+                                        try { if (response.errorBody() != null) err = response.errorBody().string(); } catch (Exception ex) { }
+                                        Log.e("FaceSignup", "Face auth request failed. code=" + code + " err=" + err);
+                                        if (code == 400) {
+                                            // retry as string
+                                            repo.sendFaceAuthRequestAsString(staffId, vector, details).enqueue(new Callback<ResponseBody>() {
+                                                @Override
+                                                public void onResponse(Call<ResponseBody> call2, Response<ResponseBody> resp2) {
+                                                    if (resp2.isSuccessful()) {
+                                                        Toast.makeText(FaceSignupActivity.this, "Đã gửi yêu cầu (fallback).", Toast.LENGTH_LONG).show();
+                                                        finish();
+                                                    } else {
+                                                        Toast.makeText(FaceSignupActivity.this, "Gửi yêu cầu thất bại (mã: " + resp2.code() + ").", Toast.LENGTH_LONG).show();
+                                                        btnConfirm.setEnabled(true);
+                                                        btnConfirm.setText("Quét");
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onFailure(Call<ResponseBody> call2, Throwable t2) {
+                                                    Log.e("FaceSignup", "Fallback send failed", t2);
+                                                    Toast.makeText(FaceSignupActivity.this, "Lỗi khi gửi yêu cầu: " + t2.getMessage(), Toast.LENGTH_LONG).show();
+                                                    btnConfirm.setEnabled(true);
+                                                    btnConfirm.setText("Quét");
+                                                }
+                                            });
+                                            return;
+                                        }
+                                    }
+                                } finally {
+                                    // re-enable if we didn't finish activity
+                                    try { btnConfirm.setEnabled(true); btnConfirm.setText("Quét"); } catch (Exception ignore) {}
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                Log.e("FaceSignup", "sendFaceAuthRequest onFailure", t);
+                                Toast.makeText(FaceSignupActivity.this, "Lỗi khi gửi yêu cầu: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                                try { btnConfirm.setEnabled(true); btnConfirm.setText("Quét"); } catch (Exception ignore) {}
+                            }
+                        });
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(FaceSignupActivity.this, "Lỗi khi phát hiện khuôn mặt: " + e.getMessage(), Toast.LENGTH_SHORT).show();

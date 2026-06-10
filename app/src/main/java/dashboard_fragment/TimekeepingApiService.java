@@ -22,5 +22,10 @@ public interface TimekeepingApiService {
     Call<java.util.List<java.util.Map<String, Object>>> getAuthRequests(
             @QueryMap Map<String, String> queries
             );
+    @GET("rest/v1/timekeeping")
+    Call<java.util.List<java.util.Map<String, Object>>> getTimekeepingEntries(
+            @QueryMap Map<String, String> queries
+
+    );
 }
 

@@ -55,8 +55,11 @@
     import java.nio.MappedByteBuffer;
     import java.nio.channels.FileChannel;
     import java.text.SimpleDateFormat;
+    import java.util.ArrayList;
     import java.util.Calendar;
+    import java.util.List;
     import java.util.Locale;
+    import java.util.Map;
     import java.util.concurrent.ExecutionException;
 
     public class Timekeeping extends BaseActivity {
@@ -69,8 +72,10 @@
         private ProfileRepository profileRepository;
         private UserProfile fetchedProfile;
         private String fetchedAndroidId;
-            private String fetchedFaceId;
+        private String fetchedFaceId;
 
+        // Khai báo ở đầu class — cùng chỗ với fetchedProfile, fetchedAndroidId
+        private List<Map<String, Object>> shiftList = new ArrayList<>();
         private final Handler timeHandler = new Handler(Looper.getMainLooper());
         private Runnable timeRunnable;
 
@@ -107,6 +112,7 @@
             setupShiftOptions();
             setupListeners();
             startTimeTracking();
+
 
             checkCameraPermission();
             // Initialize ML Kit detector and try to load TFLite model for in-place verification
@@ -242,11 +248,45 @@
         }
 
         private void setupShiftOptions() {
-            String[] shifts = {"Ca Sáng (07:30 - 11:30)", "Ca Chiều (13:30 - 17:30)", "Ca Tối (18:00 - 21:00)"};
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, shifts);
-            if (spinnerShift != null) spinnerShift.setAdapter(adapter);
-        }
+            if (fetchedProfile == null || fetchedProfile.getID() == null) return;
+            TimekeepingRepository repo = new TimekeepingRepository(this);
+            repo.getShifts(fetchedProfile.getID()).enqueue(new Callback<List<Map<String, Object>>>() {
+                @Override
+                public void onResponse(Call<List<Map<String, Object>>> call, Response<List<Map<String, Object>>> response) {
+                if (!response.isSuccessful() || response.body() == null) return;
 
+                    shiftList = response.body();
+
+                    List<String> displayItems = new ArrayList<>();
+                    for (Map<String, Object> row : shiftList) {
+                        String start = formatTime((String) row.get("start_time"));
+                        String end   = formatTime((String) row.get("end_time"));
+                        displayItems.add(start + " - " + end);
+                    }
+
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                            Timekeeping.this,
+                            android.R.layout.simple_spinner_dropdown_item,
+                            displayItems
+                    );
+                    if (spinnerShift != null) spinnerShift.setAdapter(adapter);
+                }
+                @Override
+                public void onFailure(Call<List<Map<String, Object>>> call, Throwable t) {
+                    Toast.makeText(Timekeeping.this, "Không thể tải ca làm việc", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        private String formatTime(String timestamp) {
+            if (timestamp == null) return "--:--";
+            try {
+                SimpleDateFormat input = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault());
+                SimpleDateFormat output = new SimpleDateFormat("HH:mm", Locale.getDefault());
+                return output.format(input.parse(timestamp));
+            } catch (Exception e) {
+                return timestamp;
+            }
+        }
         private void setupListeners() {
             if (btnBack != null) {
                 btnBack.setOnClickListener(v -> finish());
@@ -333,7 +373,8 @@
                             if (fetchedProfile != null && fetchedProfile.getID() != null) {
                                 btnSend.setEnabled(false);
                                 TimekeepingRepository repo = new TimekeepingRepository(Timekeeping.this);
-                                repo.getRequestsByStaffIdAndStatus(fetchedProfile.getID(), "Chưa duyệt").enqueue(new retrofit2.Callback<java.util.List<java.util.Map<String, Object>>>() {
+                                // Check for pending Face requests specifically
+                                repo.getRequestsByStaffIdStatusAndType(fetchedProfile.getID(), "Chưa duyệt", "Face").enqueue(new retrofit2.Callback<java.util.List<java.util.Map<String, Object>>>() {
                                     @Override
                                     public void onResponse(retrofit2.Call<java.util.List<java.util.Map<String, Object>>> call, retrofit2.Response<java.util.List<java.util.Map<String, Object>>> response) {
                                         btnSend.setEnabled(true);
@@ -389,11 +430,66 @@
                         .setCancelable(true)
                         .create();
 
-                dialog.setOnDismissListener(d -> {
-                    // after dismiss, show toast and send insert request
-                    Toast.makeText(Timekeeping.this, "Đã gửi yêu cầu.", Toast.LENGTH_SHORT).show();
-                    sendTimekeepingAuthRequest(deviceAndroidId);
-                });
+                // Make dialog window transparent so only our card is visible (same as unknown_faceid)
+                if (dialog.getWindow() != null) {
+                    dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+                }
+
+                // Do NOT send request automatically on dismiss. Only send when user explicitly taps the send button.
+                View btnSend = dialogView.findViewById(R.id.btnSendRequest);
+                if (btnSend != null) {
+                    btnSend.setOnClickListener(v -> {
+                        try {
+                            // disable to avoid double taps while we check
+                            v.setEnabled(false);
+
+                            // If we have a fetched profile id, check for existing pending requests first
+                            if (fetchedProfile != null && fetchedProfile.getID() != null) {
+                                 TimekeepingRepository repo = new TimekeepingRepository(Timekeeping.this);
+                                 // Check for pending DeviceID requests specifically
+                                 repo.getRequestsByStaffIdStatusAndType(fetchedProfile.getID(), "Chưa duyệt", "DeviceID")
+                                         .enqueue(new retrofit2.Callback<java.util.List<java.util.Map<String, Object>>>() {
+                                            @Override
+                                            public void onResponse(retrofit2.Call<java.util.List<java.util.Map<String, Object>>> call, retrofit2.Response<java.util.List<java.util.Map<String, Object>>> response) {
+                                                v.setEnabled(true);
+                                                boolean hasPending = false;
+                                                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                                                    hasPending = true;
+                                                }
+
+                                                if (hasPending) {
+                                                    Toast.makeText(Timekeeping.this, "Bạn đã gửi yêu cầu trước đó, vui lòng chờ quản trị viên xét duyệt.", Toast.LENGTH_LONG).show();
+                                                    dialog.dismiss();
+                                                    finish();
+                                                } else {
+                                                    // no pending -> send request
+                                                    Toast.makeText(Timekeeping.this, "Đã gửi yêu cầu.", Toast.LENGTH_SHORT).show();
+                                                    sendTimekeepingAuthRequest(deviceAndroidId);
+                                                    dialog.dismiss();
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onFailure(retrofit2.Call<java.util.List<java.util.Map<String, Object>>> call, Throwable t) {
+                                                v.setEnabled(true);
+                                                // Could not check; inform user and avoid sending to prevent duplicates
+                                                Toast.makeText(Timekeeping.this, "Không thể kiểm tra trạng thái yêu cầu, thử lại sau.", Toast.LENGTH_SHORT).show();
+                                                dialog.dismiss();
+                                            }
+                                        });
+                            } else {
+                                // No profile id available: send request directly (fallback)
+                                Toast.makeText(Timekeeping.this, "Đã gửi yêu cầu.", Toast.LENGTH_SHORT).show();
+                                sendTimekeepingAuthRequest(deviceAndroidId);
+                                dialog.dismiss();
+                            }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            v.setEnabled(true);
+                            Toast.makeText(Timekeeping.this, "Không thể gửi yêu cầu lúc này.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
 
                 dialog.show();
             } catch (Exception e) {
@@ -522,12 +618,12 @@
                                 double sum = 0.0; for (float f : exp) sum += f*f; double norm = Math.sqrt(sum); if (norm != 0) for (int i=0;i<exp.length;i++) exp[i] /= norm;
                                 double s = 0.0; for (int i = 0; i < emb.length && i < exp.length; i++) { double diff = emb[i] - exp[i]; s += diff*diff; }
                                 distance = Math.sqrt(s);
-                                double THRESH = 0.9; if (distance <= THRESH) match = true;
+                                double THRESH = 0.8; if (distance <= THRESH) match = true;
                             }
 
                             android.util.Log.d("TimekeepingAction", "verifyFaceNow: match=" + match + " distance=" + distance);
-                            if (match) Toast.makeText(Timekeeping.this, "Xác thực khuôn mặt: thành công", Toast.LENGTH_SHORT).show();
-                            else Toast.makeText(Timekeeping.this, "Xác thực khuôn mặt: thất bại", Toast.LENGTH_SHORT).show();
+                            if (match) Toast.makeText(Timekeeping.this, "Xác thực khuôn mặt: thành công (dist=" + String.format(Locale.US, "%.4f", distance) + ")", Toast.LENGTH_SHORT).show();
+                            else Toast.makeText(Timekeeping.this, "Xác thực khuôn mặt: thất bại (dist=" + String.format(Locale.US, "%.4f", distance) + ")", Toast.LENGTH_SHORT).show();
                         })
                         .addOnFailureListener(e -> {
                             Toast.makeText(Timekeeping.this, "Lỗi khi phát hiện khuôn mặt: " + e.getMessage(), Toast.LENGTH_SHORT).show();
