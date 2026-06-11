@@ -477,12 +477,10 @@ public class AdminTimekeepingScheduleActivity extends BaseActivity {
         if (iso == null || iso.isEmpty()) return null;
         try {
             String formattedIso = iso.replace(" ", "T");
-            // Thử parse có timezone trước (dữ liệu có +07:00)
             try {
                 return ZonedDateTime.parse(formattedIso)
                         .withZoneSameInstant(ZONE).toLocalDate();
             } catch (Exception e1) {
-                // Fallback: Supabase trả về không có timezone
                 return java.time.LocalDateTime.parse(formattedIso).toLocalDate();
             }
         } catch (Exception e) {
