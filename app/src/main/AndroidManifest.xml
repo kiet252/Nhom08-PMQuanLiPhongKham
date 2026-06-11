@@ -85,6 +85,9 @@
         <activity
             android:name="dashboard_fragment.admin_manage_device.AdminManageDeviceActivity"
             android:exported="false" />
+        <activity
+            android:name="dashboard_fragment.admin_timekeeping_schedule.AdminTimekeepingScheduleActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

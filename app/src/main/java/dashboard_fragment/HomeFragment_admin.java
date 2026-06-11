@@ -21,6 +21,7 @@ import com.example.nhom08_quanlyphongkham.admin_reports.ReportItem;
 import com.example.nhom08_quanlyphongkham.admin_manage_staff.admin_manage_staff;
 import com.example.nhom08_quanlyphongkham.admin_reports.ReportsActivity_Admin;
 import dashboard_fragment.admin_manage_device.AdminManageDeviceActivity;
+import dashboard_fragment.admin_timekeeping_schedule.AdminTimekeepingScheduleActivity;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 
@@ -142,6 +143,14 @@ public class HomeFragment_admin extends Fragment {
             Intent intent = new Intent(getActivity(), admin_manage_staff.class);
             startActivity(intent);
         });
+
+        View btnMngTimekeepingSchedule = view.findViewById(R.id.btn_mngTimekeepingSchedule);
+        if (btnMngTimekeepingSchedule != null) {
+            btnMngTimekeepingSchedule.setOnClickListener(v -> {
+                Intent intent = new Intent(getActivity(), AdminTimekeepingScheduleActivity.class);
+                startActivity(intent);
+            });
+        }
 
         View btnMngDeviceApproval = view.findViewById(R.id.btn_mngDeviceApproval);
         if (btnMngDeviceApproval != null) {

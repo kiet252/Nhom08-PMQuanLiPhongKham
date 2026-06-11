@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp">
+
+    <TextView
+        android:id="@+id/tvStaffAvatarInitials"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:background="@drawable/bg_schedule_avatar"
+        android:gravity="center"
+        android:text="NV"
+        android:textColor="#0D3F6E"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvStaffName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tên nhân viên"
+            android:textColor="#1E293B"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvStaffRole"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Chức vụ"
+            android:textColor="#64748B"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutStaffStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="10dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="4dp">
+
+        <View
+            android:id="@+id/dotStaffStatus"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="@drawable/bg_schedule_dot_pending" />
+
+        <TextView
+            android:id="@+id/tvStaffStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:text="Chưa checkin"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/btnRemoveStaff"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="6dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Xóa ca"
+        android:src="@drawable/ic_delete"
+        android:visibility="gone"
+        app:tint="#94A3B8" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAddStaff"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:layout_marginStart="6dp"
+        android:minWidth="0dp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:text="+ Thêm"
+        android:textColor="#0D3F6E"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+</LinearLayout>
