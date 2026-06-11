@@ -82,6 +82,9 @@
         <activity
             android:name="dashboard_fragment.admin_manage_medicine_clinical.AdminClinicalDetailActivity"
             android:exported="false" />
+        <activity
+            android:name="dashboard_fragment.admin_manage_device.AdminManageDeviceActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

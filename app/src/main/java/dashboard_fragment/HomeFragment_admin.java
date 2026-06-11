@@ -20,6 +20,7 @@ import com.example.nhom08_quanlyphongkham.admin_reports.ReportApiService;
 import com.example.nhom08_quanlyphongkham.admin_reports.ReportItem;
 import com.example.nhom08_quanlyphongkham.admin_manage_staff.admin_manage_staff;
 import com.example.nhom08_quanlyphongkham.admin_reports.ReportsActivity_Admin;
+import dashboard_fragment.admin_manage_device.AdminManageDeviceActivity;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 
@@ -120,12 +121,12 @@ public class HomeFragment_admin extends Fragment {
         reportApiService = SupabaseClientProvider.getClient(requireContext()).create(ReportApiService.class);
 
         View chatbotView = view.findViewById(R.id.chatbot_floating_button);
-        if (chatbotView != null) {
-            chatbotView.setOnClickListener(v ->
-                    ChatbotBottomSheetFragment.newInstance(UserRole.ADMIN.name())
-                            .show(getParentFragmentManager(), "chatbot")
-            );
-        }
+//        if (chatbotView != null) {
+//            chatbotView.setOnClickListener(v ->
+//                    ChatbotBottomSheetFragment.newInstance(UserRole.ADMIN.name())
+//                            .show(getParentFragmentManager(), "chatbot")
+//            );
+//        }
 
         // Lấy tên người dùng từ SharedPrefManager
         SharedPrefManager prefManager = SharedPrefManager.getInstance(requireContext());
@@ -141,6 +142,14 @@ public class HomeFragment_admin extends Fragment {
             Intent intent = new Intent(getActivity(), admin_manage_staff.class);
             startActivity(intent);
         });
+
+        View btnMngDeviceApproval = view.findViewById(R.id.btn_mngDeviceApproval);
+        if (btnMngDeviceApproval != null) {
+            btnMngDeviceApproval.setOnClickListener(v -> {
+                Intent intent = new Intent(getActivity(), AdminManageDeviceActivity.class);
+                startActivity(intent);
+            });
+        }
 
         View btnMngMedicineClinical = view.findViewById(R.id.btn_mngMedicineClinical);
         if (btnMngMedicineClinical != null) {
