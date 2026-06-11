@@ -82,11 +82,10 @@
                         app:cardElevation="0dp">
 
                         <ImageView
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
                             android:layout_gravity="center"
-                            android:src="@drawable/ic_pill"
-                            app:tint="@android:color/white" />
+                            android:src="@drawable/ic_pill" />
                     </com.google.android.material.card.MaterialCardView>
 
                     <!-- Text on the right -->

@@ -54,7 +54,7 @@ public class AdminMedicineDetailActivity extends BaseActivity {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
         // Setup Dropdown for units
-        String[] units = {"Viên", "Chai", "Hộp", "Ống", "Vỉ", "Gói", "Tuýp", "Cái", "Viên nén", "Viên sủi"};
+        String[] units = {"viên", "chai","lọ", "ống", "gói", "ml", "hộp","vỉ", "tuýp", "cái", "viên nén", "viên sủi"};
         ArrayAdapter<String> unitAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, units);
         actvMedUnit.setAdapter(unitAdapter);
 

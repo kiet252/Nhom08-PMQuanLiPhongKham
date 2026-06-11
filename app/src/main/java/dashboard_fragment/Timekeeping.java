@@ -253,8 +253,9 @@
             repo.getShifts(fetchedProfile.getID()).enqueue(new Callback<List<Map<String, Object>>>() {
                 @Override
                 public void onResponse(Call<List<Map<String, Object>>> call, Response<List<Map<String, Object>>> response) {
-                if (!response.isSuccessful() || response.body() == null) return;
-
+                if (!response.isSuccessful() || response.body() == null) {
+                    return;
+                }
                     shiftList = response.body();
 
                     List<String> displayItems = new ArrayList<>();

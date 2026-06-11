@@ -52,7 +52,7 @@ public class AdminClinicalDetailActivity extends BaseActivity {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
         // Setup Dropdown for clinical types
-        String[] clinicalTypes = {"Xét nghiệm máu", "Siêu âm", "Chụp X-quang", "Nội soi", "Điện tim", "Thính học", "Xét nghiệm nước tiểu", "Xét nghiệm khác"};
+        String[] clinicalTypes = {"Xét nghiệm máu", "Siêu âm", "Chẩn đoán hình ảnh", "Nội soi", "Thính học"};
         ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, clinicalTypes);
         actvClinicalType.setAdapter(typeAdapter);
 

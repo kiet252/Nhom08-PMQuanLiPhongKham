@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-feature android:name="android.hardware.camera.any" />
 
     <application
@@ -16,6 +17,9 @@
         android:roundIcon="@drawable/ic_launcher_icon"
         android:supportsRtl="true"
         android:theme="@style/Theme.Nhom08QuanLyPhongKham">
+        <activity
+            android:name="dashboard_fragment.staff_add_update_patient.add_patient_logic.OCRCameraActivity"
+            android:exported="false" />
         <activity
             android:name=".account_forgot_password.ForgotPassword_account"
             android:exported="false" />
@@ -51,6 +55,15 @@
             android:name="dashboard_fragment.staff_create_examination_form.CreateExaminationForm_staff"
             android:exported="false" />
         <activity
+            android:name="dashboard_fragment.admin_manage_medicine_clinical.AdminManageMedicineClinicalActivity"
+            android:exported="false" />
+        <activity
+            android:name="dashboard_fragment.admin_manage_medicine_clinical.AdminMedicineDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name="dashboard_fragment.admin_manage_medicine_clinical.AdminClinicalDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".login"
             android:exported="true">
             <intent-filter>
@@ -75,7 +88,9 @@
         <activity
             android:name=".admin_reports.ReportsActivity_Admin"
             android:exported="false" />
-        <activity android:name="dashboard_fragment.timekeeping"/>
+        <activity
+            android:name="dashboard_fragment.Timekeeping"
+            android:exported="false" />
         <activity
             android:name="dashboard_fragment.admin_timekeeping_schedule.AdminTimekeepingScheduleActivity"
             android:exported="false" />
