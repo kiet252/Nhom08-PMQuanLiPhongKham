@@ -11,10 +11,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class SupabaseClientProvider {
     public static final String SUPABASE_URL = "https://waiuciilyysobnvcwshd.supabase.co/";
     public static final String SUPABASE_ANON_KEY = BuildConfig.SUPABASE_ANON_KEY;
-    private static Retrofit retrofit;
 
     public static Retrofit getClient(Context context) {
-        if (retrofit == null) {
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
             logging.setLevel(HttpLoggingInterceptor.Level.BODY);
 
@@ -66,12 +64,12 @@ public class SupabaseClientProvider {
                     })
                     .build();
 
-            retrofit = new Retrofit.Builder()
-                    .baseUrl(SUPABASE_URL)
-                    .client(okHttpClient)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-        }
-        return retrofit;
+
+
+        return new Retrofit.Builder()
+                .baseUrl(SUPABASE_URL)
+                .client(okHttpClient)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
     }
 }

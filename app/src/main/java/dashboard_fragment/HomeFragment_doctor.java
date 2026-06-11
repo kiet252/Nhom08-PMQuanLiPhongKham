@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.os.Looper;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
@@ -35,9 +34,6 @@ import dashboard_fragment.doctor_examination_list.ExaminationList_doctor;
 import dashboard_fragment.staff_create_examination_form.ExaminationFormRepository;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import retrofit2.Call;
-
-import android.widget.Toast;
-import com.example.nhom08_quanlyphongkham.widget.ChatbotFloatingButton;
 
 public class HomeFragment_doctor extends Fragment {
 
@@ -207,7 +203,7 @@ public class HomeFragment_doctor extends Fragment {
         // MỞ GIAO DIỆN CHẤM CÔNG
         if (btnTimekeeping != null) {
             btnTimekeeping.setOnClickListener(v -> {
-                startActivity(new Intent(getActivity(), timekeeping.class));
+                startActivity(new Intent(getActivity(), Timekeeping.class));
             });
         }
     }
