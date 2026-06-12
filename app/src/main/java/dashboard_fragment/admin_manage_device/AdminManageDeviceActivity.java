@@ -93,7 +93,15 @@ public class AdminManageDeviceActivity extends BaseActivity {
         pendingRequests.clear();
         pendingRequests.addAll(requests);
         adapter.setData(pendingRequests);
-        tvPendingCount.setText(pendingRequests.size() + " yêu cầu chờ duyệt");
+        
+        long pendingCount = 0;
+        for (DeviceApprovalRequest req : requests) {
+            if (req != null && (req.getStatus() == null || "Chưa duyệt".equals(req.getStatus()))) {
+                pendingCount++;
+            }
+        }
+        tvPendingCount.setText(pendingCount + " yêu cầu chờ duyệt");
+        
         layoutEmpty.setVisibility(pendingRequests.isEmpty() ? View.VISIBLE : View.GONE);
         recyclerView.setVisibility(pendingRequests.isEmpty() ? View.GONE : View.VISIBLE);
     }
@@ -111,6 +119,7 @@ public class AdminManageDeviceActivity extends BaseActivity {
         TextView tvStaffId = dialog.findViewById(R.id.tvDialogDeviceStaffId);
         TextView tvAndroidId = dialog.findViewById(R.id.tvDialogDeviceAndroidId);
         TextView tvCreatedAt = dialog.findViewById(R.id.tvDialogDeviceCreatedAt);
+        TextView tvStatus = dialog.findViewById(R.id.tvDialogDeviceStatus);
         MaterialButton btnApprove = dialog.findViewById(R.id.btnApproveDevice);
         MaterialButton btnReject = dialog.findViewById(R.id.btnRejectDevice);
 
@@ -118,6 +127,29 @@ public class AdminManageDeviceActivity extends BaseActivity {
         tvStaffId.setText(request.getStaffId());
         tvAndroidId.setText(request.getAndroidId());
         tvCreatedAt.setText(DeviceApprovalAdapter.formatDetailDate(request.getCreatedAt()));
+
+        if (tvStatus != null) {
+            String status = request.getStatus();
+            if ("Đã duyệt".equals(status)) {
+                tvStatus.setText("Đã duyệt");
+                tvStatus.setBackgroundResource(R.drawable.bg_device_status_approved);
+                tvStatus.setTextColor(android.graphics.Color.parseColor("#10B981"));
+                btnApprove.setEnabled(false);
+                btnReject.setEnabled(false);
+            } else if ("Từ chối".equals(status)) {
+                tvStatus.setText("Từ chối");
+                tvStatus.setBackgroundResource(R.drawable.bg_device_status_rejected);
+                tvStatus.setTextColor(android.graphics.Color.parseColor("#EF4444"));
+                btnApprove.setEnabled(false);
+                btnReject.setEnabled(false);
+            } else {
+                tvStatus.setText("Chờ duyệt");
+                tvStatus.setBackgroundResource(R.drawable.bg_device_status_pending);
+                tvStatus.setTextColor(android.graphics.Color.parseColor("#D98B00"));
+                btnApprove.setEnabled(true);
+                btnReject.setEnabled(true);
+            }
+        }
 
         dialog.findViewById(R.id.btnCloseDeviceDialog).setOnClickListener(v -> dialog.dismiss());
         btnApprove.setOnClickListener(v -> confirmApprove(request, dialog));
@@ -180,17 +212,64 @@ public class AdminManageDeviceActivity extends BaseActivity {
 
     private void updateRequestStatus(DeviceApprovalRequest request, String status, String successMessage, Dialog dialog) {
         repository.updateRequestStatus(request.getId(), status).enqueue(new Callback<ResponseBody>() {
-            @Override
+             @Override
             public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                 setLoading(false);
 
+                String url = call.request().url().toString();
+                int code = response.code();
+                String responseBodyStr = "";
+                try {
+                    if (response.body() != null) {
+                        responseBodyStr = response.body().string();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                android.util.Log.d("SUPABASE_UPDATE_DIAGNOSTIC", "URL: " + url + " | Code: " + code + " | Body: " + responseBodyStr);
+
                 if (!response.isSuccessful()) {
-                    Toast.makeText(AdminManageDeviceActivity.this, "Không thể cập nhật trạng thái yêu cầu", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AdminManageDeviceActivity.this, "Không thể cập nhật trạng thái yêu cầu. Mã HTTP: " + code, Toast.LENGTH_SHORT).show();
                     return;
                 }
-                dialog.dismiss();
+
+                if (responseBodyStr.trim().equals("[]") || responseBodyStr.trim().isEmpty()) {
+                    Toast.makeText(AdminManageDeviceActivity.this, "Cảnh báo: Không có dòng nào được cập nhật trên database! (Lỗi RLS hoặc ID)", Toast.LENGTH_LONG).show();
+                    android.util.Log.w("SUPABASE_UPDATE_DIAGNOSTIC", "Warning: 0 rows updated! Check filters or RLS policies.");
+                }
+
+                // Cập nhật hiển thị trạng thái trực tiếp trên dialog sang màu xanh lá/đỏ
+                TextView tvStatus = dialog.findViewById(R.id.tvDialogDeviceStatus);
+                if (tvStatus != null) {
+                    if ("Đã duyệt".equals(status)) {
+                        tvStatus.setText("Đã duyệt");
+                        tvStatus.setBackgroundResource(R.drawable.bg_device_status_approved);
+                        tvStatus.setTextColor(android.graphics.Color.parseColor("#10B981"));
+                    } else if ("Từ chối".equals(status)) {
+                        tvStatus.setText("Từ chối");
+                        tvStatus.setBackgroundResource(R.drawable.bg_device_status_rejected);
+                        tvStatus.setTextColor(android.graphics.Color.parseColor("#EF4444"));
+                    }
+                }
+
+                // Vô hiệu hoá các nút bấm để người dùng thấy thao tác đã thành công và tránh click đúp
+                MaterialButton btnApprove = dialog.findViewById(R.id.btnApproveDevice);
+                MaterialButton btnReject = dialog.findViewById(R.id.btnRejectDevice);
+                if (btnApprove != null) btnApprove.setEnabled(false);
+                if (btnReject != null) btnReject.setEnabled(false);
+
+                // Cập nhật trạng thái của đối tượng request trong danh sách và làm mới adapter
+                request.setStatus(status);
+                adapter.notifyDataSetChanged();
+
                 Toast.makeText(AdminManageDeviceActivity.this, successMessage, Toast.LENGTH_SHORT).show();
-                loadPendingRequests();
+
+                // Trì hoãn 1.5 giây trước khi đóng dialog và load lại danh sách để admin kịp nhìn thấy màu xanh lá/đỏ
+                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                    dialog.dismiss();
+                    loadPendingRequests();
+                }, 1500);
             }
 
             @Override

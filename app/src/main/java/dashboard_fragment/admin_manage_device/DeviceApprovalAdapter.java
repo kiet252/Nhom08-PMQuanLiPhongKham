@@ -174,7 +174,21 @@ public class DeviceApprovalAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             tvAndroidId.setText(request.getAndroidId());
             tvStaffId.setText("Mã NV: " + request.getStaffId());
             tvTime.setText(formatTime(request.getCreatedAt()));
-            tvStatus.setText("Chờ duyệt");
+            
+            String status = request.getStatus();
+            if ("Đã duyệt".equals(status)) {
+                tvStatus.setText("Đã duyệt");
+                tvStatus.setBackgroundResource(R.drawable.bg_device_status_approved);
+                tvStatus.setTextColor(android.graphics.Color.parseColor("#10B981"));
+            } else if ("Từ chối".equals(status)) {
+                tvStatus.setText("Từ chối");
+                tvStatus.setBackgroundResource(R.drawable.bg_device_status_rejected);
+                tvStatus.setTextColor(android.graphics.Color.parseColor("#EF4444"));
+            } else {
+                tvStatus.setText("Chờ duyệt");
+                tvStatus.setBackgroundResource(R.drawable.bg_device_status_pending);
+                tvStatus.setTextColor(android.graphics.Color.parseColor("#D98B00"));
+            }
             itemView.setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onRequestClick(request);

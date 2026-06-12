@@ -12,7 +12,7 @@ import retrofit2.http.PATCH;
 import retrofit2.http.Query;
 
 public interface DeviceApprovalApiService {
-    @GET("rest/v1/timekeeping_auth_request?type_of_request=eq.DeviceID&status=eq.Chưa duyệt&order=created_at.desc")
+    @GET("rest/v1/timekeeping_auth_request?type_of_request=eq.DeviceID&order=created_at.desc")
     Call<List<DeviceApprovalRequest>> getPendingDeviceRequests(
             @Query("select") String select
     );

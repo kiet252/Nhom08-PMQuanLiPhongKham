@@ -33,6 +33,6 @@ public class DeviceApprovalRepository {
     public Call<ResponseBody> updateRequestStatus(long requestId, String status) {
         Map<String, Object> updates = new HashMap<>();
         updates.put("status", status);
-        return apiService.updateRequestStatus("return=minimal", "eq." + requestId, updates);
+        return apiService.updateRequestStatus("return=representation", "eq." + requestId, updates);
     }
 }
