@@ -203,9 +203,9 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
 
             setSuggestionTexts(
                     btnSuggestion1, btnSuggestion2, btnSuggestion3, btnSuggestion4, btnSuggestion5,
-                    "Làm sao để thêm nhân viên mới",
-                    "Làm sao để xóa nhân viên",
                     "Làm sao chỉnh sửa thông tin nhân viên",
+                    "Làm sao để thêm thuốc và dịch vụ CLS",
+                    "Làm sao để phân ca cho nhân viên",
                     "Làm sao để tạo thông báo chung",
                     "Làm sao để xóa thông báo chung"
             );
@@ -256,6 +256,14 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
 
         if (UserRole.BAC_SI.name().equals(roleName)) {
             return answerDoctor(query);
+        }
+
+        if (UserRole.NHAN_VIEN.name().equals(roleName)) {
+            return answerStaff(query);
+        }
+
+        if (UserRole.ADMIN.name().equals(roleName)) {
+            return answerAdmin(query);
         }
 
         return "Xin lỗi, tôi không hiểu câu hỏi này."; // Chỗ này Kiệt Cao sửa lại thêm 2 role kia vào nhé (answerAdmin với answerStaff)
@@ -338,6 +346,148 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
 
         return "Mình chưa hiểu rõ câu hỏi này.\n\n" +
                 "Mình chỉ hỗ trợ các chức năng dành cho Bác sĩ. Bạn có thể bấm một trong các câu gợi ý phía dưới hoặc nhập cụ thể chức năng bạn muốn xem.";
+    }
+
+    private String answerStaff(String rawMessage) {
+        String query = normalize(rawMessage);
+
+        if (containsAny(query,
+                "cach tao ho so cho benh nhan moi",
+                "tao ho so benh nhan moi",
+                "tao ho so benh nhan",
+                "them benh nhan",
+                "tao benh nhan")) {
+            return "📘 Cách tạo hồ sơ cho bệnh nhân mới\n\n" +
+                    "Vào mục \"Quản lý thông tin bệnh nhân\" → Nhấn nút \"Tạo mới\" → Nhập đầy đủ Họ tên, Địa chỉ, Số điện thoại, Giới tính, Ngày sinh, CCCD → Nhấn \"Lưu\" để tạo mới.";
+        }
+
+        if (containsAny(query,
+                "cach cap nhat thong tin cho benh nhan",
+                "cap nhat thong tin cho benh nhan",
+                "sua thong tin benh nhan",
+                "cap nhat thong tin benh nhan",
+                "sua benh nhan")) {
+            return "📘 Cách cập nhật thông tin cho bệnh nhân\n\n" +
+                    "Vào mục \"Quản lý thông tin bệnh nhân\" → Nhấn nút \"Cập nhật\" → Nhập đầy đủ Họ tên, Địa chỉ, Số điện thoại, Giới tính, Ngày sinh, CCCD → Nhấn \"Lưu\" để cập nhật.";
+        }
+
+        if (containsAny(query,
+                "cach tao phieu kham",
+                "tao phieu kham",
+                "them phieu kham",
+                "tao phieu")) {
+            return "📘 Cách tạo phiếu khám\n\n" +
+                    "Nhập CCCD hoặc mã bênh nhân → Nhấn \"Tìm\" → Chọn lịch hẹn gần nhất (Nếu có), chọn ngày khám, giờ khám dự kiến, bác sĩ khám → Nhập trệu chứng ban đầu → Chọn hình thức thanh toán (Nếu chọn chuyển khoản thì sẽ xuất hiện QR thanh toán) → Nhấn \"Tạo phiếu\".";
+        }
+
+        if (containsAny(query,
+                "cach xem chi tiet phieu kham",
+                "xem chi tiet phieu kham",
+                "chi tiet phieu kham",
+                "xem phieu kham")) {
+            return "📘 Cách xem chi tiết phiếu khám\n\n" +
+                    "Vào mục \"Quản lý phiếu khám\" → Nhập CCCD hoặc mã bệnh nhân → Sử dụng bộ lọc và sắp xếp → Nhấn giữ vào hàng phiếu khám cần xem → Chọn Chi tiết.";
+        }
+
+        if (containsAny(query,
+                "cach huy phieu kham",
+                "huy phieu kham",
+                "huy phieu") && !query.contains("chuyen")) { // Tránh nhầm với đổi trạng thái
+            return "📘 Cách hủy phiếu khám\n\n" +
+                    "Vào mục \"Quản lý phiếu khám\" → Nhập CCCD hoặc mã bệnh nhân → Sử dụng bộ lọc và sắp xếp → Nhấn giữ vào hàng phiếu khám cần xem → Chọn Hủy phiếu.";
+        }
+
+        if (containsAny(query,
+                "thay doi thong tin ca nhan",
+                "cap nhat thong tin ca nhan",
+                "thong tin ca nhan",
+                "doi thong tin ca nhan")) {
+            return "📘 Thay đổi thông tin cá nhân\n\n" +
+                    "Vào mục Tài khoản → Chọn \"Chỉnh sửa hồ sơ\" → Cập nhật dữ liệu cần thiết → Bấm \"Lưu thay đổi\".";
+        }
+
+        if (containsAny(query,
+                "doi mat khau",
+                "doi password",
+                "mat khau")) {
+            return "📘 Đổi mật khẩu\n\n" +
+                    "Vào mục Tài khoản → Chọn \"Đổi mật khẩu\" → Nhập mật khẩu cũ, mật khẩu mới và xác nhận → Bấm \"Cập nhật\".";
+        }
+
+        return "Mình chưa hiểu rõ câu hỏi này.\n\n" +
+                "Mình chỉ hỗ trợ các chức năng dành cho Nhân viên. Bạn có thể bấm một trong các câu gợi ý phía dưới hoặc nhập cụ thể chức năng bạn muốn xem.";
+    }
+
+    private String answerAdmin(String rawMessage) {
+        String query = normalize(rawMessage);
+
+        if (containsAny(query,
+                "lam sao chinh sua thong tin nhan vien",
+                "chinh sua thong tin nhan vien",
+                "sua thong tin nhan vien",
+                "sua nhan vien",
+                "cap nhat nhan vien")) {
+            return "📘 Cách chỉnh sửa thông tin nhân viên\n\n" +
+                    "Vào mục \"Quản lý thông tin nhân viên\" → Tìm và chọn nhân viên muốn chỉnh sửa → Nhấn biểu tượng \"Sửa\" (Cây bút) → Thay đổi các thông tin cần thiết → Nhấn \"Lưu\" hoặc \"Cập nhật\".";
+        }
+
+        if (containsAny(query,
+                "lam sao de them thuoc va dich vu cls",
+                "them thuoc va dich vu cls",
+                "them thuoc",
+                "them dich vu cls",
+                "them danh muc")) {
+            return "📘 Cách thêm thuốc và dịch vụ CLS\n\n" +
+                    "Vào mục \"Quản lý thuốc và dịch vụ CLS\" → Chọn tab \"Danh sách thuốc\" hoặc \"Dịch vụ CLS\" tương ứng → Nhấn nút \"Thêm mới\" (+) → Nhập các thông tin bắt buộc (Tên, đơn giá, đơn vị tính,...) → Nhấn \"Lưu thông tin\" để áp dụng toàn hệ thống.";
+        }
+
+        if (containsAny(query,
+                "lam sao de phan ca cho nhan vien",
+                "phan ca cho nhan vien",
+                "phan ca",
+                "xep lich lam viec",
+                "xep ca")) {
+            return "📘 Cách phân ca cho nhân viên\n\n" +
+                    "Vào mục \"Phân ca chấm công\" → Chọn ngày cần xếp lịch → Chọn ca làm việc tương ứng (Sáng/Chiều/Tối) → Chọn thêm nhân viên muốn phân ca → Nhân viên sẽ được thêm vào ca tương ứng.";
+        }
+
+        if (containsAny(query,
+                "lam sao de tao thong bao chung",
+                "tao thong bao chung",
+                "them thong bao chung",
+                "dang thong bao",
+                "tao thong bao")) {
+            return "📘 Cách tạo thông báo chung\n\n" +
+                    "Vào mục \"Quản lí thông báo\" → Chọn \"Tạo thông báo mới\" (Dấu + góc trên bên phải) → Nhập tiêu đề và nội dung thông báo cho phòng khám → chọn chức vụ có thể xem được thông báo → Nhấn \"Gửi thông báo\" để hiển thị tới toàn bộ hệ thống.";
+        }
+
+        if (containsAny(query,
+                "lam sao de xoa thong bao chung",
+                "xoa thong bao chung",
+                "xoa thong bao")) {
+            return "📘 Cách xóa thông báo chung\n\n" +
+                    "Vào mục \"Quản lý thông báo\" → Nhấn vào nút \"Chọn\" → Chọn các thông báo muốn gỡ bõ → Chọn nút \"Xóa\" để gỡ thông báo khỏi hệ thống.";
+        }
+
+        if (containsAny(query,
+                "thay doi thong tin ca nhan",
+                "cap nhat thong tin ca nhan",
+                "thong tin ca nhan",
+                "doi thong tin ca nhan")) {
+            return "📘 Thay đổi thông tin cá nhân\n\n" +
+                    "Vào mục Tài khoản → Chọn \"Chỉnh sửa hồ sơ\" → Cập nhật dữ liệu cần thiết → Bấm \"Lưu thay đổi\".";
+        }
+
+        if (containsAny(query,
+                "doi mat khau",
+                "doi password",
+                "mat khau")) {
+            return "📘 Đổi mật khẩu\n\n" +
+                    "Vào mục Tài khoản → Chọn \"Đổi mật khẩu\" → Nhập mật khẩu cũ, mật khẩu mới và xác nhận → Bấm \"Cập nhật\".";
+        }
+
+        return "Mình chưa hiểu rõ câu hỏi này.\n\n" +
+                "Mình chỉ hỗ trợ các chức năng dành cho Quản trị viên. Bạn có thể bấm một trong các câu gợi ý phía dưới hoặc nhập cụ thể chức năng bạn muốn xem.";
     }
 
     private void appendUserMessage(String message, String time) {
