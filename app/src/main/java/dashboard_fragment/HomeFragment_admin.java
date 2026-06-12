@@ -27,6 +27,11 @@ import dashboard_fragment.admin_timekeeping_schedule.AdminTimekeepingScheduleAct
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 
+import androidx.viewpager2.widget.ViewPager2;
+import androidx.recyclerview.widget.RecyclerView;
+import android.widget.LinearLayout;
+import java.util.ArrayList;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -45,8 +50,9 @@ public class HomeFragment_admin extends Fragment {
 
     private Button mngStaff;
     private TextView txtName;
-    private TextView tvRevenueChange;
-    private RevenueChartView chartRevenue;
+    private ViewPager2 viewPagerCharts;
+    private LinearLayout layoutIndicators;
+    private AdminChartsAdapter adapterCharts;
     private ReportApiService reportApiService;
 
     public HomeFragment_admin() {
@@ -119,8 +125,8 @@ public class HomeFragment_admin extends Fragment {
         
         txtName = view.findViewById(R.id.admin_home_name);
         mngStaff = view.findViewById(R.id.btn_mngStaff);
-        tvRevenueChange = view.findViewById(R.id.tv_admin_revenue_change);
-        chartRevenue = view.findViewById(R.id.chart_admin_revenue);
+        viewPagerCharts = view.findViewById(R.id.view_pager_admin_charts);
+        layoutIndicators = view.findViewById(R.id.layout_chart_indicators);
         reportApiService = SupabaseClientProvider.getClient(requireContext()).create(ReportApiService.class);
 
         View chatbotView = view.findViewById(R.id.chatbot_floating_button);
@@ -170,18 +176,50 @@ public class HomeFragment_admin extends Fragment {
             });
         }
 
-        taiDuLieuDoanhThu();
+        taiDuLieuBaoCao();
     }
 
-    private void taiDuLieuDoanhThu() {
+    private void taiDuLieuBaoCao() {
         khoiTaoBieuDoMacDinh();
         reportApiService.getDanhSachDonKham().enqueue(new Callback<List<ReportItem>>() {
             @Override
-            public void onResponse(@NonNull Call<List<ReportItem>> call, @NonNull Response<List<ReportItem>> response) {
-                if (!isAdded() || chartRevenue == null || !response.isSuccessful() || response.body() == null) {
+            public void onResponse(@NonNull Call<List<ReportItem>> call, @NonNull Response<List<ReportItem>> responseDonKham) {
+                if (!isAdded() || !responseDonKham.isSuccessful() || responseDonKham.body() == null) {
                     return;
                 }
-                capNhatBieuDoDoanhThu(response.body());
+
+                reportApiService.getThongKePatient().enqueue(new Callback<List<ReportItem>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<List<ReportItem>> call2, @NonNull Response<List<ReportItem>> responsePatient) {
+                        if (!isAdded() || !responsePatient.isSuccessful() || responsePatient.body() == null) {
+                            return;
+                        }
+
+                        reportApiService.getThongKeBill().enqueue(new Callback<List<ReportItem>>() {
+                            @Override
+                            public void onResponse(@NonNull Call<List<ReportItem>> call3, @NonNull Response<List<ReportItem>> responseBill) {
+                                if (!isAdded() || !responseBill.isSuccessful() || responseBill.body() == null) {
+                                    return;
+                                }
+                                xuLyVaHienThiBaoCao(responseDonKham.body(), responsePatient.body(), responseBill.body());
+                            }
+
+                            @Override
+                            public void onFailure(@NonNull Call<List<ReportItem>> call3, @NonNull Throwable t) {
+                                if (isAdded()) {
+                                    khoiTaoBieuDoMacDinh();
+                                }
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<List<ReportItem>> call2, @NonNull Throwable t) {
+                        if (isAdded()) {
+                            khoiTaoBieuDoMacDinh();
+                        }
+                    }
+                });
             }
 
             @Override
@@ -193,12 +231,15 @@ public class HomeFragment_admin extends Fragment {
         });
     }
 
-    private void capNhatBieuDoDoanhThu(List<ReportItem> reportItems) {
+    private void xuLyVaHienThiBaoCao(List<ReportItem> listDonKham, List<ReportItem> listPatients, List<ReportItem> listBills) {
         Calendar startMonth = Calendar.getInstance();
         startMonth.set(Calendar.DAY_OF_MONTH, 1);
         startMonth.add(Calendar.MONTH, -5);
 
         Map<String, Float> revenueByMonth = new LinkedHashMap<>();
+        Map<String, Float> patientByMonth = new LinkedHashMap<>();
+        Map<String, Float> formsByMonth = new LinkedHashMap<>();
+
         String[] labels = new String[6];
         Calendar cursor = (Calendar) startMonth.clone();
         SimpleDateFormat keyFormat = new SimpleDateFormat("yyyy-MM", Locale.getDefault());
@@ -206,54 +247,111 @@ public class HomeFragment_admin extends Fragment {
         for (int i = 0; i < 6; i++) {
             String key = keyFormat.format(cursor.getTime());
             revenueByMonth.put(key, 0f);
+            patientByMonth.put(key, 0f);
+            formsByMonth.put(key, 0f);
+
             labels[i] = "T" + (cursor.get(Calendar.MONTH) + 1);
             cursor.add(Calendar.MONTH, 1);
         }
 
-        for (ReportItem item : reportItems) {
-            Calendar date = parseReportDate(item.getNgay_kham());
+        // 1. Phân bổ Doanh thu
+        for (ReportItem item : listBills) {
+            Calendar date = parseReportDate(item.getCreated_at());
             if (date == null) continue;
 
             String key = keyFormat.format(date.getTime());
             if (revenueByMonth.containsKey(key)) {
-                float current = revenueByMonth.get(key);
-                revenueByMonth.put(key, current + (float) (item.getTongDoanhThu() / 1_000_000f));
+                float currentRev = revenueByMonth.get(key);
+                revenueByMonth.put(key, currentRev + (float) (item.getBillTongThanhToan() / 1_000_000f));
             }
         }
 
-        float[] values = new float[6];
-        int index = 0;
-        for (Float value : revenueByMonth.values()) {
-            values[index++] = value;
+        // 2. Phân bổ Phiếu khám
+        for (ReportItem item : listDonKham) {
+            Calendar date = parseReportDate(item.getNgay_kham());
+            if (date == null) continue;
+
+            String key = keyFormat.format(date.getTime());
+            if (formsByMonth.containsKey(key)) {
+                if (!"Đã hủy".equalsIgnoreCase(item.getTrang_thai()) && !"Da huy".equalsIgnoreCase(item.getTrang_thai())) {
+                    float currentForms = formsByMonth.get(key);
+                    formsByMonth.put(key, currentForms + 1f);
+                }
+            }
         }
 
-        chartRevenue.setData(labels, values);
-        capNhatPhanTramTangTruong(values);
+        // 3. Phân bổ Bệnh nhân mới
+        for (ReportItem item : listPatients) {
+            Calendar date = parseReportDate(item.getCreated_at());
+            if (date == null) continue;
+
+            String key = keyFormat.format(date.getTime());
+            if (patientByMonth.containsKey(key)) {
+                float currentPatients = patientByMonth.get(key);
+                patientByMonth.put(key, currentPatients + 1f);
+            }
+        }
+
+        float[] valuesRevenue = new float[6];
+        float[] valuesPatients = new float[6];
+        float[] valuesForms = new float[6];
+
+        int index = 0;
+        for (Float value : revenueByMonth.values()) valuesRevenue[index++] = value;
+
+        index = 0;
+        for (Float value : patientByMonth.values()) valuesPatients[index++] = value;
+
+        index = 0;
+        for (Float value : formsByMonth.values()) valuesForms[index++] = value;
+
+        String changeRevenue = tinhPhanTramTangTruong(valuesRevenue);
+        String changePatients = tinhPhanTramTangTruong(valuesPatients);
+        String changeForms = tinhPhanTramTangTruong(valuesForms);
+
+        List<AdminChartData> list = new ArrayList<>();
+        list.add(new AdminChartData("Doanh thu", "6 tháng gần nhất (triệu đồng)", changeRevenue, labels, valuesRevenue));
+        list.add(new AdminChartData("Bệnh nhân", "6 tháng gần nhất (người)", changePatients, labels, valuesPatients));
+        list.add(new AdminChartData("Phiếu khám", "6 tháng gần nhất (phiếu)", changeForms, labels, valuesForms));
+
+        adapterCharts = new AdminChartsAdapter(list);
+        viewPagerCharts.setAdapter(adapterCharts);
+        setupIndicators(list.size());
+
+        viewPagerCharts.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                updateIndicators(position, list.size());
+            }
+        });
     }
 
-    private void capNhatPhanTramTangTruong(float[] values) {
-        if (tvRevenueChange == null || values.length < 2) return;
+    private String tinhPhanTramTangTruong(float[] values) {
+        if (values.length < 2) return "+0.0%";
 
         float previous = values[values.length - 2];
         float current = values[values.length - 1];
         if (previous <= 0f) {
-            tvRevenueChange.setText(current > 0f ? "+100%" : "+0.0%");
-            return;
+            return current > 0f ? "+100%" : "+0.0%";
         }
 
         float percent = (current - previous) * 100f / previous;
         String prefix = percent >= 0 ? "+" : "";
-        tvRevenueChange.setText(String.format(Locale.getDefault(), "%s%.1f%%", prefix, percent));
+        return String.format(Locale.getDefault(), "%s%.1f%%", prefix, percent);
     }
 
     private Calendar parseReportDate(String value) {
         if (value == null || value.trim().isEmpty()) return null;
-
-        String[] patterns = {"yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "dd/MM/yyyy"};
+        String cleaned = value.trim();
+        if (cleaned.length() > 10) {
+            cleaned = cleaned.substring(0, 10);
+        }
+        String[] patterns = {"yyyy-MM-dd", "dd/MM/yyyy"};
         for (String pattern : patterns) {
             try {
                 Calendar calendar = Calendar.getInstance();
-                calendar.setTime(new SimpleDateFormat(pattern, Locale.getDefault()).parse(value.trim()));
+                calendar.setTime(new SimpleDateFormat(pattern, Locale.getDefault()).parse(cleaned));
                 return calendar;
             } catch (ParseException ignored) {
 
@@ -263,8 +361,6 @@ public class HomeFragment_admin extends Fragment {
     }
 
     private void khoiTaoBieuDoMacDinh() {
-        if (chartRevenue == null) return;
-
         String[] labels = new String[6];
         float[] values = new float[6];
         Calendar cursor = Calendar.getInstance();
@@ -273,9 +369,123 @@ public class HomeFragment_admin extends Fragment {
             labels[i] = "T" + (cursor.get(Calendar.MONTH) + 1);
             cursor.add(Calendar.MONTH, 1);
         }
-        chartRevenue.setData(labels, values);
-        if (tvRevenueChange != null) {
-            tvRevenueChange.setText("+0.0%");
+
+        List<AdminChartData> list = new ArrayList<>();
+        list.add(new AdminChartData("Doanh thu", "6 tháng gần nhất (triệu đồng)", "+0.0%", labels, values));
+        list.add(new AdminChartData("Bệnh nhân", "6 tháng gần nhất (người)", "+0.0%", labels, values));
+        list.add(new AdminChartData("Phiếu khám", "6 tháng gần nhất (phiếu)", "+0.0%", labels, values));
+
+        if (viewPagerCharts != null) {
+            adapterCharts = new AdminChartsAdapter(list);
+            viewPagerCharts.setAdapter(adapterCharts);
+            setupIndicators(list.size());
+        }
+    }
+
+    private void setupIndicators(int count) {
+        if (layoutIndicators == null) return;
+        layoutIndicators.removeAllViews();
+        for (int i = 0; i < count; i++) {
+            View dot = new View(requireContext());
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    i == 0 ? dpToPx(16) : dpToPx(6),
+                    dpToPx(6)
+            );
+            params.setMargins(dpToPx(3), dpToPx(3), dpToPx(3), dpToPx(3));
+            dot.setLayoutParams(params);
+            dot.setBackgroundResource(i == 0 ? R.drawable.bg_dot_indicator_active : R.drawable.bg_dot_indicator_inactive);
+            layoutIndicators.addView(dot);
+        }
+    }
+
+    private void updateIndicators(int position, int count) {
+        if (layoutIndicators == null) return;
+        for (int i = 0; i < count; i++) {
+            View dot = layoutIndicators.getChildAt(i);
+            if (dot == null) continue;
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) dot.getLayoutParams();
+            if (i == position) {
+                params.width = dpToPx(16);
+                dot.setBackgroundResource(R.drawable.bg_dot_indicator_active);
+            } else {
+                params.width = dpToPx(6);
+                dot.setBackgroundResource(R.drawable.bg_dot_indicator_inactive);
+            }
+            dot.setLayoutParams(params);
+        }
+    }
+
+    private int dpToPx(int dp) {
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round(dp * density);
+    }
+
+    public static class AdminChartData {
+        String title;
+        String subtitle;
+        String changePercent;
+        String[] labels;
+        float[] values;
+
+        public AdminChartData(String title, String subtitle, String changePercent, String[] labels, float[] values) {
+            this.title = title;
+            this.subtitle = subtitle;
+            this.changePercent = changePercent;
+            this.labels = labels;
+            this.values = values;
+        }
+    }
+
+    private class AdminChartsAdapter extends RecyclerView.Adapter<AdminChartsAdapter.ChartViewHolder> {
+        private final List<AdminChartData> chartDataList;
+
+        public AdminChartsAdapter(List<AdminChartData> chartDataList) {
+            this.chartDataList = chartDataList;
+        }
+
+        @NonNull
+        @Override
+        public ChartViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_admin_chart_page, parent, false);
+            return new ChartViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ChartViewHolder holder, int position) {
+            AdminChartData data = chartDataList.get(position);
+            holder.tvTitle.setText(data.title);
+            holder.tvSubtitle.setText(data.subtitle);
+            holder.tvChange.setText(data.changePercent);
+
+            if (data.changePercent.startsWith("-")) {
+                holder.tvChange.setTextColor(android.graphics.Color.parseColor("#C53243"));
+                holder.tvChange.setBackgroundResource(R.drawable.bg_admin_revenue_badge_red);
+            } else {
+                holder.tvChange.setTextColor(android.graphics.Color.parseColor("#3F7D3A"));
+                holder.tvChange.setBackgroundResource(R.drawable.bg_admin_revenue_badge);
+            }
+
+            holder.chartView.setData(data.labels, data.values);
+        }
+
+        @Override
+        public int getItemCount() {
+            return chartDataList.size();
+        }
+
+        class ChartViewHolder extends RecyclerView.ViewHolder {
+            TextView tvTitle;
+            TextView tvSubtitle;
+            TextView tvChange;
+            RevenueChartView chartView;
+
+            public ChartViewHolder(@NonNull View itemView) {
+                super(itemView);
+                tvTitle = itemView.findViewById(R.id.tvChartTitle);
+                tvSubtitle = itemView.findViewById(R.id.tvChartSubtitle);
+                tvChange = itemView.findViewById(R.id.tvChartChange);
+                chartView = itemView.findViewById(R.id.chartView);
+            }
         }
     }
 }
