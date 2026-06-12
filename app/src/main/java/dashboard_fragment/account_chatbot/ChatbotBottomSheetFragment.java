@@ -33,12 +33,14 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
 
+import com.example.nhom08_quanlyphongkham.BuildConfig;
 import com.example.nhom08_quanlyphongkham.R;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.google.genai.Client;
 
 import dashboard_fragment.UserRole;
 
@@ -47,6 +49,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.Executors;
 
 public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
 
@@ -68,6 +71,37 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
     private EditText edtChatInput;
 
     private String welcomeMessage = "";
+    private Client geminiClient;
+    private final StringBuilder conversationHistory = new StringBuilder();
+    private View loadingView;
+    private TextView loadingTextView;
+
+    private final Handler loadingHandler = new Handler(Looper.getMainLooper());
+
+    private final Runnable loadingRunnable = new Runnable() {
+
+        int dotCount = 0;
+
+        @Override
+        public void run() {
+
+            if (loadingTextView == null) return;
+
+            dotCount = (dotCount + 1) % 4;
+
+            String dots = "";
+            for (int i = 0; i < dotCount; i++) {
+                dots += ".";
+            }
+
+            loadingTextView.setText(
+                    "🔍 Đang tra cứu thông tin" + dots
+            );
+
+            loadingHandler.postDelayed(this, 500);
+        }
+    };
+
     private final String[] suggestionTexts = new String[5];
 
     @Override
@@ -150,7 +184,11 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
 
         renderInitialGreeting();
 
-        btnCloseChatbot.setOnClickListener(v -> dismiss());
+        btnCloseChatbot.setOnClickListener(v ->{
+            conversationHistory.setLength(0);
+
+            dismiss();
+        });
 
         btnSuggestion1.setOnClickListener(v -> sendMessage(btnSuggestion1.getText().toString()));
         btnSuggestion2.setOnClickListener(v -> sendMessage(btnSuggestion2.getText().toString()));
@@ -166,6 +204,9 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
             sendMessage(edtChatInput.getText().toString());
             return true;
         });
+        geminiClient = new Client.Builder()
+                .apiKey(BuildConfig.GEMINI_API_KEY)
+                .build();
     }
 
     private void applyRoleContent(
@@ -246,11 +287,22 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
 
         mainHandler.postDelayed(() -> {
             if (!isAdded()) return;
-            appendBotMessage(answerQuery(message), nowTime());
+            String localAnswer = answerQueryLocal(message);
+
+            if (localAnswer != null &&
+                    !localAnswer.startsWith("Mình chưa hiểu rõ câu hỏi này")) {
+
+                appendBotMessage(localAnswer, nowTime());
+
+            } else {
+                showLoadingMessage();
+
+                askGemini(message);
+            }
         }, 300);
     }
 
-    private String answerQuery(String rawMessage) {
+    private String answerQueryLocal(String rawMessage) {
 
         String query = normalize(rawMessage);
 
@@ -266,7 +318,7 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
             return answerAdmin(query);
         }
 
-        return "Xin lỗi, tôi không hiểu câu hỏi này."; // Chỗ này Kiệt Cao sửa lại thêm 2 role kia vào nhé (answerAdmin với answerStaff)
+        return null;
 
     }
     private String answerDoctor(String rawMessage) {
@@ -283,8 +335,7 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
 
         if (containsAny(query,
                 "chon dich vu can lam sang",
-                "dich vu can lam sang",
-                "can lam sang",
+                "chon can lam sang",
                 "xet nghiem can lam sang")) {
             return "📘 Cách chọn dịch vụ cận lâm sàng\n\n" +
                     "Nhấn vào \"Danh sách phiếu khám\" → Mở phiếu cần xử lý → Mở tab \"Cận lâm sàng\" → Chọn loại xét nghiệm/cận lâm sàng cần chỉ định → Chuyển sang tab \"Đơn thuốc\" → Nhấn \"Lưu bệnh án\" để xác nhận.";
@@ -296,17 +347,14 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
                 "chon nhap chan doan",
                 "chon/nhap chan doan",
                 "chon chan doan",
-                "nhap chan doan",
-                "chan doan")) {
+                "nhap chan doan")) {
             return "📘 Cách chọn/nhập chẩn đoán\n\n" +
                     "Nhấn vào \"Danh sách phiếu khám\" → Mở phiếu cần xử lý → Mở tab \"Chẩn đoán\" → Chọn chẩn đoán có sẵn hoặc nhập nội dung mới → Kiểm tra lại thông tin → Chuyển sang tab \"Đơn thuốc\" → Nhấn \"Lưu bệnh án\" để xác nhận.";
         }
 
         if (containsAny(query,
                 "ke don thuoc",
-                "ke don",
-                "don thuoc",
-                "thuoc")) {
+                "ke don")) {
             return "📘 Kê đơn thuốc\n\n" +
                     "Nhấn vào \"Danh sách phiếu khám\" → Mở phiếu cần xử lý → Mở tab \"Đơn thuốc\" → bấm \"Thêm thuốc\" → Tìm thuốc → Nhập liều lượng, số ngày uống và hướng dẫn dùng → Nhấn \"Lưu bệnh án\" để xác nhận.";
         }
@@ -344,8 +392,7 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
                     "Vào mục Tài khoản → Chọn \"Đổi mật khẩu\" → Nhập mật khẩu cũ, mật khẩu mới và xác nhận → Bấm \"Cập nhật\".";
         }
 
-        return "Mình chưa hiểu rõ câu hỏi này.\n\n" +
-                "Mình chỉ hỗ trợ các chức năng dành cho Bác sĩ. Bạn có thể bấm một trong các câu gợi ý phía dưới hoặc nhập cụ thể chức năng bạn muốn xem.";
+        return null;
     }
 
     private String answerStaff(String rawMessage) {
@@ -414,8 +461,7 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
                     "Vào mục Tài khoản → Chọn \"Đổi mật khẩu\" → Nhập mật khẩu cũ, mật khẩu mới và xác nhận → Bấm \"Cập nhật\".";
         }
 
-        return "Mình chưa hiểu rõ câu hỏi này.\n\n" +
-                "Mình chỉ hỗ trợ các chức năng dành cho Nhân viên. Bạn có thể bấm một trong các câu gợi ý phía dưới hoặc nhập cụ thể chức năng bạn muốn xem.";
+        return null;
     }
 
     private String answerAdmin(String rawMessage) {
@@ -486,10 +532,116 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
                     "Vào mục Tài khoản → Chọn \"Đổi mật khẩu\" → Nhập mật khẩu cũ, mật khẩu mới và xác nhận → Bấm \"Cập nhật\".";
         }
 
-        return "Mình chưa hiểu rõ câu hỏi này.\n\n" +
-                "Mình chỉ hỗ trợ các chức năng dành cho Quản trị viên. Bạn có thể bấm một trong các câu gợi ý phía dưới hoặc nhập cụ thể chức năng bạn muốn xem.";
+        return null;
     }
 
+    private void askGemini(String userMessage) {
+
+        conversationHistory
+                .append("Người dùng: ")
+                .append(userMessage)
+                .append("\n");
+
+        Executors.newSingleThreadExecutor().execute(() -> {
+
+            try {
+
+                String prompt =
+                        "Bạn là MedBot của phòng khám TMH.\n\n" +
+
+                                "NHIỆM VỤ:\n" +
+                                "- Chỉ trả lời các câu hỏi liên quan đến y tế.\n" +
+                                "- Bao gồm bệnh lý, triệu chứng, thuốc, xét nghiệm, dinh dưỡng, sức khỏe, bệnh viện, bác sĩ, điều trị.\n" +
+                                "- Nếu câu hỏi không thuộc lĩnh vực y tế thì KHÔNG được trả lời.\n" +
+
+                                "BẮT BUỘC:\n" +
+                                "Nếu câu hỏi không liên quan y tế, chỉ trả lời đúng duy nhất:\n" +
+                                "\"Xin lỗi, tôi chỉ hỗ trợ các câu hỏi liên quan đến y tế và sức khỏe.\"\n\n" +
+
+                                "LỊCH SỬ HỘI THOẠI:\n" +
+                                conversationHistory.toString() + "\n" +
+
+                                "Hãy trả lời tin nhắn cuối cùng của người dùng.";
+
+                var result = geminiClient.models.generateContent(
+                        "gemini-3-flash-preview",
+                        prompt,
+                        null
+                );
+                String response = result != null ? result.text() : null;
+
+                if (response == null || response.trim().isEmpty()) {
+                    response = "Xin lỗi, hiện tại tôi chưa thể trả lời câu hỏi này.";
+                }
+
+                conversationHistory
+                        .append("MedBot: ")
+                        .append(response)
+                        .append("\n");
+
+                if (conversationHistory.length() > 8000) {
+                    conversationHistory.delete(
+                            0,
+                            conversationHistory.length() - 5000
+                    );
+                }
+
+                String finalResponse = response;
+
+                mainHandler.post(() -> {
+                    if (isAdded()) {
+
+                        hideLoadingMessage();
+
+                        appendBotMessage(
+                                finalResponse,
+                                nowTime()
+                        );
+                    }
+                });
+
+            } catch (Exception e) {
+
+                mainHandler.post(() -> {
+                    if (isAdded()) {
+
+                        hideLoadingMessage();
+
+                        appendBotMessage(
+                                "Không thể kết nối Gemini. Vui lòng thử lại sau.",
+                                nowTime()
+                        );
+                    }
+                });
+            }
+        });
+    }
+
+    private void showLoadingMessage() {
+
+        loadingView = createBotBubble(
+                "🔍 Đang tra cứu thông tin",
+                nowTime()
+        );
+
+        chatMessageContainer.addView(loadingView);
+
+        loadingTextView = loadingView.findViewWithTag("loading_text");
+
+        loadingHandler.post(loadingRunnable);
+
+        scrollToBottom();
+    }
+    private void hideLoadingMessage() {
+
+        loadingHandler.removeCallbacks(loadingRunnable);
+
+        if (loadingView != null) {
+            chatMessageContainer.removeView(loadingView);
+            loadingView = null;
+            loadingTextView = null;
+        }
+    }
     private void appendUserMessage(String message, String time) {
         chatMessageContainer.addView(createUserBubble(message, time));
         scrollToBottom();
@@ -630,6 +782,11 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
 
         TextView tvMessage = new TextView(requireContext());
         tvMessage.setText(parts[1]);
+
+        if (message.contains("Đang tra cứu thông tin")) {
+            tvMessage.setTag("loading_text");
+        }
+
         tvMessage.setTextColor(Color.parseColor("#334155"));
         tvMessage.setTextSize(14);
         tvMessage.setLineSpacing(dp(4), 1f);
