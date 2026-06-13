@@ -1,4 +1,4 @@
-package dashboard_fragment;
+package dashboard_fragment.timekeeping;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -83,7 +82,6 @@ public class FaceSignupActivity extends BaseActivity {
         btnBack.setOnClickListener(v -> finish());
 
         btnConfirm.setOnClickListener(v -> {
-            // Capture one frame and run ML Kit face detection + model inference asynchronously
             Bitmap bmp = cameraPreview.getBitmap();
             if (bmp == null) {
                 Toast.makeText(this, "Không thể lấy ảnh từ camera, thử lại.", Toast.LENGTH_SHORT).show();
@@ -99,42 +97,28 @@ public class FaceSignupActivity extends BaseActivity {
                         }
 
                         Face face = faces.get(0);
-                        Rect box = face.getBoundingBox();
-                        int left = Math.max(0, box.left);
-                        int top = Math.max(0, box.top);
-                        int right = Math.min(bmp.getWidth(), box.right);
-                        int bottom = Math.min(bmp.getHeight(), box.bottom);
 
-                        if (right - left <= 0 || bottom - top <= 0) {
-                            Toast.makeText(FaceSignupActivity.this, "Khuôn mặt không hợp lệ, thử lại.", Toast.LENGTH_SHORT).show();
-                            return;
+                        // Pipeline dùng chung: crop margin + square -> resize -> embedding -> L2 normalize
+                        float[] emb = null;
+                        try {
+                            if (tflite != null) {
+                                emb = FaceEmbeddingUtil.getEmbedding(tflite, bmp, face.getBoundingBox());
+                            }
+                        } catch (Exception ex) {
+                            Log.e("FaceSignup", "getEmbedding threw", ex);
+                            emb = null;
                         }
 
-                        Bitmap faceBmp = Bitmap.createBitmap(bmp, left, top, right - left, bottom - top);
-                        Bitmap resized = Bitmap.createScaledBitmap(faceBmp, MODEL_INPUT_SIZE, MODEL_INPUT_SIZE, true);
-
-                        float[] emb = null;
-                        if (tflite != null) {
-                            emb = runModel(resized);
-                        } else {
-                            // fallback deterministic vector if model absent
-                            List<Double> fallback = computeFaceVector(resized);
-                            if (fallback == null) {
-                                Toast.makeText(FaceSignupActivity.this, "Không thể tạo vector khuôn mặt.", Toast.LENGTH_SHORT).show();
+                        // Fallback: if tflite missing or embedding failed, compute a simple fallback vector (deterministic)
+                        if (emb == null) {
+                            try {
+                                emb = computeFaceVector(bmp, face.getBoundingBox());
+                            } catch (Exception ex) {
+                                Log.e("FaceSignup", "fallback embedding failed", ex);
+                                Toast.makeText(FaceSignupActivity.this, "Không thể xử lý khuôn mặt. Hãy thử lại.", Toast.LENGTH_SHORT).show();
                                 return;
                             }
-                            // convert List<Double> to float[]
-                            emb = new float[128];
-                            for (int i = 0; i < Math.min(128, fallback.size()); i++) emb[i] = fallback.get(i).floatValue();
                         }
-
-                        if (emb == null || emb.length != 128) {
-                            Toast.makeText(FaceSignupActivity.this, "Không thể xử lý khuôn mặt. Hãy thử lại.", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-
-                        // L2 normalize
-                        l2Normalize(emb);
 
                         List<Double> vector = new ArrayList<>();
                         for (float f : emb) vector.add((double) f);
@@ -163,48 +147,27 @@ public class FaceSignupActivity extends BaseActivity {
                                 "2. KHOẢNG CÁCH: 30–50 cm là tốt nhất.\n" +
                                 "3. ÁNH SÁNG: Đảm bảo ánh sáng từ phía trước, tránh ngược sáng.\n" +
                                 "4. CỬ ĐỘNG VÀ XOAY: Khi check-in chỉ cần nhìn thẳng và giữ yên 1–2 giây.";
-                        // If running in verify mode, compare the captured vector with expected face from profile
+
+                        // Verify mode: so sánh embedding vừa quét với embedding lưu trong intent
                         if (isVerifyMode) {
                             String expectedFaceRaw = null;
                             try { expectedFaceRaw = getIntent().getStringExtra("expected_face"); } catch (Exception ignored) {}
 
-                            List<Double> expectedVec = null;
-                            if (expectedFaceRaw != null) {
-                                try {
-                                    com.google.gson.Gson gson = new com.google.gson.Gson();
-                                    java.lang.reflect.Type type = new com.google.gson.reflect.TypeToken<java.util.List<Double>>(){}.getType();
-                                    expectedVec = gson.fromJson(expectedFaceRaw, type);
-                                } catch (Exception ex) {
-                                    // try to parse as simple comma separated if not JSON
-                                    try {
-                                        String s = expectedFaceRaw.replaceAll("[\\[\\]]", "");
-                                        String[] parts = s.split(",");
-                                        expectedVec = new ArrayList<>();
-                                        for (String p : parts) {
-                                            if (p.trim().isEmpty()) continue;
-                                            expectedVec.add(Double.parseDouble(p.trim()));
-                                        }
-                                    } catch (Exception ex2) {
-                                        expectedVec = null;
-                                    }
-                                }
-                            }
+                            List<Double> expectedVec = FaceEmbeddingUtil.parseVector(expectedFaceRaw);
 
                             double distance = -1.0;
                             boolean match = false;
-                            if (expectedVec != null && expectedVec.size() >= vector.size()) {
-                                // convert expectedVec to float[] and l2 norm
-                                float[] exp = new float[vector.size()];
-                                for (int i = 0; i < vector.size(); i++) exp[i] = expectedVec.get(i).floatValue();
-                                // normalize both
-                                l2Normalize(emb);
-                                // convert captured emb to float[] (already emb)
-                                // ensure expected is normalized
-                                float sum = 0f; for (float f : exp) sum += f*f; double norm = Math.sqrt(sum); if (norm != 0) for (int i=0;i<exp.length;i++) exp[i] /= norm;
-                                double s = 0.0; for (int i = 0; i < emb.length && i < exp.length; i++) { double diff = emb[i] - exp[i]; s += diff * diff; }
-                                distance = Math.sqrt(s);
-                                double THRESH = 0.8; // tunable (relaxed from 0.9)
+
+                            if (expectedVec != null && expectedVec.size() >= emb.length) {
+                                float[] exp = new float[emb.length];
+                                for (int i = 0; i < emb.length; i++) exp[i] = expectedVec.get(i).floatValue();
+                                FaceEmbeddingUtil.l2Normalize(exp);
+
+                                distance = FaceEmbeddingUtil.euclideanDistance(emb, exp);
+                                double THRESH = 0.8; // TODO: test lại sau khi đổi normalization
                                 if (distance <= THRESH) match = true;
+                            } else {
+                                Log.e("FaceSignup", "expectedVec invalid: " + (expectedVec == null ? "null" : "size=" + expectedVec.size()));
                             }
 
                             android.content.Intent out = new android.content.Intent();
@@ -215,8 +178,7 @@ public class FaceSignupActivity extends BaseActivity {
                             return;
                         }
 
-                        // Non-verify mode: send face registration/auth request to server
-                        // Disable confirm button to avoid duplicates and give user feedback
+                        // Non-verify mode: gửi request đăng ký khuôn mặt lên server
                         try {
                             btnConfirm.setEnabled(false);
                             btnConfirm.setText("Đang gửi...");
@@ -233,13 +195,11 @@ public class FaceSignupActivity extends BaseActivity {
                                         finish();
                                         return;
                                     } else {
-                                        // If server returns 400, try fallback: send face as JSON string
                                         int code = response.code();
                                         String err = null;
                                         try { if (response.errorBody() != null) err = response.errorBody().string(); } catch (Exception ex) { }
                                         Log.e("FaceSignup", "Face auth request failed. code=" + code + " err=" + err);
                                         if (code == 400) {
-                                            // retry as string
                                             repo.sendFaceAuthRequestAsString(staffId, vector, details).enqueue(new Callback<ResponseBody>() {
                                                 @Override
                                                 public void onResponse(Call<ResponseBody> call2, Response<ResponseBody> resp2) {
@@ -265,7 +225,6 @@ public class FaceSignupActivity extends BaseActivity {
                                         }
                                     }
                                 } finally {
-                                    // re-enable if we didn't finish activity
                                     try { btnConfirm.setEnabled(true); btnConfirm.setText("Quét"); } catch (Exception ignore) {}
                                 }
                             }
@@ -300,13 +259,12 @@ public class FaceSignupActivity extends BaseActivity {
         detector = FaceDetection.getClient(options);
 
         try {
-            tflite = new Interpreter(loadModelFile("facenet.tflite"));
+            tflite = new Interpreter(FaceEmbeddingUtil.loadModelFile(this, "facenet.tflite"));
         } catch (Exception ex) {
             Log.w("FaceSignup", "TFLite not loaded: " + ex.getMessage());
             tflite = null;
         }
     }
-
     private void startCamera() {
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
         cameraProviderFuture.addListener(() -> {
@@ -327,19 +285,19 @@ public class FaceSignupActivity extends BaseActivity {
         }, ContextCompat.getMainExecutor(this));
     }
 
-    private MappedByteBuffer loadModelFile(String modelFile) throws IOException {
-        FileInputStream is = new FileInputStream(getAssets().openFd(modelFile).getFileDescriptor());
-        FileChannel fileChannel = is.getChannel();
-        long startOffset = getAssets().openFd(modelFile).getStartOffset();
-        long declaredLength = getAssets().openFd(modelFile).getDeclaredLength();
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
-    }
-
-    // Simple deterministic 128-d vector extractor: resize to 16x8 grayscale and return normalized values [-1,1]
-    private List<Double> computeFaceVector(Bitmap bmp) {
+    private float[] computeFaceVector(Bitmap bmp, Rect box) {
+        if (bmp == null || box == null) return null;
         try {
-            Bitmap small = Bitmap.createScaledBitmap(bmp, 16, 8, true);
-            List<Double> vec = new ArrayList<>(128);
+            int left = Math.max(0, box.left);
+            int top = Math.max(0, box.top);
+            int right = Math.min(bmp.getWidth(), box.right);
+            int bottom = Math.min(bmp.getHeight(), box.bottom);
+            if (right - left <= 0 || bottom - top <= 0) return null;
+
+            Bitmap faceBmp = Bitmap.createBitmap(bmp, left, top, right - left, bottom - top);
+            Bitmap small = Bitmap.createScaledBitmap(faceBmp, 16, 8, true);
+            float[] vec = new float[128];
+            int idx = 0;
             for (int y = 0; y < 8; y++) {
                 for (int x = 0; x < 16; x++) {
                     int px = small.getPixel(x, y);
@@ -347,48 +305,14 @@ public class FaceSignupActivity extends BaseActivity {
                     int g = (px >> 8) & 0xff;
                     int b = px & 0xff;
                     double gray = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0;
-                    // normalize to [-1,1]
-                    vec.add(gray * 2.0 - 1.0);
+                    vec[idx++] = (float) (gray * 2.0 - 1.0);
                 }
             }
             return vec;
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("FaceSignup", "computeFaceVector failed", e);
             return null;
         }
-    }
-
-    private float[] runModel(Bitmap bitmap) {
-        int inputSize = MODEL_INPUT_SIZE;
-        ByteBuffer input = ByteBuffer.allocateDirect(4 * 1 * inputSize * inputSize * 3);
-        input.order(ByteOrder.nativeOrder());
-
-        int[] intValues = new int[inputSize * inputSize];
-        bitmap.getPixels(intValues, 0, inputSize, 0, 0, inputSize, inputSize);
-
-        for (int i = 0; i < intValues.length; ++i) {
-            int val = intValues[i];
-            float r = ((val >> 16) & 0xFF);
-            float g = ((val >> 8) & 0xFF);
-            float b = (val & 0xFF);
-            // normalize to [-1,1]
-            input.putFloat((r - 128f) / 128f);
-            input.putFloat((g - 128f) / 128f);
-            input.putFloat((b - 128f) / 128f);
-        }
-        input.rewind();
-
-        float[][] output = new float[1][128];
-        tflite.run(input, output);
-        return output[0];
-    }
-
-    private void l2Normalize(float[] v) {
-        double sum = 0.0;
-        for (float f : v) sum += f * f;
-        double norm = Math.sqrt(sum);
-        if (norm == 0) return;
-        for (int i = 0; i < v.length; i++) v[i] /= norm;
     }
 }
 
