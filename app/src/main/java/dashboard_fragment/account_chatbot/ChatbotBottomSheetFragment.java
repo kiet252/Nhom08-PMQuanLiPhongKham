@@ -41,6 +41,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.genai.Client;
+import com.google.gson.JsonObject;
 
 import dashboard_fragment.UserRole;
 
@@ -72,6 +73,7 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
 
     private String welcomeMessage = "";
     private Client geminiClient;
+    private ChatbotDatabaseAssistant databaseAssistant;
     private final StringBuilder conversationHistory = new StringBuilder();
     private View loadingView;
     private TextView loadingTextView;
@@ -207,6 +209,7 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
         geminiClient = new Client.Builder()
                 .apiKey(BuildConfig.GEMINI_API_KEY)
                 .build();
+        databaseAssistant = new ChatbotDatabaseAssistant(requireContext(), roleName);
     }
 
     private void applyRoleContent(
@@ -276,9 +279,13 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
     }
 
     private void sendMessage(String rawMessage) {
+
         String message = rawMessage == null ? "" : rawMessage.trim();
+
         if (TextUtils.isEmpty(message)) {
-            Toast.makeText(requireContext(), "Nhập câu hỏi trước khi gửi", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(),
+                    "Nhập câu hỏi trước khi gửi",
+                    Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -286,20 +293,434 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
         edtChatInput.setText("");
 
         mainHandler.postDelayed(() -> {
+
             if (!isAdded()) return;
+
             String localAnswer = answerQueryLocal(message);
 
-            if (localAnswer != null &&
-                    !localAnswer.startsWith("Mình chưa hiểu rõ câu hỏi này")) {
-
+            if (localAnswer != null) {
                 appendBotMessage(localAnswer, nowTime());
+                return;
+            }
+            if (isDatabaseQuery(message)) {
 
-            } else {
+                if (!canAccessDatabaseIntent(message)) {
+
+                    appendBotMessage(
+                            "❌ Bạn không có quyền truy cập thông tin này.",
+                            nowTime()
+                    );
+                    return;
+                }
+
                 showLoadingMessage();
 
-                askGemini(message);
+                databaseAssistant.processNaturalLanguage(
+                        message,
+                        json -> mainHandler.post(() -> {
+
+                            if (!isAdded()) return;
+
+                            hideLoadingMessage();
+
+                            String display =
+                                    formatDatabaseResponse(json);
+
+                            appendBotMessage(
+                                    display,
+                                    nowTime()
+                            );
+                        })
+                );
+
+                return;
             }
+
+            showLoadingMessage();
+            askGemini(message);
+
         }, 300);
+    }
+
+    private boolean canAccessDatabaseIntent(String message) {
+
+        String q = normalize(message);
+
+        if (UserRole.ADMIN.name().equals(roleName)) {
+            return true;
+        }
+
+        if (UserRole.BAC_SI.name().equals(roleName)) {
+
+            if (containsAny(q,
+                    "hoa don",
+                    "doanh thu",
+                    "tong tien")) {
+                return false;
+            }
+
+            return true;
+        }
+
+        if (UserRole.NHAN_VIEN.name().equals(roleName)) {
+
+            if (containsAny(q,
+                    "benh an",
+                    "lich su benh an",
+                    "chan doan")) {
+                return false;
+            }
+
+            if (containsAny(q,
+                    "kho thuoc",
+                    "ton kho",
+                    "thuoc sap het")) {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isDatabaseQuery(String message) {
+        String q = normalize(message);
+
+        if (containsAny(q,
+                "thong tin benh nhan",
+                "ho so benh nhan",
+                "tra cuu benh nhan",
+                "tim benh nhan",
+                "benh nhan ten",
+                "cccd",
+                "can cuoc cong dan",
+                "can cuoc",
+                "ma benh nhan",
+                "id benh nhan")) return true;
+
+        if (containsAny(q,
+                "lich hen cua benh nhan",
+                "lich hen benh nhan",
+                "lich hen cua",
+                "dat lich hen",
+                "xem lich hen")) return true;
+
+        if (containsAny(q,
+                "benh an cua benh nhan",
+                "benh an cua",
+                "ho so benh an",
+                "lich su kham",
+                "lich su benh an")) return true;
+
+        if (containsAny(q,
+                "lich kham hom nay",
+                "lich kham ngay",
+                "lich kham cua bac si",
+                "lich kham",
+                "phieu kham hom nay",
+                "phieu kham ngay")) return true;
+
+        if (containsAny(q,
+                "hoa don cua benh nhan",
+                "hoa don benh nhan",
+                "tra cuu hoa don benh nhan")) return true;
+
+        if (containsAny(q,
+                "hoa don hom nay",
+                "hoa don ngay",
+                "hoa don thang")) return true;
+
+        if (containsAny(q,
+                "tra cuu thuoc",
+                "tim thuoc",
+                "thong tin thuoc",
+                "thuoc ten",
+                "hoat chat")) return true;
+
+        if (containsAny(q,
+                "tra cuu dich vu",
+                "tim dich vu",
+                "dich vu lam sang",
+                "can lam sang ten",
+                "xet nghiem ten")) return true;
+
+        if (containsAny(q,
+                "bao nhieu benh nhan",
+                "so luong benh nhan",
+                "dem benh nhan",
+                "tong so benh nhan")) return true;
+
+        if (containsAny(q,
+                "bao nhieu lich hen",
+                "so luong lich hen",
+                "dem lich hen",
+                "tong so lich hen")) return true;
+
+        if (containsAny(q,
+                "bao nhieu phieu kham",
+                "so luong phieu kham",
+                "dem phieu kham",
+                "tong so phieu kham")) return true;
+
+        if (containsAny(q,
+                "bao nhieu hoa don",
+                "so luong hoa don",
+                "dem hoa don",
+                "tong so hoa don")) return true;
+
+        if (containsAny(q,
+                "danh sach benh nhan",
+                "liet ke benh nhan",
+                "tat ca benh nhan")) return true;
+
+        if (containsAny(q,
+                "danh sach lich hen",
+                "liet ke lich hen",
+                "tat ca lich hen")) return true;
+
+        if (containsAny(q,
+                "danh sach phieu kham",
+                "liet ke phieu kham",
+                "tat ca phieu kham")) return true;
+
+        if (containsAny(q,
+                "danh sach hoa don",
+                "liet ke hoa don",
+                "tat ca hoa don",
+                "xem hoa don")) return true;
+
+        if (containsAny(q,
+                "kho thuoc",
+                "ton kho",
+                "thong ke kho",
+                "thuoc con lai",
+                "thuoc sap het",
+                "thuoc het hang",
+                "so luong thuoc")) return true;
+
+        return false;
+    }
+
+    private String formatDatabaseResponse(String json) {
+        if (json == null) return "⚠️ Không nhận được phản hồi từ hệ thống.";
+
+        try {
+            com.google.gson.JsonObject obj = com.google.gson.JsonParser.parseString(json).getAsJsonObject();
+            boolean success = obj.has("success") && obj.get("success").getAsBoolean();
+
+            if (!success) {
+                String msg = obj.has("message") ? obj.get("message").getAsString() : "Đã có lỗi xảy ra.";
+                return "⚠️ " + msg;
+            }
+
+            String intent = obj.has("intent") ? obj.get("intent").getAsString() : "";
+            com.google.gson.JsonElement dataEl = obj.has("data") ? obj.get("data") : null;
+
+            if (dataEl == null || dataEl.isJsonNull()) {
+                return "ℹ️ Không có dữ liệu phù hợp.";
+            }
+
+            if (dataEl.isJsonObject()) {
+                com.google.gson.JsonObject dataObj = dataEl.getAsJsonObject();
+                if (dataObj.has("count")) {
+                    int count = dataObj.get("count").getAsInt();
+                    return buildCountMessage(intent, count);
+                }
+            }
+
+            if ("INVENTORY_STATS".equals(intent) && dataEl.isJsonObject()) {
+                com.google.gson.JsonObject stats = dataEl.getAsJsonObject();
+                int total = stats.has("total_distinct_medicines") ? stats.get("total_distinct_medicines").getAsInt() : 0;
+                long stock = stats.has("total_stock_count") ? stats.get("total_stock_count").getAsLong() : 0;
+                int low = stats.has("low_stock_types_count") ? stats.get("low_stock_types_count").getAsInt() : 0;
+                return "📦 Thống kê kho thuốc\n\n" +
+                        "• Tổng số loại thuốc: " + total + "\n" +
+                        "• Tổng tồn kho: " + stock + " đơn vị\n" +
+                        "• Số loại sắp hết (< 10): " + low;
+            }
+
+            if (dataEl.isJsonArray()) {
+                com.google.gson.JsonArray arr = dataEl.getAsJsonArray();
+                if (arr.size() == 0) return "ℹ️ Không tìm thấy dữ liệu phù hợp.";
+                return buildArraySummary(intent, arr);
+            }
+
+            return "✅ Dữ liệu:\n" + json;
+
+        } catch (Exception e) {
+            return "⚠️ Lỗi xử lý dữ liệu: " + e.getMessage();
+        }
+    }
+
+    private String buildCountMessage(String intent, int count) {
+        switch (intent) {
+            case "COUNT_PATIENTS":     return "👥 Tổng số bệnh nhân: **" + count + "** người.";
+            case "COUNT_APPOINTMENTS": return "📅 Tổng số lịch hẹn: **" + count + "** lịch.";
+            case "COUNT_EXAMINATIONS": return "📋 Tổng số phiếu khám: **" + count + "** phiếu.";
+            case "COUNT_BILLS":        return "🧾 Tổng số hóa đơn: **" + count + "** hóa đơn.";
+            default:                   return "📊 Kết quả: " + count;
+        }
+    }
+
+    private String buildArraySummary(String intent, com.google.gson.JsonArray arr) {
+        int size = arr.size();
+        StringBuilder sb = new StringBuilder();
+
+        switch (intent) {
+            case "PATIENT_PROFILE":
+            case "LIST_PATIENTS": {
+                sb.append("👤 ").append(size == 1 ? "Thông tin bệnh nhân" : "Danh sách bệnh nhân (" + size + " người)").append("\n\n");
+                int limit = Math.min(size, 10);
+                for (int i = 0; i < limit; i++) {
+                    com.google.gson.JsonObject p = arr.get(i).getAsJsonObject();
+                    sb.append("• ").append(getString(p, "ho_ten", "(Chưa rõ tên)"));
+                    String cccd = getString(p, "cccd", "");
+                    if (!cccd.isEmpty()) sb.append(" | CCCD: ").append(cccd);
+                    String phone = getString(p, "so_dien_thoai", "");
+                    if (!phone.isEmpty()) sb.append(" | SĐT: ").append(phone);
+                    sb.append("\n");
+                }
+                if (size > 10) sb.append("... và ").append(size - 10).append(" người khác.");
+                break;
+            }
+            case "APPOINTMENT_BY_PATIENT":
+            case "LIST_APPOINTMENTS": {
+                sb.append("📅 ").append(size == 1 ? "Lịch hẹn" : "Danh sách lịch hẹn (" + size + " lịch)").append("\n\n");
+                int limit = Math.min(size, 10);
+                for (int i = 0; i < limit; i++) {
+                    com.google.gson.JsonObject a = arr.get(i).getAsJsonObject();
+                    sb.append("• Ngày: ").append(getString(a, "ngay_hen", "?"));
+                    String note = getString(a, "ghi_chu", "");
+                    if (!note.isEmpty()) sb.append(" | Ghi chú: ").append(note);
+                    sb.append("\n");
+                }
+                if (size > 10) sb.append("... và ").append(size - 10).append(" lịch khác.");
+                break;
+            }
+            case "MEDICAL_RECORD_BY_PATIENT": {
+                sb.append("🗂️ Bệnh án (").append(size).append(" lần khám)\n\n");
+                int limit = Math.min(size, 5);
+                for (int i = 0; i < limit; i++) {
+                    com.google.gson.JsonObject r = arr.get(i).getAsJsonObject();
+                    sb.append("• Ngày: ").append(getString(r, "ngay_kham", "?"));
+                    String diag = getString(r, "chan_doan", "");
+                    if (!diag.isEmpty()) sb.append(" | Chẩn đoán: ").append(diag);
+                    sb.append("\n");
+                }
+                if (size > 5) sb.append("... và ").append(size - 5).append(" lần khám khác.");
+                break;
+            }
+            case "DOCTOR_SCHEDULE":
+            case "LIST_EXAMINATIONS": {
+                sb.append("📋 ").append(size == 1 ? "Phiếu khám" : "Danh sách phiếu khám (" + size + " phiếu)").append("\n\n");
+                int limit = Math.min(size, 10);
+                for (int i = 0; i < limit; i++) {
+                    com.google.gson.JsonObject e = arr.get(i).getAsJsonObject();
+                    sb.append("• Ngày: ").append(getString(e, "ngay_kham", "?"));
+                    String gio = getString(e, "gio_du_kien", "");
+                    if (!gio.isEmpty()) sb.append(" ").append(gio);
+
+                    if (e.has("patient") && !e.get("patient").isJsonNull()) {
+                        try {
+                            String ten = e.get("patient").getAsJsonObject().get("ho_ten").getAsString();
+                            sb.append(" | BN: ").append(ten);
+                        } catch (Exception ignored) {}
+                    }
+                    String status = getString(e, "trang_thai", "");
+                    if (!status.isEmpty()) sb.append(" | TT: ").append(status);
+                    sb.append("\n");
+                }
+                if (size > 10) sb.append("... và ").append(size - 10).append(" phiếu khác.");
+                break;
+            }
+            case "BILL_BY_PATIENT":
+            case "BILL_BY_DATE":
+            case "LIST_BILLS": {
+
+                sb.append("🧾 ")
+                        .append(size == 1
+                                ? "Hóa đơn"
+                                : "Danh sách hóa đơn (" + size + ")")
+                        .append("\n\n");
+
+                int limit = Math.min(size, 10);
+
+                for (int i = 0; i < limit; i++) {
+
+                    JsonObject b = arr.get(i).getAsJsonObject();
+
+                    sb.append("• BN: ")
+                            .append(getString(b, "ten_benh_nhan", "Không rõ"));
+
+                    sb.append("\n  Ngày khám: ")
+                            .append(getString(b, "ngay_kham", "?"));
+
+                    sb.append("\n  Tổng tiền: ")
+                            .append(getString(b, "tong_thanh_toan", "0"))
+                            .append("đ");
+
+                    String status =
+                            getString(b, "trang_thai_thanh_toan", "");
+
+                    if (!status.isEmpty()) {
+                        sb.append("\n  Trạng thái: ")
+                                .append(status);
+                    }
+
+                    sb.append("\n\n");
+                }
+
+                if (size > 10) {
+                    sb.append("... và ")
+                            .append(size - 10)
+                            .append(" hóa đơn khác.");
+                }
+
+                break;
+            }
+            case "MEDICINE_LOOKUP": {
+                sb.append("💊 Thuốc tìm được (").append(size).append(")\n\n");
+                int limit = Math.min(size, 10);
+                for (int i = 0; i < limit; i++) {
+                    com.google.gson.JsonObject m = arr.get(i).getAsJsonObject();
+                    sb.append("• ").append(getString(m, "ten_thuoc", "?"));
+                    String hc = getString(m, "hoat_chat", "");
+                    if (!hc.isEmpty()) sb.append(" (").append(hc).append(")");
+                    String dvt = getString(m, "don_vi_tinh", "");
+                    if (!dvt.isEmpty()) sb.append(" | ĐVT: ").append(dvt);
+                    sb.append(" | Tồn: ").append(getString(m, "ton_kho", "?"));
+                    sb.append("\n");
+                }
+                if (size > 10) sb.append("... và ").append(size - 10).append(" loại khác.");
+                break;
+            }
+            case "CLINICAL_LOOKUP": {
+                sb.append("🔬 Dịch vụ lâm sàng (").append(size).append(")\n\n");
+                int limit = Math.min(size, 10);
+                for (int i = 0; i < limit; i++) {
+                    com.google.gson.JsonObject c = arr.get(i).getAsJsonObject();
+                    sb.append("• ").append(getString(c, "ten_dich_vu", "?"));
+                    String price = getString(c, "don_gia", "");
+                    if (!price.isEmpty()) sb.append(" | Giá: ").append(price).append("đ");
+                    sb.append("\n");
+                }
+                if (size > 10) sb.append("... và ").append(size - 10).append(" dịch vụ khác.");
+                break;
+            }
+            default:
+                sb.append("✅ Tìm được ").append(size).append(" kết quả.");
+        }
+        return sb.toString().trim();
+    }
+
+    private String getString(com.google.gson.JsonObject obj, String key, String defaultVal) {
+        try {
+            if (obj.has(key) && !obj.get(key).isJsonNull()) {
+                return obj.get(key).getAsString();
+            }
+        } catch (Exception ignored) {}
+        return defaultVal;
     }
 
     private String answerQueryLocal(String rawMessage) {
@@ -439,7 +860,7 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
         if (containsAny(query,
                 "cach huy phieu kham",
                 "huy phieu kham",
-                "huy phieu") && !query.contains("chuyen")) { // Tránh nhầm với đổi trạng thái
+                "huy phieu") && !query.contains("chuyen")) {
             return "📘 Cách hủy phiếu khám\n\n" +
                     "Vào mục \"Quản lý phiếu khám\" → Nhập CCCD hoặc mã bệnh nhân → Sử dụng bộ lọc và sắp xếp → Nhấn giữ vào hàng phiếu khám cần xem → Chọn Hủy phiếu.";
         }

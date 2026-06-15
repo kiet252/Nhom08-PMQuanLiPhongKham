@@ -26,4 +26,11 @@ public class AppointmentRepository {
                 "ngay_hen.desc"
         );
     }
+    public Call<List<AppointmentItem>> getAllAppointments() {
+        return apiService.getAppointmentsByPatientId(
+                null,
+                "id,patient_id,doctor_id,ngay_hen,ghi_chu",
+                "ngay_hen.desc"
+        );
+    }
 }
