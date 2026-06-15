@@ -41,14 +41,34 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.genai.Client;
+import com.google.genai.types.Content;
+import com.google.genai.types.FunctionDeclaration;
+import com.google.genai.types.FunctionResponse;
+import com.google.genai.types.GenerateContentConfig;
+import com.google.genai.types.Tool;
+import com.google.genai.types.Schema;
+import com.google.genai.types.Type;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Executors;
+
+
+
 
 import dashboard_fragment.UserRole;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.Executors;
 
 public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
@@ -504,7 +524,7 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
                 "dang thong bao",
                 "tao thong bao")) {
             return "📘 Cách tạo thông báo chung\n\n" +
-                    "Vào mục \"Quản lí thông báo\" → Chọn \"Tạo thông báo mới\" (Dấu + góc trên bên phải) → Nhập tiêu đề và nội dung thông báo cho phòng khám → chọn chức vụ có thể xem được thông báo → Nhấn \"Gửi thông báo\" để hiển thị tới toàn bộ hệ thống.";
+                    "Vào mục \"Quản lí thông báo\" → Chọn \"Tạo thông báo mới\" (Dấu + học trên bên phải) → Nhập tiêu đề và nội dung thông báo cho phòng khám → chọn chức vụ có thể xem được thông báo → Nhấn \"Gửi thông báo\" để hiển thị tới toàn bộ hệ thống.";
         }
 
         if (containsAny(query,
@@ -536,83 +556,102 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
     }
 
     private void askGemini(String userMessage) {
-
-        conversationHistory
-                .append("Người dùng: ")
-                .append(userMessage)
-                .append("\n");
+        conversationHistory.append("Người dùng: ").append(userMessage).append("\n");
 
         Executors.newSingleThreadExecutor().execute(() -> {
-
             try {
-
-                String prompt =
-                        "Bạn là MedBot của phòng khám TMH.\n\n" +
-
-                                "NHIỆM VỤ:\n" +
-                                "- Chỉ trả lời các câu hỏi liên quan đến y tế.\n" +
-                                "- Bao gồm bệnh lý, triệu chứng, thuốc, xét nghiệm, dinh dưỡng, sức khỏe, bệnh viện, bác sĩ, điều trị.\n" +
-                                "- Nếu câu hỏi không thuộc lĩnh vực y tế thì KHÔNG được trả lời.\n" +
-
-                                "BẮT BUỘC:\n" +
-                                "Nếu câu hỏi không liên quan y tế, chỉ trả lời đúng duy nhất:\n" +
-                                "\"Xin lỗi, tôi chỉ hỗ trợ các câu hỏi liên quan đến y tế và sức khỏe.\"\n\n" +
-
-                                "LỊCH SỬ HỘI THOẠI:\n" +
-                                conversationHistory.toString() + "\n" +
-
-                                "Hãy trả lời tin nhắn cuối cùng của người dùng.";
-
-                var result = geminiClient.models.generateContent(
-                        "gemini-3-flash-preview",
-                        prompt,
-                        null
-                );
-                String response = result != null ? result.text() : null;
-
-                if (response == null || response.trim().isEmpty()) {
-                    response = "Xin lỗi, hiện tại tôi chưa thể trả lời câu hỏi này.";
+                // 1. Tìm kiếm thuốc liên quan (Thay vì lấy hết cả bảng)
+                String medicineData = "";
+                String query = normalize(userMessage);
+                if (containsAny(query, "thuoc", "gia", "ton kho", "lieu", "dung", "ban", "mua", "cong dung")) {
+                    // Lấy các từ khóa chính để tìm kiếm
+                    String[] words = userMessage.split(" ");
+                    String searchKey = words[words.length - 1]; // Lấy từ cuối cùng làm từ khóa gợi ý
+                    medicineData = fetchSupabaseData(searchKey);
                 }
 
-                conversationHistory
-                        .append("MedBot: ")
-                        .append(response)
-                        .append("\n");
+                // 2. Xây dựng Prompt cực ngắn để tiết kiệm Token/Quota
+                StringBuilder sb = new StringBuilder();
+                sb.append("Bạn là MedBot phòng khám TMH. Chỉ trả lời về y tế/thuốc.\n");
 
-                if (conversationHistory.length() > 8000) {
-                    conversationHistory.delete(
-                            0,
-                            conversationHistory.length() - 5000
-                    );
+                if (!medicineData.isEmpty() && !medicineData.startsWith("Lỗi")) {
+                    sb.append("DỮ LIỆU THUỐC: ").append(medicineData).append("\n");
                 }
 
-                String finalResponse = response;
+                sb.append("LỊCH SỬ: ").append(conversationHistory.toString()).append("\n");
+                sb.append("Trả lời ngắn gọn bằng tiếng Việt.");
 
-                mainHandler.post(() -> {
-                    if (isAdded()) {
+                // 3. Gọi Gemini với model ổn định nhất cho Free Tier
+                // Thử model gemini-1.5-flash (Model phổ biến nhất)
+                var result = geminiClient.models.generateContent("gemini-1.5-flash", sb.toString(), null);
 
-                        hideLoadingMessage();
+                String responseText = (result != null) ? result.text() : null;
 
-                        appendBotMessage(
-                                finalResponse,
-                                nowTime()
-                        );
+                if (responseText == null || responseText.trim().isEmpty()) {
+                    responseText = "Xin lỗi, hiện tại tôi gặp chút trục trặc khi xử lý thông tin.";
+                }
+
+                updateChatUI(responseText);
+
+            } catch (com.google.genai.errors.ClientException e) {
+                if (e.getMessage().contains("429")) {
+                    updateChatUI("Quota Free của bạn đã hết lượt. Hãy thử tạo API Key mới hoặc đợi 60 giây.");
+                } else if (e.getMessage().contains("404")) {
+                    // Nếu 1.5-flash bị 404, thử fallback sang 1.5-flash-8b (bản siêu nhẹ)
+                    try {
+                        var fallback = geminiClient.models.generateContent("gemini-1.5-flash-8b", userMessage, null);
+                        updateChatUI(fallback.text());
+                    } catch (Exception ex) {
+                        updateChatUI("Lỗi model: " + e.getMessage());
                     }
-                });
-
+                } else {
+                    updateChatUI("Lỗi Gemini: " + e.getMessage());
+                }
             } catch (Exception e) {
+                e.printStackTrace();
+                updateChatUI("Không thể kết nối. Vui lòng kiểm tra mạng.");
+            }
+        });
+    }
 
-                mainHandler.post(() -> {
-                    if (isAdded()) {
+    private String fetchSupabaseData(String searchKey) {
+        try {
+            OkHttpClient client = new OkHttpClient();
+            String baseUrl = com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider.SUPABASE_URL;
+            String anonKey = com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider.SUPABASE_ANON_KEY;
 
-                        hideLoadingMessage();
+            if (baseUrl.endsWith("/")) baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
 
-                        appendBotMessage(
-                                "Không thể kết nối Gemini. Vui lòng thử lại sau.",
-                                nowTime()
-                        );
-                    }
-                });
+            // TÌM KIẾM THEO TÊN (Lọc dữ liệu ngay từ Supabase để giảm kích thước Prompt)
+            // Lấy tối đa 5 kết quả để tránh làm Prompt quá dài
+            String url = baseUrl + "/rest/v1/medicine?ten_thuoc=ilike.*" + searchKey + "*&limit=5&select=ten_thuoc,don_gia,ton_kho,chuc_nang";
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .addHeader("apikey", anonKey)
+                    .addHeader("Authorization", "Bearer " + anonKey)
+                    .get()
+                    .build();
+
+            try (Response response = client.newCall(request).execute()) {
+                if (response.isSuccessful() && response.body() != null) {
+                    return response.body().string();
+                }
+            }
+        } catch (Exception e) {
+            return "Lỗi lấy dữ liệu: " + e.getMessage();
+        }
+        return "";
+    }
+    private void updateChatUI(String message) {
+        conversationHistory.append("MedBot: ").append(message).append("\n");
+        if (conversationHistory.length() > 8000) {
+            conversationHistory.delete(0, conversationHistory.length() - 5000);
+        }
+        mainHandler.post(() -> {
+            if (isAdded()) {
+                hideLoadingMessage();
+                appendBotMessage(message, nowTime());
             }
         });
     }
