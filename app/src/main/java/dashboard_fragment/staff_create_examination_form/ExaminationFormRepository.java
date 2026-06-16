@@ -92,6 +92,26 @@ public class ExaminationFormRepository {
         );
     }
 
+    public Call<List<ExaminationFormWithPatientDto>> getFormsByDateRange(String startDate, String endDate, String currentProfileId) {
+
+         String EXAM_SELECT = "*,patient:patient!examination_form_patient_id_fkey(" +
+                        "id,cccd,ho_ten,gioi_tinh,so_dien_thoai,ngay_sinh,dia_chi)," +
+                        "doctor:profiles!examination_form_doctor_id_fkey(" +
+                        "id,ho_ten,chuc_vu)";
+
+        String doctorFilter = currentProfileId == null ? null : "eq." + currentProfileId;
+
+        String filter = "(ngay_kham.gte." + startDate + ",ngay_kham.lte." + endDate + ")";
+
+        return getAllExFormToday.getFormsByDateRange(
+                filter,
+                EXAM_SELECT,
+                "ngay_kham.desc,gio_du_kien.asc",
+                "not.in.(Vắng,Đã hủy)",
+                doctorFilter
+        );
+    }
+
     public Call<Void> patchExaminationForm(String id, String newStatus, String newSymptoms) {
         String filter = "eq." + id;
 
@@ -99,4 +119,6 @@ public class ExaminationFormRepository {
 
         return updateSpecificExForm.updateExaminationStatus(filter, updateData);
     }
+
+
 }

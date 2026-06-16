@@ -15,8 +15,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -346,24 +348,51 @@ public class ChatbotDatabaseAssistant {
         if (containsAnyNL(q, "danh sach benh nhan", "liet ke benh nhan",
                 "tat ca benh nhan")) {
             spec.setIntent(IntentType.LIST_PATIENTS);
+
+            extractDateRange(rawMessage, spec);
+
             return spec;
         }
 
         if (containsAnyNL(q, "danh sach lich hen", "liet ke lich hen",
                 "tat ca lich hen")) {
+
             spec.setIntent(IntentType.LIST_APPOINTMENTS);
+
+            extractDateRange(rawMessage, spec);
+
+            if (spec.getStartDate() == null) {
+                spec.setDate(extractDate(rawMessage));
+            }
+
             return spec;
         }
 
         if (containsAnyNL(q, "danh sach phieu kham", "liet ke phieu kham",
                 "tat ca phieu kham")) {
+
             spec.setIntent(IntentType.LIST_EXAMINATIONS);
+
+            extractDateRange(rawMessage, spec);
+
+            if (spec.getStartDate() == null) {
+                spec.setDate(extractDate(rawMessage));
+            }
+
             return spec;
         }
 
         if (containsAnyNL(q, "danh sach hoa don", "liet ke hoa don",
-                "tat ca hoa don", "xem hoa don")) {
+                "tat ca hoa don")) {
+
             spec.setIntent(IntentType.LIST_BILLS);
+
+            extractDateRange(rawMessage, spec);
+
+            if (spec.getStartDate() == null) {
+                spec.setDate(extractDate(rawMessage));
+            }
+
             return spec;
         }
 
@@ -704,27 +733,43 @@ public class ChatbotDatabaseAssistant {
                 queryListPatients(callback);
                 break;
             case COUNT_APPOINTMENTS:
-                queryCountAppointments(callback);
+                queryCountAppointments(
+                        spec.getStartDate(),
+                        spec.getEndDate(),
+                        callback);
                 break;
             case LIST_APPOINTMENTS:
-                queryListAppointments(callback);
-                break;
-            case COUNT_EXAMINATIONS:
-                queryCountExaminations(
+                queryListAppointments(
                         spec.getDate(),
                         spec.getStartDate(),
                         spec.getEndDate(),
                         callback
                 );
                 break;
+            case COUNT_EXAMINATIONS:
+                queryCountExaminations(
+                        spec.getStartDate(),
+                        spec.getEndDate(),
+                        callback
+                );
+                break;
             case LIST_EXAMINATIONS:
-                queryListExaminations(callback);
+                queryListExaminations(
+                        spec.getDate(),
+                        spec.getStartDate(),
+                        spec.getEndDate(),
+                        callback);
                 break;
             case COUNT_BILLS:
                 queryCountBills(callback);
                 break;
             case LIST_BILLS:
-                queryListBills(callback);
+                queryListBills(
+                        spec.getDate(),
+                        spec.getStartDate(),
+                        spec.getEndDate(),
+                        callback
+                );
                 break;
             case INVENTORY_STATS:
                 queryInventoryStats(callback);
@@ -1035,51 +1080,139 @@ public class ChatbotDatabaseAssistant {
         });
     }
 
-    private void queryCountAppointments(AnswerCallback callback) {
-        appointmentRepository.getAllAppointments().enqueue(new Callback<List<AppointmentItem>>() {
+    private void queryCountAppointments(
+            String startDate,
+            String endDate,
+            AnswerCallback callback
+    ) {
+
+        Call<List<AppointmentItem>> call;
+
+        if (startDate != null && endDate != null) {
+            call = appointmentRepository.getAppointmentsByDateRange(
+                    startDate,
+                    endDate
+            );
+        } else {
+            call = appointmentRepository.getAllAppointments();
+        }
+
+        call.enqueue(new Callback<List<AppointmentItem>>() {
+
             @Override
-            public void onResponse(Call<List<AppointmentItem>> call, Response<List<AppointmentItem>> response) {
-                if (response.isSuccessful() && response.body() != null) {
+            public void onResponse(
+                    Call<List<AppointmentItem>> call,
+                    Response<List<AppointmentItem>> response
+            ) {
+
+                if (response.isSuccessful()
+                        && response.body() != null) {
+
                     int count = response.body().size();
-                    callback.onAnswer("{\n" +
-                            "  \"success\": true,\n" +
-                            "  \"intent\": \"COUNT_APPOINTMENTS\",\n" +
-                            "  \"data\": {\n" +
-                            "    \"count\": " + count + "\n" +
-                            "  }\n" +
-                            "}");
+
+                    callback.onAnswer(
+                            "{\n" +
+                                    "  \"success\": true,\n" +
+                                    "  \"intent\": \"COUNT_APPOINTMENTS\",\n" +
+                                    "  \"data\": {\n" +
+                                    "    \"count\": " + count + "\n" +
+                                    "  }\n" +
+                                    "}"
+                    );
+
                 } else {
-                    callback.onAnswer(errorJson("Không lấy được số lượng lịch hẹn."));
+                    callback.onAnswer(
+                            errorJson("Không lấy được số lượng lịch hẹn.")
+                    );
                 }
             }
 
             @Override
-            public void onFailure(Call<List<AppointmentItem>> call, Throwable t) {
-                callback.onAnswer(errorJson("Lỗi đếm lịch hẹn: " + t.getMessage()));
+            public void onFailure(
+                    Call<List<AppointmentItem>> call,
+                    Throwable t
+            ) {
+
+                callback.onAnswer(
+                        errorJson(
+                                "Lỗi đếm lịch hẹn: "
+                                        + t.getMessage()
+                        )
+                );
             }
         });
     }
 
-    private void queryListAppointments(AnswerCallback callback) {
-        appointmentRepository.getAllAppointments().enqueue(new Callback<List<AppointmentItem>>() {
+    private void queryListAppointments(
+            String date,
+            String startDate,
+            String endDate,
+            AnswerCallback callback
+    ) {
+
+        Call<List<AppointmentItem>> call;
+
+        if (startDate != null && endDate != null) {
+
+            call = appointmentRepository.getAppointmentsByDateRange(
+                    startDate,
+                    endDate
+            );
+
+        } else if (date != null) {
+
+            call = appointmentRepository.getAppointmentsByDate(
+                    date
+            );
+
+        } else {
+
+            call = appointmentRepository.getAllAppointments();
+        }
+
+        call.enqueue(new Callback<List<AppointmentItem>>() {
+
             @Override
-            public void onResponse(Call<List<AppointmentItem>> call, Response<List<AppointmentItem>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    callback.onAnswer(successJson(IntentType.LIST_APPOINTMENTS, formatAppointments(response.body())));
+            public void onResponse(
+                    Call<List<AppointmentItem>> call,
+                    Response<List<AppointmentItem>> response
+            ) {
+
+                if (response.isSuccessful()
+                        && response.body() != null) {
+
+                    callback.onAnswer(
+                            successJson(
+                                    IntentType.LIST_APPOINTMENTS,
+                                    formatAppointments(response.body())
+                            )
+                    );
+
                 } else {
-                    callback.onAnswer(errorJson("Không lấy được danh sách lịch hẹn."));
+
+                    callback.onAnswer(
+                            errorJson("Không lấy được danh sách lịch hẹn.")
+                    );
                 }
             }
 
             @Override
-            public void onFailure(Call<List<AppointmentItem>> call, Throwable t) {
-                callback.onAnswer(errorJson("Lỗi lấy danh sách lịch hẹn: " + t.getMessage()));
+            public void onFailure(
+                    Call<List<AppointmentItem>> call,
+                    Throwable t
+            ) {
+
+                callback.onAnswer(
+                        errorJson(
+                                "Lỗi lấy danh sách lịch hẹn: "
+                                        + t.getMessage()
+                        )
+                );
             }
         });
     }
 
     private void queryCountExaminations(
-            String date,
             String startDate,
             String endDate,
             AnswerCallback callback) {
@@ -1148,20 +1281,88 @@ public class ChatbotDatabaseAssistant {
         });
     }
 
-    private void queryListExaminations(AnswerCallback callback) {
-        exFormApi.getFormsByDate(null, EXAM_SELECT, "ngay_kham.desc,gio_du_kien.asc", null, null).enqueue(new Callback<List<ExaminationFormWithPatientDto>>() {
+    private void queryListExaminations(
+            String date,
+            String startDate,
+            String endDate,
+            AnswerCallback callback
+    ) {
+
+        Call<List<ExaminationFormWithPatientDto>> call;
+
+        if (startDate != null && endDate != null) {
+
+            String dateRangeFilter =
+                    "(ngay_kham.gte." + startDate +
+                            ",ngay_kham.lte." + endDate + ")";
+
+            call = exFormApi.getFormsByDateRange(
+                    dateRangeFilter,
+                    EXAM_SELECT,
+                    "ngay_kham.desc,gio_du_kien.asc",
+                    null,
+                    null
+            );
+
+        } else if (date != null) {
+
+            call = exFormApi.getFormsByDate(
+                    "eq." + date,
+                    EXAM_SELECT,
+                    "ngay_kham.desc,gio_du_kien.asc",
+                    null,
+                    null
+            );
+
+        } else {
+
+            call = exFormApi.getFormsByDate(
+                    null,
+                    EXAM_SELECT,
+                    "ngay_kham.desc,gio_du_kien.asc",
+                    null,
+                    null
+            );
+        }
+
+        call.enqueue(new Callback<List<ExaminationFormWithPatientDto>>() {
+
             @Override
-            public void onResponse(Call<List<ExaminationFormWithPatientDto>> call, Response<List<ExaminationFormWithPatientDto>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    callback.onAnswer(successJson(IntentType.LIST_EXAMINATIONS, formatSchedule(response.body())));
+            public void onResponse(
+                    Call<List<ExaminationFormWithPatientDto>> call,
+                    Response<List<ExaminationFormWithPatientDto>> response
+            ) {
+
+                if (response.isSuccessful()
+                        && response.body() != null) {
+
+                    callback.onAnswer(
+                            successJson(
+                                    IntentType.LIST_EXAMINATIONS,
+                                    formatSchedule(response.body())
+                            )
+                    );
+
                 } else {
-                    callback.onAnswer(errorJson("Không lấy được danh sách phiếu khám."));
+
+                    callback.onAnswer(
+                            errorJson("Không lấy được danh sách phiếu khám.")
+                    );
                 }
             }
 
             @Override
-            public void onFailure(Call<List<ExaminationFormWithPatientDto>> call, Throwable t) {
-                callback.onAnswer(errorJson("Lỗi lấy danh sách phiếu khám: " + t.getMessage()));
+            public void onFailure(
+                    Call<List<ExaminationFormWithPatientDto>> call,
+                    Throwable t
+            ) {
+
+                callback.onAnswer(
+                        errorJson(
+                                "Lỗi lấy danh sách phiếu khám: "
+                                        + t.getMessage()
+                        )
+                );
             }
         });
     }
@@ -1191,20 +1392,72 @@ public class ChatbotDatabaseAssistant {
         });
     }
 
-    private void queryListBills(AnswerCallback callback) {
-        billRepository.getAllBills().enqueue(new Callback<List<ExamFormWithBillDto>>() {
+    private void queryListBills(
+            String date,
+            String startDate,
+            String endDate,
+            AnswerCallback callback
+    ) {
+
+        Call<List<ExamFormWithBillDto>> call;
+
+        if (startDate != null && endDate != null) {
+
+            call = billRepository.getBillsByDateRange(
+                    startDate,
+                    endDate
+            );
+
+        } else if (date != null) {
+
+            call = billRepository.getBillsByDateRange(
+                    date,
+                    date
+            );
+
+        } else {
+
+            call = billRepository.getAllBills();
+        }
+
+        call.enqueue(new Callback<List<ExamFormWithBillDto>>() {
+
             @Override
-            public void onResponse(Call<List<ExamFormWithBillDto>> call, Response<List<ExamFormWithBillDto>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    callback.onAnswer(successJson(IntentType.LIST_BILLS, formatBills(response.body())));
+            public void onResponse(
+                    Call<List<ExamFormWithBillDto>> call,
+                    Response<List<ExamFormWithBillDto>> response
+            ) {
+
+                if (response.isSuccessful()
+                        && response.body() != null) {
+
+                    callback.onAnswer(
+                            successJson(
+                                    IntentType.LIST_BILLS,
+                                    formatBills(response.body())
+                            )
+                    );
+
                 } else {
-                    callback.onAnswer(errorJson("Không lấy được danh sách hóa đơn."));
+
+                    callback.onAnswer(
+                            errorJson("Không lấy được danh sách hóa đơn.")
+                    );
                 }
             }
 
             @Override
-            public void onFailure(Call<List<ExamFormWithBillDto>> call, Throwable t) {
-                callback.onAnswer(errorJson("Lỗi lấy danh sách hóa đơn: " + t.getMessage()));
+            public void onFailure(
+                    Call<List<ExamFormWithBillDto>> call,
+                    Throwable t
+            ) {
+
+                callback.onAnswer(
+                        errorJson(
+                                "Lỗi lấy danh sách hóa đơn: "
+                                        + t.getMessage()
+                        )
+                );
             }
         });
     }
@@ -1297,6 +1550,32 @@ public class ChatbotDatabaseAssistant {
                 map.put("ngay_tao_hoa_don",
                         bill.getCreated_at());
             }
+
+            result.add(map);
+        }
+
+        return gson.toJson(result);
+    }
+
+    private String formatPatients(List<PatientProfile> patients) {
+
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (PatientProfile patient : patients) {
+
+            Map<String, Object> map = new HashMap<>();
+
+            map.put("id", patient.getId());
+
+            map.put("ho_ten", patient.getHo_ten());
+
+            map.put("so_dien_thoai", patient.getSo_dien_thoai());
+
+            map.put("cccd", patient.getCccd());
+
+            map.put("gioi_tinh", patient.getGioi_tinh());
+
+            map.put("ngay_sinh", patient.getNgay_sinh());
 
             result.add(map);
         }

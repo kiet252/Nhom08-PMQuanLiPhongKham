@@ -575,8 +575,8 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
                 for (int i = 0; i < limit; i++) {
                     com.google.gson.JsonObject p = arr.get(i).getAsJsonObject();
                     sb.append("• ").append(getString(p, "ho_ten", "(Chưa rõ tên)"));
-                    String cccd = getString(p, "cccd", "");
-                    if (!cccd.isEmpty()) sb.append(" | CCCD: ").append(cccd);
+                    String idBN = getString(p, "id", "");
+                    if (!idBN.isEmpty()) sb.append(" | Mã bệnh nhân: ").append(idBN);
                     String phone = getString(p, "so_dien_thoai", "");
                     if (!phone.isEmpty()) sb.append(" | SĐT: ").append(phone);
                     sb.append("\n");
@@ -790,7 +790,6 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
 
         if (containsAny(query,
                 "tao lich hen",
-                "lich hen",
                 "hen kham")) {
             return "📘 Cách tạo lịch hẹn\n\n" +
                     "Vào màn hình \"Tạo lịch hẹn\" → Nhập mã BN hoặc CCCD → Chọn ngày tái khám → Ghi chú nếu cần → Bấm \"Xác nhận đặt lịch hẹn\" để hẹn tái khám.";
