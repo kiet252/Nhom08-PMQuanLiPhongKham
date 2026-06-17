@@ -89,7 +89,7 @@
             android:name=".admin_reports.ReportsActivity_Admin"
             android:exported="false" />
         <activity
-            android:name="dashboard_fragment.Timekeeping"
+            android:name="dashboard_fragment.timekeeping.Timekeeping"
             android:exported="false" />
         <activity
             android:name="dashboard_fragment.admin_timekeeping_schedule.AdminTimekeepingScheduleActivity"
@@ -100,6 +100,8 @@
         <activity
         android:name="dashboard_fragment.timekeeping.FaceSignupActivity"
         android:exported="false" />
+        <activity android:name="dashboard_fragment.timekeeping.timekeeping_request"
+            android:exported="false" />
         <activity
             android:name="dashboard_fragment.admin_timekeeping_fix_request.AdminTimekeepingFixRequestActivity"
             android:exported="false" />

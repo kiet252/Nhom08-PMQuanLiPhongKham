@@ -374,7 +374,6 @@
                                                     dialog.dismiss();
                                                     finish();
                                                 } else {
-                                                    // no pending -> send request
                                                     Toast.makeText(Timekeeping.this, "Đã gửi yêu cầu.", Toast.LENGTH_SHORT).show();
                                                     sendTimekeepingAuthRequest(deviceAndroidId);
                                                     dialog.dismiss();
@@ -571,7 +570,11 @@
                         @Override
                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                             if (response.isSuccessful()) {
-                                Toast.makeText(Timekeeping.this, "Chấm công thành công.", Toast.LENGTH_SHORT).show();
+                                if ("Chưa checkin".equalsIgnoreCase(status))
+                                Toast.makeText(Timekeeping.this, "Check in thành công.", Toast.LENGTH_SHORT).show();
+                                else if ("Đang trong ca".equalsIgnoreCase(status))
+                                Toast.makeText(Timekeeping.this, "Check out thành công.", Toast.LENGTH_SHORT).show();
+                                else Toast.makeText(Timekeeping.this, "Chấm công thành công.", Toast.LENGTH_SHORT).show();
                                 finish();
                                 if (fetchedProfile != null && fetchedProfile.getID() != null) {
                                     loadCaLamViec(fetchedProfile.getID());

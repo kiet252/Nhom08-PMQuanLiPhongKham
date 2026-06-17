@@ -123,7 +123,6 @@ public class AccountFragment extends Fragment {
 
         String avatarUrl = userprofile.getAnh_dai_dien();
         if (avatarUrl != null && !avatarUrl.isEmpty()) {
-            // Nối thêm base URL nếu avatarUrl chỉ là tên file
             if (!avatarUrl.startsWith("http")) {
                 avatarUrl = "https://waiuciilyysobnvcwshd.supabase.co/storage/v1/object/public/avatars/" + avatarUrl;
             }

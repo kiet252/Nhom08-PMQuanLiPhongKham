@@ -11,6 +11,8 @@ public class ca_lam_viec {
     private String start_time;
     private String end_time;
 
+    private String status;
+
     public String getId() {
         return id;
     }
@@ -24,6 +26,7 @@ public class ca_lam_viec {
     public String getDisplayTime() {
         return formatTime(start_time) + " - " + formatTime(end_time);
     }
+    public String getStatus() {return status;}
     private String formatTime(String timestamp) {
         if (timestamp == null) return "--:--";
         try {

@@ -100,7 +100,7 @@ public class TimekeepingRepository {
         String today = java.time.LocalDate.now().toString();
         String currentTime = java.time.LocalDateTime.now().toString();
 
-        queries.put("select", "id,start_time,end_time");
+        queries.put("select", "id,start_time,end_time, status");
         queries.put("user_id", "eq." + staffId);
         queries.put("status", "neq.Hoàn thành");
 

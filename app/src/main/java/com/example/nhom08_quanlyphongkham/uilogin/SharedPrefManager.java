@@ -54,11 +54,11 @@ public class SharedPrefManager {
 
     // 2. Hàm lấy Token
     public String getToken() {
-        return sharedPreferences.getString(KEY_TOKEN, null); // Trả về null nếu chưa có token
+        return sharedPreferences.getString(KEY_TOKEN, null);
     }
 
     public String getRefreshToken() {
-        return sharedPreferences.getString(KEY_REFRESH_TOKEN, null); // Trả về null nếu chưa có token
+        return sharedPreferences.getString(KEY_REFRESH_TOKEN, null);
     }
 
     // 3. Hàm xóa dữ liệu (Dùng khi Logout)
@@ -67,21 +67,17 @@ public class SharedPrefManager {
         editor.clear();
         editor.apply();
     }
-    // 4. Lưu Profile vào máy (Đã được mã hóa nhờ sharedPreferences ở trên)
     public void saveProfile(UserProfile profile) {
-        // Dùng luôn biến sharedPreferences đã khai báo ở đầu Class
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
         Gson gson = new Gson();
-        String json = gson.toJson(profile); // Chuyển Object thành chuỗi JSON
+        String json = gson.toJson(profile);
 
         editor.putString("user_profile", json);
         editor.apply();
     }
 
-    // 5. Lấy Profile từ máy ra
     public UserProfile getProfile() {
-        // Dùng luôn biến sharedPreferences đã khai báo ở đầu Class
         String json = sharedPreferences.getString("user_profile", null);
 
         if (json == null) return null;

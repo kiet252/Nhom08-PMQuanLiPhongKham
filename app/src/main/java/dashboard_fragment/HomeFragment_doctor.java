@@ -36,6 +36,7 @@ import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.Ex
 import dashboard_fragment.timekeeping.Timekeeping;
 import dashboard_fragment.timekeeping.TimekeepingRepository;
 import dashboard_fragment.timekeeping.ca_lam_viec;
+import dashboard_fragment.timekeeping.timekeeping_request;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Call;
@@ -52,6 +53,7 @@ public class HomeFragment_doctor extends Fragment {
     private CardView btnExaminationList, btnCreateAppointment, btnViewMedicalRecords, btnTimekeeping;
     private TextView tvStatus;
     private TextView tvWorkTime;
+    private CardView btnTimekeepingRequest;
     private TimekeepingRepository timekeepingRepository;
 
     private ExaminationFormWithPatientDto nextPatient;
@@ -68,26 +70,16 @@ public class HomeFragment_doctor extends Fragment {
     };
 
     public HomeFragment_doctor() {
-        // Required empty public constructor
     }
 
-    public static HomeFragment_doctor newInstance() {
-        return new HomeFragment_doctor();
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        profile = SharedPrefManager.getInstance(requireContext()).getProfile();
         rootView = inflater.inflate(R.layout.fragment_home_doctor, container, false);
-        repository = new ExaminationFormRepository(requireContext());
-        timekeepingRepository = new TimekeepingRepository(requireContext());
-
         initializeViews(rootView);
-        loadTimekeepingForHome();
+        loadData();
         setupListeners();
-        SetAvatar(rootView, profile);
-        
         return rootView;
     }
 
@@ -100,6 +92,7 @@ public class HomeFragment_doctor extends Fragment {
         btnTimekeeping = view.findViewById(R.id.btnTimekeeping);
         tvStatus = view.findViewById(R.id.status);
         tvWorkTime = view.findViewById(R.id.work_time);
+        btnTimekeepingRequest = view.findViewById(R.id.btnTimekeepingRequest);
 
         View chatbotView = rootView.findViewById(R.id.chatbot_floating_button);
         if (chatbotView != null) {
@@ -167,14 +160,14 @@ public class HomeFragment_doctor extends Fragment {
                     } else {
                         tvStatus.setText("●");
                         tvStatus.setTextColor(android.graphics.Color.parseColor("#9CA3AF")); // gray
-                        tvWorkTime.setText("--:-- - --:--");
+                        tvWorkTime.setText("Hôm nay không có ca làm");
                         tvWorkTime.setTextColor(android.graphics.Color.parseColor("#9CA3AF"));
                     }
                 } else {
                     // no shifts
                     tvStatus.setText("●");
                     tvStatus.setTextColor(android.graphics.Color.parseColor("#9CA3AF"));
-                    tvWorkTime.setText("--:-- - --:--");
+                    tvWorkTime.setText("Hôm nay không có ca làm");
                     tvWorkTime.setTextColor(android.graphics.Color.parseColor("#9CA3AF"));
                 }
             }
@@ -194,6 +187,15 @@ public class HomeFragment_doctor extends Fragment {
     public void onResume() {
         super.onResume();
         refreshHandler.post(autoRefreshRunnable);
+        loadData();
+    }
+
+    private void loadData() {
+        profile = SharedPrefManager.getInstance(requireContext()).getProfile();
+        repository = new ExaminationFormRepository(requireContext());
+        timekeepingRepository = new TimekeepingRepository(requireContext());
+        SetAvatar(rootView, profile);
+        loadTimekeepingForHome();
     }
 
     @Override
@@ -280,6 +282,7 @@ public class HomeFragment_doctor extends Fragment {
         btnExaminationList.setOnClickListener(v -> startActivity(new Intent(getActivity(), ExaminationList_doctor.class)));
         btnCreateAppointment.setOnClickListener(v -> startActivity(new Intent(getActivity(), CreateAppointment_doctor.class)));
         btnViewMedicalRecords.setOnClickListener(v -> startActivity(new Intent(getActivity(), dashboard_fragment.doctor_view_medical_record.ViewMedicalRecord_doctor.class)));
+        btnTimekeepingRequest.setOnClickListener(v -> startActivity(new Intent(getActivity(), timekeeping_request.class)));
         btn_KhamNgay.setOnClickListener(v -> {
             if (nextPatient == null) return;
             Intent intent = new Intent(getActivity(), ExaminationList_doctor.class);
