@@ -5,6 +5,8 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 public enum ShiftSlot {
     MORNING("Ca Sáng", "07:30", "11:30", 7, 30, 11, 30, "#4CAF50"),
@@ -40,7 +42,7 @@ public enum ShiftSlot {
     }
 
     public String getTimeRange() {
-        return displayStart + " – " + displayEnd;
+        return displayStart + " - " + displayEnd;
     }
 
     public String getAccentColor() {
@@ -64,21 +66,52 @@ public enum ShiftSlot {
     }
 
     public boolean matchesStartTime(String startTimeIso) {
-        if (startTimeIso == null || startTimeIso.isEmpty()) return false;
-        try {
-            String formatted = startTimeIso.replace(" ", "T");
-            LocalTime time;
-            try {
-                // Xử lý chuỗi có timezone (vd: "2026-06-11T07:30:00+07:00")
-                time = ZonedDateTime.parse(formatted).withZoneSameInstant(ZONE).toLocalTime();
-            } catch (Exception e1) {
-                // Fallback: Supabase trả về không có timezone (vd: "2026-06-11T07:30:00")
-                time = java.time.LocalDateTime.parse(formatted).toLocalTime();
+        return matchesTime(startTimeIso);
+    }
+
+    public boolean matchesTime(String timeIso) {
+        for (LocalTime time : parseCandidateTimes(timeIso)) {
+            if (isSameStartTime(time) || isSameEndTime(time) || isTimeInsideSlot(time)) {
+                return true;
             }
-            return time.getHour() == startHour && time.getMinute() == startMinute;
-        } catch (Exception e) {
-            return false;
         }
+        return false;
+    }
+
+    private List<LocalTime> parseCandidateTimes(String timeIso) {
+        List<LocalTime> times = new ArrayList<>();
+        if (timeIso == null || timeIso.isEmpty()) return times;
+
+        String formatted = timeIso.replace(" ", "T");
+        try {
+            times.add(ZonedDateTime.parse(formatted).withZoneSameInstant(ZONE).toLocalTime());
+            return times;
+        } catch (Exception ignored) {
+        }
+
+        try {
+            java.time.LocalDateTime localDateTime = java.time.LocalDateTime.parse(formatted);
+            times.add(localDateTime.toLocalTime());
+            times.add(localDateTime.atZone(java.time.ZoneOffset.UTC)
+                    .withZoneSameInstant(ZONE)
+                    .toLocalTime());
+        } catch (Exception ignored) {
+        }
+        return times;
+    }
+
+    private boolean isSameStartTime(LocalTime time) {
+        return time.getHour() == startHour && time.getMinute() == startMinute;
+    }
+
+    private boolean isSameEndTime(LocalTime time) {
+        return time.getHour() == endHour && time.getMinute() == endMinute;
+    }
+
+    private boolean isTimeInsideSlot(LocalTime time) {
+        LocalTime start = LocalTime.of(startHour, startMinute);
+        LocalTime end = LocalTime.of(endHour, endMinute);
+        return !time.isBefore(start) && !time.isAfter(end);
     }
 
     public static ShiftSlot[] all() {

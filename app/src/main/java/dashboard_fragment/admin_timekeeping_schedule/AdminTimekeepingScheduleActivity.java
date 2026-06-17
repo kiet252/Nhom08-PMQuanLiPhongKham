@@ -209,10 +209,30 @@ public class AdminTimekeepingScheduleActivity extends BaseActivity {
 
         updateStats(dayShifts);
         ShiftSlot[] slots = ShiftSlot.all();
+        List<TimekeepingItem> unmatchedItems = new ArrayList<>(dayShifts);
+        List<List<TimekeepingItem>> slotItemsList = new ArrayList<>();
         for (int i = 0; i < slots.length; i++) {
             List<TimekeepingItem> slotItems = filterShiftsForSlot(dayShifts, slots[i]);
-            renderShiftSection(i, slots[i], slotItems);
+            slotItemsList.add(slotItems);
+            unmatchedItems.removeAll(slotItems);
         }
+
+        if (!unmatchedItems.isEmpty() && hasNoVisibleShiftItems(slotItemsList)) {
+            slotItemsList.get(0).addAll(unmatchedItems);
+        }
+
+        for (int i = 0; i < slots.length; i++) {
+            renderShiftSection(i, slots[i], slotItemsList.get(i));
+        }
+    }
+
+    private boolean hasNoVisibleShiftItems(List<List<TimekeepingItem>> slotItemsList) {
+        for (List<TimekeepingItem> items : slotItemsList) {
+            if (!items.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void updateStats(List<TimekeepingItem> dayShifts) {
@@ -455,8 +475,7 @@ public class AdminTimekeepingScheduleActivity extends BaseActivity {
     private List<TimekeepingItem> filterShiftsForDate(LocalDate date) {
         List<TimekeepingItem> result = new ArrayList<>();
         for (TimekeepingItem item : weekShifts) {
-            LocalDate itemDate = parseDate(item.getStartTime());
-            if (date.equals(itemDate)) {
+            if (matchesDate(item.getStartTime(), date) || matchesDate(item.getEndTime(), date)) {
                 result.add(item);
             }
         }
@@ -466,7 +485,7 @@ public class AdminTimekeepingScheduleActivity extends BaseActivity {
     private List<TimekeepingItem> filterShiftsForSlot(List<TimekeepingItem> dayShifts, ShiftSlot slot) {
         List<TimekeepingItem> result = new ArrayList<>();
         for (TimekeepingItem item : dayShifts) {
-            if (slot.matchesStartTime(item.getStartTime())) {
+            if (slot.matchesTime(item.getStartTime()) || slot.matchesTime(item.getEndTime())) {
                 result.add(item);
             }
         }
@@ -485,6 +504,28 @@ public class AdminTimekeepingScheduleActivity extends BaseActivity {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
+        }
+    }
+
+    private boolean matchesDate(String iso, LocalDate date) {
+        LocalDate parsedDate = parseDate(iso);
+        if (date.equals(parsedDate)) {
+            return true;
+        }
+        LocalDate utcDate = parseDateAssumingUtc(iso);
+        return date.equals(utcDate);
+    }
+
+    private LocalDate parseDateAssumingUtc(String iso) {
+        if (iso == null || iso.isEmpty()) return null;
+        try {
+            String formattedIso = iso.replace(" ", "T");
+            return java.time.LocalDateTime.parse(formattedIso)
+                    .atZone(java.time.ZoneOffset.UTC)
+                    .withZoneSameInstant(ZONE)
+                    .toLocalDate();
+        } catch (Exception e) {
             return null;
         }
     }
