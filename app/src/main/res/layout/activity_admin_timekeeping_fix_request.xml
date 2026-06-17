@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F0F7FF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_gradient_dark_blue_header"
+            android:paddingBottom="18dp">
+
+            <ImageButton
+                android:id="@+id/btnBackFixRequest"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="32dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_arrow_back"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@android:color/white" />
+
+            <ImageView
+                android:id="@+id/imgFixRequestTitleIcon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/bg_schedule_title_icon"
+                android:padding="12dp"
+                android:src="@drawable/ic_save"
+                app:layout_constraintBottom_toBottomOf="@id/btnBackFixRequest"
+                app:layout_constraintStart_toEndOf="@id/btnBackFixRequest"
+                app:layout_constraintTop_toTopOf="@id/btnBackFixRequest"
+                app:tint="@android:color/white" />
+
+            <TextView
+                android:id="@+id/tvFixRequestTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="8dp"
+                android:text="Yêu cầu sửa chấm công"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="@id/imgFixRequestTitleIcon"
+                app:layout_constraintEnd_toStartOf="@id/tvFixRequestHeaderPendingCount"
+                app:layout_constraintStart_toEndOf="@id/imgFixRequestTitleIcon"
+                app:layout_constraintTop_toTopOf="@id/imgFixRequestTitleIcon" />
+
+            <TextView
+                android:id="@+id/tvFixRequestHeaderPendingCount"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/bg_count_badge_selected"
+                android:gravity="center"
+                android:text="0"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="@id/imgFixRequestTitleIcon"
+                app:layout_constraintEnd_toStartOf="@id/btnRefreshFixRequest"
+                app:layout_constraintTop_toTopOf="@id/imgFixRequestTitleIcon" />
+
+            <ImageButton
+                android:id="@+id/btnRefreshFixRequest"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginEnd="14dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_popup_sync"
+                app:layout_constraintBottom_toBottomOf="@id/imgFixRequestTitleIcon"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/imgFixRequestTitleIcon"
+                app:tint="@android:color/white" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FFFFFF"
+            android:elevation="2dp"
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="14dp">
+
+            <EditText
+                android:id="@+id/edtFixRequestSearch"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:background="@drawable/bg_prescription_field"
+                android:hint="Tìm theo tên, vị trí, lý do..."
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:singleLine="true"
+                android:textColor="#1E293B"
+                android:textColorHint="#94A3B8"
+                android:textSize="15sp" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tabFixAll"
+                        android:layout_width="wrap_content"
+                        android:layout_height="42dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_filter_tab_selected"
+                        android:gravity="center"
+                        android:minWidth="98dp"
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
+                        android:text="Tất cả  0"
+                        android:textColor="@android:color/white"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tabFixPending"
+                        android:layout_width="wrap_content"
+                        android:layout_height="42dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_filter_tab_unselected"
+                        android:gravity="center"
+                        android:minWidth="110dp"
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
+                        android:text="Chờ duyệt  0"
+                        android:textColor="#64748B"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tabFixApproved"
+                        android:layout_width="wrap_content"
+                        android:layout_height="42dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_filter_tab_unselected"
+                        android:gravity="center"
+                        android:minWidth="108dp"
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
+                        android:text="Đã duyệt  0"
+                        android:textColor="#64748B"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tabFixRejected"
+                        android:layout_width="wrap_content"
+                        android:layout_height="42dp"
+                        android:background="@drawable/bg_filter_tab_unselected"
+                        android:gravity="center"
+                        android:minWidth="96dp"
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
+                        android:text="Từ chối  0"
+                        android:textColor="#64748B"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </HorizontalScrollView>
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:padding="16dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvTimekeepingFixRequests"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingBottom="12dp" />
+
+            <LinearLayout
+                android:id="@+id/layoutFixRequestEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:alpha="0.45"
+                    android:src="@drawable/ic_save"
+                    app:tint="#94A3B8" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Không có yêu cầu sửa chấm công"
+                    android:textColor="#64748B"
+                    android:textSize="15sp" />
+            </LinearLayout>
+        </FrameLayout>
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progressFixRequests"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+</FrameLayout>

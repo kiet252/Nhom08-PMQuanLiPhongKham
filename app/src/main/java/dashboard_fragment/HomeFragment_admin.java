@@ -24,6 +24,7 @@ import com.example.nhom08_quanlyphongkham.admin_reports.ReportsActivity_Admin;
 import dashboard_fragment.account_chatbot.ChatbotBottomSheetFragment;
 import dashboard_fragment.admin_manage_device.AdminManageDeviceActivity;
 import dashboard_fragment.admin_timekeeping_schedule.AdminTimekeepingScheduleActivity;
+import dashboard_fragment.admin_timekeeping_fix_request.AdminTimekeepingFixRequestActivity;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 
@@ -156,6 +157,14 @@ public class HomeFragment_admin extends Fragment {
         if (btnMngTimekeepingSchedule != null) {
             btnMngTimekeepingSchedule.setOnClickListener(v -> {
                 Intent intent = new Intent(getActivity(), AdminTimekeepingScheduleActivity.class);
+                startActivity(intent);
+            });
+        }
+
+        View btnMngTimekeepingFixRequest = view.findViewById(R.id.btn_mngTimekeepingFixRequest);
+        if (btnMngTimekeepingFixRequest != null) {
+            btnMngTimekeepingFixRequest.setOnClickListener(v -> {
+                Intent intent = new Intent(getActivity(), AdminTimekeepingFixRequestActivity.class);
                 startActivity(intent);
             });
         }
