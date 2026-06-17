@@ -111,6 +111,19 @@ public class TimekeepingRepository {
         return apiService.getCaLamViec(queries);
     }
 
+    // New method for timekeeping_request to get shifts by staff_id with proper filter
+    public Call<java.util.List<ca_lam_viec>> getCaLamViecListByStaffId(String staffId) {
+        java.util.Map<String, String> queries = new java.util.HashMap<>();
+
+        queries.put("select", "id,start_time,end_time,status");
+        queries.put("user_id", "eq." + staffId);
+
+        Log.e("getCaLamViecListByStaffId", "Query: select=" + queries.get("select") +
+                ", user_id=" + queries.get("user_id"));
+
+        return apiService.getCaLamViec(queries);
+    }
+
     public Call<java.util.List<java.util.Map<String, Object>>> getTimekeepingById(String id) {
         java.util.Map<String, String> queries = new java.util.HashMap<>();
         queries.put("select", "id,real_start_time,real_end_time,status");

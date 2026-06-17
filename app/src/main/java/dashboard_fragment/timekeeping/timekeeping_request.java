@@ -38,7 +38,6 @@ import java.util.Locale;
 public class timekeeping_request extends BaseActivity {
 
 	private TextInputEditText etViolationDate, etViolationTime, etExplanationReason;
-	private AutoCompleteTextView actvViolationType; // actual widget in layout
 	private RecyclerView recyclerEvidence;
 	private MaterialButton btnSubmit;
 
@@ -86,42 +85,69 @@ public class timekeeping_request extends BaseActivity {
 		setupActions();
 
 		// Load all shifts for the current user (store into caAllList)
+		loadCaLamViecData();
+	}
+
+	private void loadCaLamViecData() {
 		try {
 			com.example.nhom08_quanlyphongkham.UserProfile local = SharedPrefManager.getInstance(this).getProfile();
 			if (local != null && local.getID() != null) {
-				repository.getCaLamViecList(local.getID()).enqueue(new retrofit2.Callback<java.util.List<ca_lam_viec>>() {
+				android.util.Log.e("timekeeping_request", "Loading ca lam viec for staff_id: " + local.getID());
+				repository.getCaLamViecListByStaffId(local.getID()).enqueue(new retrofit2.Callback<java.util.List<ca_lam_viec>>() {
 					@Override
 					public void onResponse(retrofit2.Call<java.util.List<ca_lam_viec>> call, retrofit2.Response<java.util.List<ca_lam_viec>> response) {
+						android.util.Log.e("timekeeping_request", "Response code: " + response.code() + ", isSuccessful: " + response.isSuccessful());
 						if (response.isSuccessful() && response.body() != null) {
+							android.util.Log.e("timekeeping_request", "Got " + response.body().size() + " shifts");
 							caAllList.clear();
 							caAllList.addAll(response.body());
+							if (caAllList.isEmpty()) {
+								Toast.makeText(timekeeping_request.this, "Không có ca làm việc nào để chọn", Toast.LENGTH_SHORT).show();
+							}
+						} else {
+							android.util.Log.e("timekeeping_request", "Response not successful or body is null");
+							try {
+								String errorBody = response.errorBody() != null ? response.errorBody().string() : "No error body";
+								android.util.Log.e("timekeeping_request", "Error body: " + errorBody);
+							} catch (Exception e) {
+								android.util.Log.e("timekeeping_request", "Could not read error body", e);
+							}
+							Toast.makeText(timekeeping_request.this, "Lỗi khi lấy dữ liệu ca làm việc (code: " + response.code() + ")", Toast.LENGTH_SHORT).show();
 						}
 					}
 
 					@Override
 					public void onFailure(retrofit2.Call<java.util.List<ca_lam_viec>> call, Throwable t) {
-						// ignore silently
+						android.util.Log.e("timekeeping_request", "Request failed", t);
+						Toast.makeText(timekeeping_request.this, "Kết nối lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
 					}
 				});
 			}
-		} catch (Exception e) { e.printStackTrace(); }
+		} catch (Exception e) { 
+			android.util.Log.e("timekeeping_request", "Exception in loadCaLamViecData", e);
+			e.printStackTrace();
+			Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+		}
 	}
 
 	private void initViews() {
-		actvViolationType = findViewById(R.id.actvViolationType);
 		etViolationDate = findViewById(R.id.etViolationDate);
 		etViolationTime = findViewById(R.id.etViolationTime);
 		etExplanationReason = findViewById(R.id.etExplanationReason);
 		recyclerEvidence = findViewById(R.id.recyclerEvidence);
 		btnSubmit = findViewById(R.id.btnSubmit);
 
+		// Disable keyboard input for date and time fields - only allow picker selection
+		etViolationDate.setInputType(android.text.InputType.TYPE_NULL);
+		etViolationTime.setInputType(android.text.InputType.TYPE_NULL);
+		etViolationDate.setFocusable(false);
+		etViolationTime.setFocusable(false);
+
 		// simple dropdown types
 		String[] types = new String[]{"Muộn", "Vắng", "Xin phép", "Khác"};
 		ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, types);
 		// set adapter
-		try {
-			actvViolationType.setAdapter(typeAdapter);
-		} catch (Exception ignored) {}
+
 
 		// RecyclerView setup
 		GridLayoutManager gm = new GridLayoutManager(this, 3);
@@ -136,12 +162,11 @@ public class timekeeping_request extends BaseActivity {
 
 		btnSubmit.setOnClickListener(v -> {
 			// validate all fields
-			String type = actvViolationType.getText() != null ? actvViolationType.getText().toString().trim() : "";
 			String date = etViolationDate.getText() != null ? etViolationDate.getText().toString().trim() : "";
 			String shift = etViolationTime.getText() != null ? etViolationTime.getText().toString().trim() : "";
 			String reason = etExplanationReason.getText() != null ? etExplanationReason.getText().toString().trim() : "";
 
-			if (type.isEmpty() || date.isEmpty() || shift.isEmpty() || reason.isEmpty() || evidenceUris.isEmpty()) {
+			if (date.isEmpty() || shift.isEmpty() || reason.isEmpty() || evidenceUris.isEmpty()) {
 				Toast.makeText(this, "Vui lòng không để trống các trường, bao gồm minh chứng.", Toast.LENGTH_LONG).show();
 				return;
 			}
@@ -175,8 +200,19 @@ public class timekeeping_request extends BaseActivity {
 			// reset selected ca and shift display (only show after date selected)
 			selectedCa = null;
 			etViolationTime.setText("");
+
+			// Update UI to show available shifts for selected date
+			updateTimeAvailability();
 		}, y, m, d);
 		dp.show();
+	}
+
+	private void updateTimeAvailability() {
+		if (caFiltered.isEmpty()) {
+			etViolationTime.setHint("Không có ca làm trong ngày này");
+		} else {
+			etViolationTime.setHint("Chọn ca làm từ " + caFiltered.size() + " ca");
+		}
 	}
 
 	private void showShiftPicker() {
@@ -188,11 +224,12 @@ public class timekeeping_request extends BaseActivity {
 		for (int i = 0; i < caFiltered.size(); i++) items[i] = caFiltered.get(i).getDisplayTime();
 
 		new androidx.appcompat.app.AlertDialog.Builder(this)
-				.setTitle("Chọn ca làm")
+				.setTitle("Chọn ca làm (" + caFiltered.size() + " ca)")
 				.setItems(items, (dialog, which) -> {
 					selectedCa = caFiltered.get(which);
 					etViolationTime.setText(selectedCa.getDisplayTime());
 				})
+				.setNegativeButton("Hủy", null)
 				.show();
 	}
 

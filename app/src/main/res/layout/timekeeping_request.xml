@@ -78,26 +78,6 @@
                     android:padding="16dp">
 
                     <com.google.android.material.textfield.TextInputLayout
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="       Lí do"
-                        app:boxCornerRadiusBottomEnd="14dp"
-                        app:boxCornerRadiusBottomStart="14dp"
-                        app:boxCornerRadiusTopEnd="14dp"
-                        app:boxCornerRadiusTopStart="14dp"
-                        app:startIconDrawable="@android:drawable/ic_menu_sort_by_size"
-                        app:startIconTint="#0D3F6E">
-                        <AutoCompleteTextView
-                            android:id="@+id/actvViolationType"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textColor="#1E293B"
-                            android:textSize="15sp"
-                            android:inputType="none" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -117,6 +97,8 @@
                             android:textSize="15sp"
                             android:focusable="false"
                             android:clickable="true"
+                            android:inputType="none"
+                            android:cursorVisible="false"
                             />
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -139,7 +121,10 @@
                             android:textColor="#1E293B"
                             android:textSize="15sp"
                             android:focusable="false"
-                            android:clickable="true" />
+                            android:clickable="true"
+                            android:inputType="none"
+                            android:cursorVisible="false"
+                            />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
