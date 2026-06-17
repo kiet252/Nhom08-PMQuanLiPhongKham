@@ -18,4 +18,18 @@ public interface AppointmentApiService {
             @Query("select") String select,
             @Query("order") String order
     );
+
+    @GET("rest/v1/appointment")
+    Call<List<AppointmentItem>> getAppointmentsByDateRange(
+            @Query("and") String dateRange,
+            @Query("select") String select,
+            @Query("order") String order
+    );
+
+    @GET("rest/v1/appointment")
+    Call<List<AppointmentItem>> getAppointmentsByDate(
+            @Query("ngay_hen") String ngayHen,
+            @Query("select") String select,
+            @Query("order") String order
+    );
 }

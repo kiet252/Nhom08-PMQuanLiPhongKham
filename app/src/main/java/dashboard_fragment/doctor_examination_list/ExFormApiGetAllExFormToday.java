@@ -16,4 +16,13 @@ public interface ExFormApiGetAllExFormToday {
             @Query("trang_thai") String trangThai,
             @Query("doctor_id") String doctorId
     );
+
+    @GET("rest/v1/examination_form")
+    Call<List<ExaminationFormWithPatientDto>> getFormsByDateRange(
+            @Query("and") String dateRange,
+            @Query(value = "select", encoded = true) String select,
+            @Query("order") String order,
+            @Query("trang_thai") String trangThai,
+            @Query("doctor_id") String doctorId
+    );
 }

@@ -35,6 +35,11 @@ val supabaseAnonKey = listOfNotNull(
 ).firstOrNull { it.isNotBlank() }?.normalizeSecretValue()
     ?: error("Missing SUPABASE_ANON_KEY. Add it to local.properties or set the SUPABASE_ANON_KEY environment variable.")
 
+val geminiApiKey = localProperties
+    .getProperty("GEMINI_API_KEY")
+    ?.normalizeSecretValue()
+    ?: ""
+
 android {
     namespace = "com.example.nhom08_quanlyphongkham"
     compileSdk = 36
@@ -45,12 +50,21 @@ android {
 
     defaultConfig {
         applicationId = "com.example.nhom08_quanlyphongkham"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
-        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${supabaseAnonKey.escapeForBuildConfig()}\"")
+        buildConfigField(
+            "String",
+            "SUPABASE_ANON_KEY",
+            "\"${supabaseAnonKey.escapeForBuildConfig()}\"")
+
+        buildConfigField(
+            "String",
+            "GEMINI_API_KEY",
+            "\"${geminiApiKey.escapeForBuildConfig()}\""
+        )
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -69,6 +83,19 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
 
         isCoreLibraryDesugaringEnabled = true
+    }
+    packaging {
+        resources {
+            // Loại bỏ các file INDEX.LIST gây xung đột
+            excludes += "/META-INF/INDEX.LIST"
+
+            // Loại bỏ thêm các file meta-data khác thường xuyên gây lỗi khi dùng thư viện Google
+            excludes += "/META-INF/DEPENDENCIES"
+            excludes += "/META-INF/LICENSE*"
+            excludes += "/META-INF/NOTICE*"
+            excludes += "/META-INF/io.netty.versions.properties"
+            excludes += "/META-INF/INDEX.LIST"
+        }
     }
 }
 
@@ -116,6 +143,9 @@ dependencies {
     implementation("androidx.camera:camera-view:1.3.4")
 
     implementation("com.google.mlkit:text-recognition:16.0.1")
+
+    //Gemini
+    implementation("com.google.genai:google-genai:1.16.0")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }

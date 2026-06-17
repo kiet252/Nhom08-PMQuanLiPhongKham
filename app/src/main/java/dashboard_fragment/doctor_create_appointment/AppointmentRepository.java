@@ -26,4 +26,31 @@ public class AppointmentRepository {
                 "ngay_hen.desc"
         );
     }
+    public Call<List<AppointmentItem>> getAllAppointments() {
+        return apiService.getAppointmentsByPatientId(
+                null,
+                "id,patient_id,doctor_id,ngay_hen,ghi_chu",
+                "ngay_hen.desc"
+        );
+    }
+
+    public Call<List<AppointmentItem>> getAppointmentsByDateRange(String startDate, String endDate) {
+        String filter = "(ngay_hen.gte." + startDate + ",ngay_hen.lte." + endDate + ")";
+
+        return apiService.getAppointmentsByDateRange(
+                filter,
+                "id,patient_id,doctor_id,ngay_hen,ghi_chu",
+                "ngay_hen.desc"
+        );
+    }
+
+    public Call<List<AppointmentItem>> getAppointmentsByDate(
+            String date
+    ) {
+        return apiService.getAppointmentsByDate(
+                "eq." + date,
+                "id,patient_id,doctor_id,ngay_hen,ghi_chu",
+                "ngay_hen.desc"
+        );
+    }
 }

@@ -33,19 +33,26 @@ import dashboard_fragment.doctor_create_appointment.CreateAppointment_doctor;
 import dashboard_fragment.doctor_examination_list.ExaminationList_doctor;
 import dashboard_fragment.staff_create_examination_form.ExaminationFormRepository;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
+import dashboard_fragment.timekeeping.Timekeeping;
+import dashboard_fragment.timekeeping.TimekeepingRepository;
+import dashboard_fragment.timekeeping.ca_lam_viec;
+import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.Call;
 
 public class HomeFragment_doctor extends Fragment {
 
     private TextView tvName;
     private TextView btn_KhamNgay;
-    private TextView ic_ChoKham;
     private UserProfile profile;
     private View rootView;
 
     private List<ExaminationFormWithPatientDto> allForms = new ArrayList<>();
     private ExaminationFormRepository repository;
     private CardView btnExaminationList, btnCreateAppointment, btnViewMedicalRecords, btnTimekeeping;
+    private TextView tvStatus;
+    private TextView tvWorkTime;
+    private TimekeepingRepository timekeepingRepository;
 
     private ExaminationFormWithPatientDto nextPatient;
 
@@ -74,8 +81,10 @@ public class HomeFragment_doctor extends Fragment {
         profile = SharedPrefManager.getInstance(requireContext()).getProfile();
         rootView = inflater.inflate(R.layout.fragment_home_doctor, container, false);
         repository = new ExaminationFormRepository(requireContext());
-        
+        timekeepingRepository = new TimekeepingRepository(requireContext());
+
         initializeViews(rootView);
+        loadTimekeepingForHome();
         setupListeners();
         SetAvatar(rootView, profile);
         
@@ -88,8 +97,9 @@ public class HomeFragment_doctor extends Fragment {
         btnCreateAppointment = view.findViewById(R.id.btnCreateAppointment);
         btnViewMedicalRecords = view.findViewById(R.id.btnViewMedicalRecords);
         btn_KhamNgay = view.findViewById(R.id.btnKhamNgay);
-        ic_ChoKham = view.findViewById(R.id.txtChoKham);
         btnTimekeeping = view.findViewById(R.id.btnTimekeeping);
+        tvStatus = view.findViewById(R.id.status);
+        tvWorkTime = view.findViewById(R.id.work_time);
 
         View chatbotView = rootView.findViewById(R.id.chatbot_floating_button);
         if (chatbotView != null) {
@@ -99,6 +109,85 @@ public class HomeFragment_doctor extends Fragment {
             );
         }
 
+    }
+
+    private void loadTimekeepingForHome() {
+        if (profile == null || profile.getID() == null || timekeepingRepository == null) return;
+        timekeepingRepository.getCaLamViecList(profile.getID()).enqueue(new Callback<java.util.List<ca_lam_viec>>() {
+            @Override
+            public void onResponse(retrofit2.Call<java.util.List<ca_lam_viec>> call, retrofit2.Response<java.util.List<ca_lam_viec>> response) {
+                if (!isAdded()) return;
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                    java.util.List<ca_lam_viec> shifts = response.body();
+                    java.text.SimpleDateFormat inFmt = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault());
+                    java.text.SimpleDateFormat outFmt = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
+                    java.util.Date now = new java.util.Date();
+
+                    ca_lam_viec current = null;
+                    ca_lam_viec next = null;
+                    java.util.Date nextStart = null;
+
+                    for (ca_lam_viec s : shifts) {
+                        try {
+                            String st = s.getStart_time();
+                            String et = s.getEnd_time();
+                            java.util.Date dStart = st == null ? null : inFmt.parse(st);
+                            java.util.Date dEnd = et == null ? null : inFmt.parse(et);
+                            if (dStart != null && dEnd != null) {
+                                if (!now.before(dStart) && !now.after(dEnd)) {
+                                    // now in [start, end]
+                                    current = s;
+                                    break;
+                                }
+                                if (dStart.after(now)) {
+                                    if (next == null || (nextStart != null && dStart.before(nextStart))) {
+                                        next = s;
+                                        nextStart = dStart;
+                                    } else if (next == null) {
+                                        next = s;
+                                        nextStart = dStart;
+                                    }
+                                }
+                            }
+                        } catch (Exception ex) {
+                            // ignore parse errors
+                        }
+                    }
+
+                    if (current != null) {
+                        tvStatus.setText("●");
+                        tvStatus.setTextColor(android.graphics.Color.parseColor("#4CAF50")); // green
+                        tvWorkTime.setText(current.getDisplayTime());
+                        tvWorkTime.setTextColor(android.graphics.Color.parseColor("#E67E22"));
+                    } else if (next != null) {
+                        tvStatus.setText("●");
+                        tvStatus.setTextColor(android.graphics.Color.parseColor("#2563EB")); // blue
+                        tvWorkTime.setText(next.getDisplayTime());
+                        tvWorkTime.setTextColor(android.graphics.Color.parseColor("#E67E22"));
+                    } else {
+                        tvStatus.setText("●");
+                        tvStatus.setTextColor(android.graphics.Color.parseColor("#9CA3AF")); // gray
+                        tvWorkTime.setText("--:-- - --:--");
+                        tvWorkTime.setTextColor(android.graphics.Color.parseColor("#9CA3AF"));
+                    }
+                } else {
+                    // no shifts
+                    tvStatus.setText("●");
+                    tvStatus.setTextColor(android.graphics.Color.parseColor("#9CA3AF"));
+                    tvWorkTime.setText("--:-- - --:--");
+                    tvWorkTime.setTextColor(android.graphics.Color.parseColor("#9CA3AF"));
+                }
+            }
+
+            @Override
+            public void onFailure(retrofit2.Call<java.util.List<ca_lam_viec>> call, Throwable t) {
+                if (!isAdded()) return;
+                tvStatus.setText("●");
+                tvStatus.setTextColor(android.graphics.Color.parseColor("#9CA3AF"));
+                tvWorkTime.setText("--:-- - --:--");
+                tvWorkTime.setTextColor(android.graphics.Color.parseColor("#9CA3AF"));
+            }
+        });
     }
 
     @Override
@@ -140,13 +229,11 @@ public class HomeFragment_doctor extends Fragment {
 
         if (nextPatient != null && nextPatient.getPatient() != null) {
             btn_KhamNgay.setVisibility(View.VISIBLE);
-            ic_ChoKham.setVisibility(View.VISIBLE);
             Name.setText(nextPatient.getPatient().getHo_ten());
             Time.setText(nextPatient.getGio_du_kien());
         } else {
-            btn_KhamNgay.setVisibility(View.INVISIBLE);
-            ic_ChoKham.setVisibility(View.INVISIBLE);
-            Time.setText("");
+            btn_KhamNgay.setVisibility(View.GONE);
+            Time.setVisibility(View.GONE);
             Name.setText("Chưa có bệnh nhân");
         }
     }

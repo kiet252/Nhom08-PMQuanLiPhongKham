@@ -46,4 +46,5 @@ public class BillRepository {
 
         return billUpdatePayloadApiService.updateBillStatus(idFilter, payload, "return=minimal");
     }
+
 }

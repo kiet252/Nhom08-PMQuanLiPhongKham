@@ -1,13 +1,10 @@
-package dashboard_fragment;
+package dashboard_fragment.timekeeping;
 
 import android.content.Context;
 
 import com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import android.util.Log;
 import com.google.gson.Gson;
@@ -75,7 +72,6 @@ public class TimekeepingRepository {
         return apiService.createAuthRequest("return=minimal", body);
     }
 
-    // Return any requests that match the given staff_id (no type filter)
     public Call<java.util.List<java.util.Map<String, Object>>> getRequestsByStaffId(String staffId) {
         java.util.Map<String, String> queries = new java.util.HashMap<>();
         queries.put("select", "*");
@@ -83,34 +79,7 @@ public class TimekeepingRepository {
 
         return apiService.getAuthRequests(queries);
     }
-    public Call<java.util.List<java.util.Map<String, Object>>> getShifts(String staffId) {
-        java.util.Map<String, String> queries = new java.util.HashMap<>();
-        queries.put("select", "start_time,end_time");
-        queries.put("user_id", "eq." + staffId);
-        queries.put("start_time", "gte." + getTodayStart()); // >= 00:00:00
-        queries.put("end_time", "lte." + getTodayEnd());   // <= 23:59:59
-        return apiService.getTimekeepingEntries(queries);
-    }
-    private String getTodayStart() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00+07:00", Locale.getDefault());
-        return sdf.format(new Date());
-    }
 
-    private String getTodayEnd() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59+07:00", Locale.getDefault());
-        return sdf.format(new Date());
-    }
-
-    // New: get requests by staff_id and exact status (e.g. "Chưa duyệt")
-    public Call<java.util.List<java.util.Map<String, Object>>> getRequestsByStaffIdAndStatus(String staffId, String status) {
-        java.util.Map<String, String> queries = new java.util.HashMap<>();
-        queries.put("select", "*");
-        queries.put("staff_id", "eq." + staffId);
-        queries.put("status", "eq." + status);
-        Log.e("CHECK_PENDING", "query staff_id: [" + staffId + "]");
-        Log.e("CHECK_PENDING", "query status: [" + status + "]");
-        return apiService.getAuthRequests(queries);
-    }
 
     // New: get requests by staff_id, status and type_of_request (e.g. "Chưa duyệt", "Face" or "DeviceID")
     public Call<java.util.List<java.util.Map<String, Object>>> getRequestsByStaffIdStatusAndType(String staffId, String status, String typeOfRequest) {
@@ -123,5 +92,35 @@ public class TimekeepingRepository {
         Log.e("CHECK_PENDING", "query status: [" + status + "]");
         Log.e("CHECK_PENDING", "query type_of_request: [" + typeOfRequest + "]");
         return apiService.getAuthRequests(queries);
+    }
+
+    public Call<java.util.List<ca_lam_viec>> getCaLamViecList(String staffId) {
+        java.util.Map<String, String> queries = new java.util.HashMap<>();
+
+        String today = java.time.LocalDate.now().toString();
+        String currentTime = java.time.LocalDateTime.now().toString();
+
+        queries.put("select", "id,start_time,end_time");
+        queries.put("user_id", "eq." + staffId);
+        queries.put("status", "neq.Hoàn thành");
+
+        queries.put("start_time", "gte." + today);
+
+        queries.put("end_time", "gte." + currentTime);
+
+        return apiService.getCaLamViec(queries);
+    }
+
+    public Call<java.util.List<java.util.Map<String, Object>>> getTimekeepingById(String id) {
+        java.util.Map<String, String> queries = new java.util.HashMap<>();
+        queries.put("select", "id,real_start_time,real_end_time,status");
+        queries.put("id", "eq." + id);
+        return apiService.getTimekeeping(queries);
+    }
+
+    public Call<ResponseBody> updateTimekeepingById(String id, java.util.Map<String, Object> updates) {
+        java.util.Map<String, String> query = new java.util.HashMap<>();
+        query.put("id", "eq." + id);
+        return apiService.updateTimekeeping("return=minimal", query, updates);
     }
 }

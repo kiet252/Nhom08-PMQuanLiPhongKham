@@ -40,6 +40,10 @@ public class PatientRepository {
         return getService.getProfileByIdOrCccd(orFilter, "*");
     }
 
+    public Call<List<PatientProfile>> getAllPatients() {
+        return getService.getProfileByIdOrCccd(null, "*");
+    }
+
     public Call<List<PatientProfile>> createProfile(CreatePatientRequest newProfile) {
         return createService.createProfile("return=representation", newProfile);
     }
