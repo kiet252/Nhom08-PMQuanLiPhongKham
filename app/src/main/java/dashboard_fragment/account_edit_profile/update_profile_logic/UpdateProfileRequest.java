@@ -5,7 +5,7 @@ public class UpdateProfileRequest {
     private String so_dien_thoai;
     private String dia_chi;
     private String gioitinh;
-    private String anh_dai_dien; // Đổi từ avatar sang anh_dai_dien để khớp với DB
+    private String anh_dai_dien;
 
     public UpdateProfileRequest(String hoTen, String soDienThoai, String diaChi, String gioiTinh, String anh_dai_dien) {
         this.ho_ten = hoTen;

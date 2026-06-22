@@ -41,5 +41,10 @@ public interface TimekeepingApiService {
             @QueryMap Map<String, String> query,
             @Body Map<String, Object> updates
     );
+    @POST("rest/v1/timekeeping_fix_request")
+    Call<ResponseBody> createTimekeepingRequest(
+            @Header("Prefer") String prefer,
+            @Body fix_request body
+    );
 }
 

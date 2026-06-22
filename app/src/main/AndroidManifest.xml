@@ -75,7 +75,8 @@
         <activity android:name=".admin_manage_staff.admin_manage_staff" />
         <activity
             android:name=".dashboard"
-            android:exported="true" />
+            android:exported="true"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".admin_manage_staff.staff_detail"
             android:exported="false" />

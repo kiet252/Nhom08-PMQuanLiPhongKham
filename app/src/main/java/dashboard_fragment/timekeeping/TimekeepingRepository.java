@@ -136,4 +136,8 @@ public class TimekeepingRepository {
         query.put("id", "eq." + id);
         return apiService.updateTimekeeping("return=minimal", query, updates);
     }
+    public Call<ResponseBody> createTimekeepingRequest(fix_request request) {
+
+        return apiService.createTimekeepingRequest("return=minimal", request);
+    }
 }

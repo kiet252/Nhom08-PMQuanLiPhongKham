@@ -87,7 +87,7 @@
                         app:boxCornerRadiusBottomStart="14dp"
                         app:boxCornerRadiusTopEnd="14dp"
                         app:boxCornerRadiusTopStart="14dp"
-                        app:startIconDrawable="@android:drawable/ic_menu_today"
+                        app:startIconDrawable="@drawable/ic_calendar_month"
                         app:startIconTint="#0D3F6E">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etViolationDate"
@@ -112,10 +112,58 @@
                         app:boxCornerRadiusBottomStart="14dp"
                         app:boxCornerRadiusTopEnd="14dp"
                         app:boxCornerRadiusTopStart="14dp"
-                        app:startIconDrawable="@android:drawable/ic_menu_recent_history"
+                        app:startIconDrawable="@drawable/ic_clock"
                         app:startIconTint="#0D3F6E">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etViolationTime"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="#1E293B"
+                            android:textSize="15sp"
+                            android:focusable="false"
+                            android:clickable="true"
+                            android:inputType="none"
+                            android:cursorVisible="false"
+                            />
+                    </com.google.android.material.textfield.TextInputLayout>
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:hint="       Thời gian vào ca"
+                        app:startIconDrawable="@drawable/ic_checkin"
+                        app:boxCornerRadiusBottomEnd="14dp"
+                        app:boxCornerRadiusBottomStart="14dp"
+                        app:boxCornerRadiusTopEnd="14dp"
+                        app:boxCornerRadiusTopStart="14dp"
+                        app:startIconTint="#0D3F6E">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etViolationFixedStartTime"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="#1E293B"
+                            android:textSize="15sp"
+                            android:focusable="false"
+                            android:clickable="true"
+                            android:inputType="none"
+                            android:cursorVisible="false"
+                            />
+                    </com.google.android.material.textfield.TextInputLayout>
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:hint="       Thời gian ra ca"
+                        app:startIconDrawable="@drawable/ic_checkout"
+                        app:boxCornerRadiusBottomEnd="14dp"
+                        app:boxCornerRadiusBottomStart="14dp"
+                        app:boxCornerRadiusTopEnd="14dp"
+                        app:boxCornerRadiusTopStart="14dp"
+                        app:startIconTint="#0D3F6E">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etViolationFixedEndTime"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:textColor="#1E293B"
@@ -217,7 +265,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:layout_marginStart="28dp"
-                        android:text="• Giải trình trong vòng 24h kể từ khi vi phạm"
+                        android:text="• Gửi yêu cầu trong vòng 24h sau ca làm"
                         android:textColor="#9A3412"
                         android:textSize="13sp" />
 
@@ -226,7 +274,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:layout_marginStart="28dp"
-                        android:text="• Cung cấp lý do cụ thể và bằng chứng nếu có"
+                        android:text="• Cung cấp lý do cụ thể và hình ảnh minh chứng"
                         android:textColor="#9A3412"
                         android:textSize="13sp" />
 
@@ -261,7 +309,6 @@
             android:textColor="#FFFFFF"
             android:textSize="15sp"
             android:textStyle="bold"
-            app:icon="@android:drawable/ic_menu_send"
             app:iconGravity="textStart"
             app:iconTint="#FFFFFF"
             app:backgroundTint="#0D3F6E"
