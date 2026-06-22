@@ -183,13 +183,6 @@ public class HomeFragment_doctor extends Fragment {
         });
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        refreshHandler.post(autoRefreshRunnable);
-        loadData();
-    }
-
     private void loadData() {
         profile = SharedPrefManager.getInstance(requireContext()).getProfile();
         repository = new ExaminationFormRepository(requireContext());
@@ -202,6 +195,24 @@ public class HomeFragment_doctor extends Fragment {
     public void onPause() {
         super.onPause();
         refreshHandler.removeCallbacks(autoRefreshRunnable);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Cập nhật thông tin profile khi fragment hiển thị lại
+        UserProfile updatedProfile = SharedPrefManager.getInstance(requireContext()).getProfile();
+        if (updatedProfile != null) {
+            profile = updatedProfile;
+            if (tvName != null && profile.getHo_ten() != null) {
+                tvName.setText(profile.getHo_ten());
+            }
+            if (rootView != null) {
+                SetAvatar(rootView, profile);
+            }
+        }
+        loadAllFormsAndPatientDto();
+        refreshHandler.postDelayed(autoRefreshRunnable, 10000);
     }
 
     private void loadAllFormsAndPatientDto() {

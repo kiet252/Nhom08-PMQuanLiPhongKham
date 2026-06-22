@@ -110,6 +110,161 @@
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/btnTimekeeping"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"
+                        app:cardBackgroundColor="@android:color/white"
+                        app:cardCornerRadius="18dp"
+                        app:cardElevation="2dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <View
+                                android:layout_width="5dp"
+                                android:layout_height="match_parent"
+                                android:background="@drawable/bg_left_accent_orange" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="horizontal"
+                                android:padding="16dp">
+
+                                <LinearLayout
+                                    android:layout_width="56dp"
+                                    android:layout_height="56dp"
+                                    android:layout_marginStart="8dp"
+                                    android:layout_marginTop="18dp"
+                                    android:background="@drawable/bg_icon_timekeeping"
+                                    android:gravity="center">
+
+                                    <ImageView
+                                        android:layout_width="28dp"
+                                        android:layout_height="28dp"
+                                        android:src="@drawable/ic_timekeeping" />
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="14dp"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Chấm công"
+                                        android:textColor="#1E293B"
+                                        android:textSize="18sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="4dp"
+                                        android:text="Điểm danh vào/ra ca làm việc"
+                                        android:textColor="#64748B"
+                                        android:textSize="14sp" />
+                                </LinearLayout>
+
+                                <ImageView
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_gravity="center_vertical"
+                                    android:src="@drawable/ic_chevron_right"
+                                    app:tint="#14B8D4" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/btnTimekeepingRequest"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"
+                        app:cardBackgroundColor="@android:color/white"
+                        app:cardCornerRadius="18dp"
+                        app:cardElevation="2dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <View
+                                android:layout_width="5dp"
+                                android:layout_height="match_parent"
+                                android:background="@drawable/bg_left_accent_orange" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="horizontal"
+                                android:padding="16dp">
+
+                                <LinearLayout
+                                    android:layout_gravity="center"
+                                    android:layout_width="56dp"
+                                    android:layout_height="56dp"
+                                    android:layout_marginStart="8dp"
+                                    android:background="@drawable/bg_icon_timekeeping"
+                                    android:gravity="center">
+
+                                    <ImageView
+                                        android:layout_width="28dp"
+                                        android:layout_height="28dp"
+                                        android:src="@drawable/ic_timekeeping_request" />
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="14dp"
+                                    android:layout_weight="1"
+                                    android:layout_gravity="center"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Yêu cầu sửa thông tin ca làm"
+                                        android:textColor="#1E293B"
+                                        android:textSize="18sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="4dp"
+                                        android:text="Giải trình chấm công"
+                                        android:textColor="#64748B"
+                                        android:textSize="14sp" />
+                                </LinearLayout>
+
+                                <ImageView
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_gravity="center_vertical"
+                                    android:src="@drawable/ic_chevron_right"
+                                    app:tint="#14B8D4" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
                     <GridLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

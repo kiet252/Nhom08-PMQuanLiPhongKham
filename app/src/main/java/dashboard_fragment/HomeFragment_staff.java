@@ -38,6 +38,9 @@ import dashboard_fragment.staff_create_examination_form.ExaminationFormRepositor
 import dashboard_fragment.staff_manage_bill.ManageBill_staff;
 import dashboard_fragment.staff_manage_examination_form.ManageExaminationForm_staff;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
+import dashboard_fragment.timekeeping.Timekeeping;
+import dashboard_fragment.timekeeping.TimekeepingRepository;
+import dashboard_fragment.timekeeping.timekeeping_request;
 import retrofit2.Call;
 
 import android.widget.Toast;
@@ -49,11 +52,15 @@ public class HomeFragment_staff extends Fragment {
 
     private String currentToken;
     private CardView BtnCreateExForm, BtnManageMedReport, BtnAddUpdatePatientInfo, BtnManageBill;
+    private CardView btnTimekeeping, btnTimekeepingRequest;
     private LinearLayout layoutTodayExFormsHeader;
     private LinearLayout layoutTodayExFormsContainer;
     private TextView tvTodayExFormsEmpty;
+    private TextView tvName;
+    private ImageView avatarView;
 
     private ExaminationFormRepository repository;
+    private TimekeepingRepository timekeepingRepository;
     private final List<ExaminationFormWithPatientDto> todayForms = new ArrayList<>();
 
     public HomeFragment_staff() {
@@ -85,7 +92,8 @@ public class HomeFragment_staff extends Fragment {
         initializeViews(view);
         setupListeners(view);
 
-        TextView tvName = view.findViewById(R.id.staff_home_name);
+        tvName = view.findViewById(R.id.staff_home_name);
+        avatarView = view.findViewById(R.id.home_avatar_staff);
         SetAvatar(view, SharedPrefManager.getInstance(requireContext()).getProfile());
         UserProfile profile = SharedPrefManager.getInstance(requireContext()).getProfile();
         if (profile != null && profile.getHo_ten() != null) {
@@ -98,6 +106,16 @@ public class HomeFragment_staff extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        // Cập nhật thông tin profile khi fragment hiển thị lại
+        UserProfile profile = SharedPrefManager.getInstance(requireContext()).getProfile();
+        if (profile != null) {
+            if (tvName != null && profile.getHo_ten() != null) {
+                tvName.setText(profile.getHo_ten());
+            }
+            if (avatarView != null) {
+                SetAvatar(getView(), profile);
+            }
+        }
         loadTodayExaminationForms();
     }
 
@@ -106,6 +124,8 @@ public class HomeFragment_staff extends Fragment {
         BtnManageMedReport = view.findViewById(R.id.CardViewManageMedReport);
         BtnAddUpdatePatientInfo = view.findViewById(R.id.CardViewAddUpdatePatientInfo);
         BtnManageBill = view.findViewById(R.id.CardViewManageBill);
+        btnTimekeeping = view.findViewById(R.id.btnTimekeeping);
+        btnTimekeepingRequest = view.findViewById(R.id.btnTimekeepingRequest);
 
         layoutTodayExFormsHeader = view.findViewById(R.id.layoutTodayExFormsHeader);
         layoutTodayExFormsContainer = view.findViewById(R.id.layoutTodayExFormsContainer);
@@ -127,6 +147,16 @@ public class HomeFragment_staff extends Fragment {
         BtnManageBill.setOnClickListener(v -> startManageBillIntent());
 
         layoutTodayExFormsHeader.setOnClickListener(v -> startManageExaminationFormIntent());
+
+        // Chấm công
+        if (btnTimekeeping != null) {
+            btnTimekeeping.setOnClickListener(v -> startActivity(new Intent(getActivity(), Timekeeping.class)));
+        }
+
+        // Yêu cầu sửa thông tin ca làm
+        if (btnTimekeepingRequest != null) {
+            btnTimekeepingRequest.setOnClickListener(v -> startActivity(new Intent(getActivity(), timekeeping_request.class)));
+        }
 
         TextView tvViewAll = view.findViewById(R.id.tvTodayExFormsViewAll);
         tvViewAll.setOnClickListener(v -> startManageExaminationFormIntent());

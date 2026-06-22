@@ -1,11 +1,15 @@
 package dashboard_fragment.account_edit_profile;
 
 import static com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider.SUPABASE_URL;
+import static com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider.SUPABASE_ANON_KEY;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.ImageButton;
@@ -29,16 +33,25 @@ import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import coil.Coil;
 import coil.request.ImageRequest;
 import dashboard_fragment.account_edit_profile.update_profile_logic.UpdateProfileRequest;
 import dashboard_fragment.staff_add_update_patient.PatientDatabaseConstraintsChecker;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import retrofit2.Call;
 import retrofit2.Callback;
-import retrofit2.Response;
 
 public class EditProfile extends BaseActivity {
 
@@ -196,7 +209,7 @@ public class EditProfile extends BaseActivity {
             return;
         }
 
-        if (PatientDatabaseConstraintsChecker.isValidPhoneNumInDB(soDienThoai)) {
+        if (!PatientDatabaseConstraintsChecker.isValidPhoneNumInDB(soDienThoai)) {
             edtEditProfilePhone.setError("Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0");
             edtEditProfilePhone.requestFocus();
             return;
@@ -213,20 +226,95 @@ public class EditProfile extends BaseActivity {
             return;
         }
 
-        // Logic lưu profile (giữ nguyên logic hiện tại của bạn)
+        // Nếu có ảnh mới được chọn, upload trước; nếu không, gửi request ngay
+        if (selectedImageUri != null) {
+            uploadAvatarAndUpdateProfile(hoTen, soDienThoai, diaChi, gioiTinh);
+        } else {
+            sendUpdateProfileRequest(hoTen, soDienThoai, diaChi, gioiTinh, userProfile.getAnh_dai_dien());
+        }
+    }
+
+    private void uploadAvatarAndUpdateProfile(String hoTen, String soDienThoai, String diaChi, String gioiTinh) {
+        ProgressDialog pd = new ProgressDialog(this);
+        pd.setMessage("Đang thay đổi thông tin...");
+        pd.setCancelable(false);
+        pd.show();
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        executor.execute(() -> {
+            OkHttpClient client = new OkHttpClient();
+            String uploadedAvatarUrl = null;
+
+            try {
+                InputStream is = getContentResolver().openInputStream(selectedImageUri);
+                if (is == null) {
+                    throw new IOException("Không thể mở file ảnh");
+                }
+
+                byte[] imageBytes = getBytes(is);
+                is.close();
+
+                UserProfile profile = SharedPrefManager.getInstance(this).getProfile();
+                String userId = profile != null ? profile.getID() : "user";
+                String fileName = userId + "_" + System.currentTimeMillis() + ".jpg";
+                String uploadUrl = SUPABASE_URL + "storage/v1/object/avatars/" + fileName;
+
+                Request request = new Request.Builder()
+                        .url(uploadUrl)
+                        .post(RequestBody.create(imageBytes, MediaType.parse("image/jpeg")))
+                        .addHeader("apikey", SUPABASE_ANON_KEY)
+                        .addHeader("Authorization", "Bearer " + SUPABASE_ANON_KEY)
+                        .build();
+
+                try (Response response = client.newCall(request).execute()) {
+                    String body = response.body() != null ? response.body().string() : "null";
+
+                    Log.e("SUPABASE_AVATAR",
+                            "URL = " + uploadUrl +
+                                    "\nCODE = " + response.code() +
+                                    "\nMESSAGE = " + response.message() +
+                                    "\nBODY = " + body);
+
+                    if (response.isSuccessful()) {
+                        uploadedAvatarUrl = SUPABASE_URL + "storage/v1/object/public/avatars/" + fileName;
+                        Log.e("SUPABASE_AVATAR", "Public URL: " + uploadedAvatarUrl);
+                    } else {
+                        throw new IOException("Lỗi upload: " + response.code() + "\n" + body);
+                    }
+                }
+
+                final String avatarUrl = uploadedAvatarUrl;
+                handler.post(() -> {
+                    pd.dismiss();
+                    sendUpdateProfileRequest(hoTen, soDienThoai, diaChi, gioiTinh, avatarUrl);
+                });
+
+            } catch (Exception e) {
+                handler.post(() -> {
+                    pd.dismiss();
+                    Toast.makeText(EditProfile.this, "Lỗi khi tải ảnh: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Log.e("EditProfile", "Avatar upload error", e);
+                });
+            }
+        });
+    }
+
+    private void sendUpdateProfileRequest(String hoTen, String soDienThoai, String diaChi, String gioiTinh, String anhDaiDien) {
         UpdateProfileRequest request = new UpdateProfileRequest(
                 hoTen,
                 soDienThoai,
                 diaChi,
                 gioiTinh,
-                userProfile.getAnh_dai_dien() // Gửi lại path ảnh hiện tại nếu không đổi
+                anhDaiDien
         );
 
         repository.updateProfile(currentToken, userProfile.getID(), request)
                 .enqueue(new Callback<java.util.List<UserProfile>>() {
-                    @Override
-                    public void onResponse(@NonNull Call<java.util.List<UserProfile>> call,
-                                           @NonNull Response<java.util.List<UserProfile>> response) {
+                @Override
+                public void onResponse(@NonNull Call<java.util.List<UserProfile>> call,
+                                       @NonNull retrofit2.Response<java.util.List<UserProfile>> response) {
                         if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                             UserProfile updatedProfile = response.body().get(0);
                             SharedPrefManager.getInstance(EditProfile.this).saveProfile(updatedProfile);
@@ -252,6 +340,18 @@ public class EditProfile extends BaseActivity {
                         Log.d("Error", "Lỗi kết nối: " + t.getMessage());
                     }
                 });
+    }
+
+    private byte[] getBytes(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+        int bufferSize = 1024;
+        byte[] buffer = new byte[bufferSize];
+
+        int len = 0;
+        while ((len = inputStream.read(buffer)) != -1) {
+            byteBuffer.write(buffer, 0, len);
+        }
+        return byteBuffer.toByteArray();
     }
 
     private String getSelectedGender() {
