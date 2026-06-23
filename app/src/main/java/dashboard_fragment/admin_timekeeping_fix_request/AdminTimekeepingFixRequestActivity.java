@@ -40,7 +40,6 @@ public class AdminTimekeepingFixRequestActivity extends BaseActivity {
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private View layoutEmpty;
-    private TextView tvHeaderPendingCount;
     private TextView tabAll;
     private TextView tabPending;
     private TextView tabApproved;
@@ -65,7 +64,6 @@ public class AdminTimekeepingFixRequestActivity extends BaseActivity {
         recyclerView = findViewById(R.id.rvTimekeepingFixRequests);
         progressBar = findViewById(R.id.progressFixRequests);
         layoutEmpty = findViewById(R.id.layoutFixRequestEmpty);
-        tvHeaderPendingCount = findViewById(R.id.tvFixRequestHeaderPendingCount);
         tabAll = findViewById(R.id.tabFixAll);
         tabPending = findViewById(R.id.tabFixPending);
         tabApproved = findViewById(R.id.tabFixApproved);
@@ -132,7 +130,6 @@ public class AdminTimekeepingFixRequestActivity extends BaseActivity {
 
     private void updateCounters() {
         int pending = countByStatus("Chờ duyệt");
-        tvHeaderPendingCount.setText(String.valueOf(pending));
         tabAll.setText("Tất cả  " + allRequests.size());
         tabPending.setText("Chờ duyệt  " + pending);
         tabApproved.setText("Đã duyệt  " + countByStatus("Đã duyệt"));

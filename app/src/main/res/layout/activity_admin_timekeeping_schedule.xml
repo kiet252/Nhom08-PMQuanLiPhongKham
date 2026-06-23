@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F0F7FF">
@@ -28,37 +29,15 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:tint="@android:color/white" />
 
-            <ImageView
-                android:id="@+id/imgScheduleTitleIcon"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginStart="10dp"
-                android:background="@drawable/bg_schedule_title_icon"
-                android:padding="12dp"
-                android:src="@drawable/ic_clock"
-                app:layout_constraintBottom_toBottomOf="@id/btnBackSchedule"
-                app:layout_constraintStart_toEndOf="@id/btnBackSchedule"
-                app:layout_constraintTop_toTopOf="@id/btnBackSchedule"
-                app:tint="@android:color/white" />
-
             <LinearLayout
+                android:id="@+id/linearLayout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
                 android:layout_marginEnd="10dp"
                 android:orientation="vertical"
-                app:layout_constraintBottom_toBottomOf="@id/imgScheduleTitleIcon"
                 app:layout_constraintEnd_toStartOf="@id/btnRefreshSchedule"
-                app:layout_constraintStart_toEndOf="@id/imgScheduleTitleIcon"
-                app:layout_constraintTop_toTopOf="@id/imgScheduleTitleIcon">
+                tools:layout_editor_absoluteY="39dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="PHÂN CA CHẤM CÔNG"
-                    android:textColor="@android:color/white"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
             </LinearLayout>
 
             <ImageButton
@@ -68,10 +47,24 @@
                 android:layout_marginEnd="16dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@android:drawable/ic_popup_sync"
-                app:layout_constraintBottom_toBottomOf="@id/imgScheduleTitleIcon"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/imgScheduleTitleIcon"
-                app:tint="@android:color/white" />
+                app:tint="@android:color/white"
+                tools:layout_editor_absoluteY="31dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="12dp"
+                android:text="Phân ca làm việc"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="@+id/btnBackSchedule"
+                app:layout_constraintEnd_toStartOf="@+id/btnRefreshSchedule"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toEndOf="@+id/btnBackSchedule"
+                app:layout_constraintTop_toTopOf="@+id/btnBackSchedule"
+                app:layout_constraintVertical_bias="0.538" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.core.widget.NestedScrollView

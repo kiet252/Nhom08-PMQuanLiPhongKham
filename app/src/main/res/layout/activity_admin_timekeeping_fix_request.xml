@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F0F7FF">
@@ -28,48 +29,18 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:tint="@android:color/white" />
 
-            <ImageView
-                android:id="@+id/imgFixRequestTitleIcon"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginStart="10dp"
-                android:background="@drawable/bg_schedule_title_icon"
-                android:padding="12dp"
-                android:src="@drawable/ic_save"
-                app:layout_constraintBottom_toBottomOf="@id/btnBackFixRequest"
-                app:layout_constraintStart_toEndOf="@id/btnBackFixRequest"
-                app:layout_constraintTop_toTopOf="@id/btnBackFixRequest"
-                app:tint="@android:color/white" />
-
             <TextView
                 android:id="@+id/tvFixRequestTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="8dp"
-                android:text="Yêu cầu sửa chấm công"
+                android:text="   Yêu cầu sửa chấm công"
                 android:textColor="@android:color/white"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="@id/imgFixRequestTitleIcon"
-                app:layout_constraintEnd_toStartOf="@id/tvFixRequestHeaderPendingCount"
-                app:layout_constraintStart_toEndOf="@id/imgFixRequestTitleIcon"
-                app:layout_constraintTop_toTopOf="@id/imgFixRequestTitleIcon" />
-
-            <TextView
-                android:id="@+id/tvFixRequestHeaderPendingCount"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/bg_count_badge_selected"
-                android:gravity="center"
-                android:text="0"
-                android:textColor="@android:color/white"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="@id/imgFixRequestTitleIcon"
-                app:layout_constraintEnd_toStartOf="@id/btnRefreshFixRequest"
-                app:layout_constraintTop_toTopOf="@id/imgFixRequestTitleIcon" />
+                app:layout_constraintBottom_toBottomOf="@+id/btnBackFixRequest"
+                app:layout_constraintEnd_toStartOf="@+id/btnRefreshFixRequest"
+                app:layout_constraintStart_toEndOf="@+id/btnBackFixRequest"
+                app:layout_constraintTop_toTopOf="@+id/btnBackFixRequest" />
 
             <ImageButton
                 android:id="@+id/btnRefreshFixRequest"
@@ -78,10 +49,9 @@
                 android:layout_marginEnd="14dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@android:drawable/ic_popup_sync"
-                app:layout_constraintBottom_toBottomOf="@id/imgFixRequestTitleIcon"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/imgFixRequestTitleIcon"
-                app:tint="@android:color/white" />
+                app:tint="@android:color/white"
+                tools:layout_editor_absoluteY="31dp" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <LinearLayout

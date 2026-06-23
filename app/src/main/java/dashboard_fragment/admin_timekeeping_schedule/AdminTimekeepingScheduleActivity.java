@@ -285,8 +285,6 @@ public class AdminTimekeepingScheduleActivity extends BaseActivity {
         RecyclerView rvAssigned = sheetView.findViewById(R.id.rvAssignedStaff);
         RecyclerView rvAvailable = sheetView.findViewById(R.id.rvAvailableStaff);
         View layoutAssignedEmpty = sheetView.findViewById(R.id.layoutAssignedEmpty);
-        ImageButton btnClose = sheetView.findViewById(R.id.btnCloseAssignSheet);
-
         tvShiftTitle.setText(slot.getLabel() + "  " + slot.getTimeRange());
         tvShiftTitle.setTextColor(Color.parseColor(slot.getAccentColor()));
 
@@ -333,7 +331,6 @@ public class AdminTimekeepingScheduleActivity extends BaseActivity {
         refreshBottomSheetLists(assigned, assignedAdapter, availableAdapter,
                 tvAssignedHeader, tvAvailableHeader, layoutAssignedEmpty);
 
-        btnClose.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
     }
 

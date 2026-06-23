@@ -49,14 +49,6 @@
                 android:textSize="14sp" />
         </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/btnCloseAssignSheet"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Đóng"
-            android:src="@drawable/ic_cross_white"
-            app:tint="#64748B" />
     </LinearLayout>
 
     <TextView
