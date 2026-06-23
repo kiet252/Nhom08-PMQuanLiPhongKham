@@ -1,12 +1,19 @@
 package dashboard_fragment;
 
+import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.app.AlertDialog;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -19,7 +26,12 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.nhom08_quanlyphongkham.R;
@@ -31,6 +43,7 @@ import com.google.android.material.card.MaterialCardView;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -53,6 +66,19 @@ public class NotificationFragment extends Fragment {
     private SharedPreferences notificationReadPrefs;
     private Set<String> readNotificationKeys = new HashSet<>();
     private String currentUserId = "guest";
+    private static final long AUTO_REFRESH_DELAY_MS = 2500L;
+    private final Handler refreshHandler = new Handler(Looper.getMainLooper());
+    private final Runnable refreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (isAdded() && layoutDanhSachThongBao != null) {
+                goiDuLieuRetrofit(false);
+                refreshHandler.postDelayed(this, AUTO_REFRESH_DELAY_MS);
+            }
+        }
+    };
+
+    private final List<String> lastLoadedNotificationKeys = new ArrayList<>();
 
     public NotificationFragment() {
     }
@@ -69,7 +95,21 @@ public class NotificationFragment extends Fragment {
         listView = inflater.inflate(R.layout.fragment_notification, rootContainer, false);
         rootContainer.addView(listView);
         cauHinhManHinhDanhSach(listView);
+        batDauTuDongCapNhat();
         return rootContainer;
+    }
+    @Override
+    public void onDestroyView() {
+        refreshHandler.removeCallbacks(refreshRunnable);
+        dialogChiTietThongBao = null;
+        layoutDanhSachThongBao = null;
+        rootContainer = null;
+        listView = null;
+        super.onDestroyView();
+    }
+    private void batDauTuDongCapNhat() {
+        refreshHandler.removeCallbacks(refreshRunnable);
+        refreshHandler.postDelayed(refreshRunnable, AUTO_REFRESH_DELAY_MS);
     }
 
     private void cauHinhManHinhDanhSach(View view) {
@@ -94,6 +134,10 @@ public class NotificationFragment extends Fragment {
     }
 
     private void goiDuLieuRetrofit() {
+        goiDuLieuRetrofit(true);
+    }
+
+    private void goiDuLieuRetrofit(boolean showToastOnError) {
         authRepository.layDanhSachThongBao(userRole.name()).enqueue(new Callback<List<ThongBao>>() {
             @Override
             public void onResponse(Call<List<ThongBao>> call, Response<List<ThongBao>> response) {
@@ -101,26 +145,44 @@ public class NotificationFragment extends Fragment {
                     return;
                 }
 
-                if (response.isSuccessful() && response.body() != null) {
-                    List<ThongBao> ds = response.body();
-                    layoutDanhSachThongBao.removeAllViews();
-
-                    Collections.reverse(ds);
-                    String ngayGanNhat = "";
-                    for (ThongBao tb : ds) {
-                        String ngayThongBao = dinhDangNgay(tb.getCreated_at());
-                        if (!ngayThongBao.isEmpty() && !ngayThongBao.equals(ngayGanNhat)) {
-                            themNgayVaoDanhSach(ngayThongBao);
-                            ngayGanNhat = ngayThongBao;
-                        }
-                        themVaoKhungXam(tb);
+                if (!response.isSuccessful() || response.body() == null) {
+                    if (showToastOnError) {
+                        Toast.makeText(getContext(), "Không tải được thông báo", Toast.LENGTH_SHORT).show();
                     }
+                    return;
+                }
+
+                List<ThongBao> ds = response.body();
+                Collections.reverse(ds);
+
+                ArrayList<String> newKeys = new ArrayList<>();
+                for (ThongBao tb : ds) {
+                    newKeys.add(taoNotificationKey(tb));
+                }
+
+                if (newKeys.equals(lastLoadedNotificationKeys)) {
+                    return;
+                }
+
+                lastLoadedNotificationKeys.clear();
+                lastLoadedNotificationKeys.addAll(newKeys);
+
+                layoutDanhSachThongBao.removeAllViews();
+
+                String ngayGanNhat = "";
+                for (ThongBao tb : ds) {
+                    String ngayThongBao = dinhDangNgay(tb.getCreated_at());
+                    if (!ngayThongBao.isEmpty() && !ngayThongBao.equals(ngayGanNhat)) {
+                        themNgayVaoDanhSach(ngayThongBao);
+                        ngayGanNhat = ngayThongBao;
+                    }
+                    themVaoKhungXam(tb);
                 }
             }
 
             @Override
             public void onFailure(Call<List<ThongBao>> call, Throwable t) {
-                if (isAdded()) {
+                if (isAdded() && showToastOnError) {
                     Toast.makeText(getContext(), "Lỗi tải thông báo", Toast.LENGTH_SHORT).show();
                     Log.d("Load notification error", t.getMessage());
                 }
@@ -150,11 +212,7 @@ public class NotificationFragment extends Fragment {
         cardMoi.setCardBackgroundColor(daDoc ? Color.WHITE : Color.parseColor("#EAF5FF"));
         cardMoi.setRadius(dpToPx(18));
         cardMoi.setCardElevation(dpToPx(2));
-        cardMoi.setOnClickListener(v -> {
-            danhDauDaDoc(notificationKey);
-            cardMoi.setCardBackgroundColor(Color.WHITE);
-            hienThiChiTietThongBao(tieuDe, noiDung, thoiGianTrongNgay);
-        });
+
 
         LinearLayout lopNgang = new LinearLayout(requireContext());
         lopNgang.setOrientation(LinearLayout.HORIZONTAL);
@@ -188,7 +246,51 @@ public class NotificationFragment extends Fragment {
             tvThoiGian.setPadding(0, dpToPx(8), 0, 0);
             lopDoc.addView(tvThoiGian);
         }
+
+        LinearLayout actionArea = new LinearLayout(requireContext());
+        actionArea.setOrientation(LinearLayout.HORIZONTAL);
+        actionArea.setGravity(Gravity.CENTER_VERTICAL);
+
+        ImageView ivMore = new ImageView(requireContext());
+        ivMore.setImageResource(R.drawable.ic_chevron_right);
+        ivMore.setColorFilter(Color.parseColor("#2563EB"));
+        ivMore.setVisibility(daDoc ? View.VISIBLE : View.GONE);
+
+        LinearLayout.LayoutParams moreParams = new LinearLayout.LayoutParams(
+                dpToPx(18),
+                dpToPx(18)
+        );
+        moreParams.setMargins(0, 0, dpToPx(6), 0);
+        actionArea.addView(ivMore, moreParams);
+
+        View unreadDot = new View(requireContext());
+        LinearLayout.LayoutParams dotParams = new LinearLayout.LayoutParams(
+                dpToPx(9),
+                dpToPx(9)
+        );
+        unreadDot.setLayoutParams(dotParams);
+        unreadDot.setBackground(taoChamXanhDuong());
+        unreadDot.setVisibility(daDoc ? View.GONE : View.VISIBLE);
+
+        cardMoi.setOnClickListener(v -> {
+            danhDauDaDoc(notificationKey);
+
+            cardMoi.setCardBackgroundColor(Color.WHITE);
+
+            unreadDot.setVisibility(View.GONE);
+            ivMore.setVisibility(View.VISIBLE);
+
+            hienThiChiTietThongBao(
+                    tieuDe,
+                    noiDung,
+                    thoiGianTrongNgay
+            );
+        });
+
+        actionArea.addView(unreadDot, dotParams);
+
         lopNgang.addView(lopDoc);
+        lopNgang.addView(actionArea);
         cardMoi.addView(lopNgang);
 
         layoutDanhSachThongBao.addView(cardMoi);
@@ -489,5 +591,11 @@ public class NotificationFragment extends Fragment {
             return "";
         }
         return createdAt.substring(11, 16);
+    }
+    private GradientDrawable taoChamXanhDuong() {
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setShape(GradientDrawable.OVAL);
+        drawable.setColor(Color.parseColor("#2563EB"));
+        return drawable;
     }
 }
