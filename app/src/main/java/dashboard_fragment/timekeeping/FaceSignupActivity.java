@@ -24,6 +24,17 @@ import com.example.nhom08_quanlyphongkham.BaseActivity;
 import com.example.nhom08_quanlyphongkham.R;
 import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
+import static com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider.SUPABASE_ANON_KEY;
+import static com.example.nhom08_quanlyphongkham.uilogin.SupabaseClientProvider.SUPABASE_URL;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.MediaType;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import android.os.Handler;
+import android.os.Looper;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -182,7 +193,7 @@ public class FaceSignupActivity extends BaseActivity {
                             btnConfirm.setText("Đang gửi...");
                         } catch (Exception ignore) {}
 
-                        String faceImageBase64Temp = null;
+                        byte[] faceBytes = null;
                         try {
                             Rect box = face.getBoundingBox();
                             int left = Math.max(0, box.left);
@@ -194,66 +205,157 @@ public class FaceSignupActivity extends BaseActivity {
                                 Bitmap scaledFaceBmp = Bitmap.createScaledBitmap(faceBmp, 200, 200, true);
                                 java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
                                 scaledFaceBmp.compress(Bitmap.CompressFormat.JPEG, 80, baos);
-                                byte[] b = baos.toByteArray();
-                                faceImageBase64Temp = android.util.Base64.encodeToString(b, android.util.Base64.NO_WRAP);
+                                faceBytes = baos.toByteArray();
                             }
                         } catch (Exception e) {
-                            Log.e("FaceSignup", "Failed to convert face bitmap to base64", e);
+                            Log.e("FaceSignup", "Failed to extract face bitmap bytes", e);
                         }
-                        final String faceImageBase64 = faceImageBase64Temp;
 
                         TimekeepingRepository repo = new TimekeepingRepository(FaceSignupActivity.this);
-                        Log.e("FaceSignup", "Sending face auth request for staffId=" + staffId);
-                        repo.sendFaceAuthRequest(staffId, vector, details, faceImageBase64).enqueue(new Callback<ResponseBody>() {
-                            @Override
-                            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                                try {
-                                    if (response.isSuccessful()) {
-                                        Toast.makeText(FaceSignupActivity.this, "Đã gửi yêu cầu quét khuôn mặt.", Toast.LENGTH_LONG).show();
-                                        finish();
-                                        return;
-                                    } else {
-                                        int code = response.code();
+                        Log.e("FaceSignup", "Preparing to send face auth request for staffId=" + staffId);
+                        // Final copies for lambda capture
+                        final TimekeepingRepository repoFinal = repo;
+                        final String staffIdFinal = staffId;
+                        final java.util.List<Double> vectorFinal = vector;
+                        final String detailsFinal = details;
+                        final byte[] faceBytesFinal = faceBytes;
+
+                        // If we have face bytes, upload to Supabase Storage (bucket 'face') in background,
+                        // then send the auth request with the public URL stored in `face_image`.
+                        if (faceBytes != null) {
+                            ExecutorService executor = Executors.newSingleThreadExecutor();
+                            Handler handler = new Handler(Looper.getMainLooper());
+                            executor.execute(() -> {
+                                String fileName = "face_" + staffIdFinal + "_" + System.currentTimeMillis() + ".jpg";
+                                String uploadUrl = SUPABASE_URL + "storage/v1/object/face/" + fileName;
+                                OkHttpClient client = new OkHttpClient();
+                                Request request = new Request.Builder()
+                                        .url(uploadUrl)
+                                        .post(RequestBody.create(faceBytesFinal, MediaType.parse("image/jpeg")))
+                                        .addHeader("apikey", SUPABASE_ANON_KEY)
+                                        .addHeader("Authorization", "Bearer " + SUPABASE_ANON_KEY)
+                                        .build();
+                                try (okhttp3.Response response = client.newCall(request).execute()) {
+                                    if (!response.isSuccessful()) {
                                         String err = null;
-                                        try { if (response.errorBody() != null) err = response.errorBody().string(); } catch (Exception ex) { }
-                                        Log.e("FaceSignup", "Face auth request failed. code=" + code + " err=" + err);
-                                        if (code == 400) {
-                                            repo.sendFaceAuthRequestAsString(staffId, vector, details, faceImageBase64).enqueue(new Callback<ResponseBody>() {
-                                                @Override
-                                                public void onResponse(Call<ResponseBody> call2, Response<ResponseBody> resp2) {
-                                                    if (resp2.isSuccessful()) {
-                                                        Toast.makeText(FaceSignupActivity.this, "Đã gửi yêu cầu (fallback).", Toast.LENGTH_LONG).show();
+                                        try { if (response.body() != null) err = response.body().string(); } catch (Exception ignored) {}
+                                        throw new IOException("Upload failed: code=" + response.code() + " body=" + err);
+                                    }
+                                    String publicUrl = SUPABASE_URL + "storage/v1/object/public/face/" + fileName;
+                                    handler.post(() -> {
+                                        Log.e("FaceSignup", "Uploaded face image, publicUrl=" + publicUrl);
+                                        repoFinal.sendFaceAuthRequest(staffIdFinal, vectorFinal, detailsFinal, publicUrl).enqueue(new Callback<ResponseBody>() {
+                                            @Override
+                                            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                                try {
+                                                    if (response.isSuccessful()) {
+                                                        Toast.makeText(FaceSignupActivity.this, "Đã gửi yêu cầu quét khuôn mặt.", Toast.LENGTH_LONG).show();
                                                         finish();
+                                                        return;
                                                     } else {
-                                                        Toast.makeText(FaceSignupActivity.this, "Gửi yêu cầu thất bại (mã: " + resp2.code() + ").", Toast.LENGTH_LONG).show();
+                                                        int code = response.code();
+                                                        String err = null;
+                                                        try { if (response.errorBody() != null) err = response.errorBody().string(); } catch (Exception ex) { }
+                                                        Log.e("FaceSignup", "Face auth request failed. code=" + code + " err=" + err);
+                                                        if (code == 400) {
+                                                            repoFinal.sendFaceAuthRequestAsString(staffIdFinal, vectorFinal, detailsFinal, publicUrl).enqueue(new Callback<ResponseBody>() {
+                                                                @Override
+                                                                public void onResponse(Call<ResponseBody> call2, Response<ResponseBody> resp2) {
+                                                                    if (resp2.isSuccessful()) {
+                                                                        Toast.makeText(FaceSignupActivity.this, "Đã gửi yêu cầu (fallback).", Toast.LENGTH_LONG).show();
+                                                                        finish();
+                                                                    } else {
+                                                                        Toast.makeText(FaceSignupActivity.this, "Gửi yêu cầu thất bại (mã: " + resp2.code() + ").", Toast.LENGTH_LONG).show();
+                                                                        btnConfirm.setEnabled(true);
+                                                                        btnConfirm.setText("Quét");
+                                                                    }
+                                                                }
+
+                                                                @Override
+                                                                public void onFailure(Call<ResponseBody> call2, Throwable t2) {
+                                                                    Log.e("FaceSignup", "Fallback send failed", t2);
+                                                                    Toast.makeText(FaceSignupActivity.this, "Lỗi khi gửi yêu cầu: " + t2.getMessage(), Toast.LENGTH_LONG).show();
+                                                                    btnConfirm.setEnabled(true);
+                                                                    btnConfirm.setText("Quét");
+                                                                }
+                                                            });
+                                                            return;
+                                                        }
+                                                    }
+                                                } finally {
+                                                    try { btnConfirm.setEnabled(true); btnConfirm.setText("Quét"); } catch (Exception ignore) {}
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                                Log.e("FaceSignup", "sendFaceAuthRequest onFailure", t);
+                                                Toast.makeText(FaceSignupActivity.this, "Lỗi khi gửi yêu cầu: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                                                try { btnConfirm.setEnabled(true); btnConfirm.setText("Quét"); } catch (Exception ignore) {}
+                                            }
+                                        });
+                                    });
+                                } catch (Exception uploadEx) {
+                                    handler.post(() -> {
+                                        Log.e("FaceSignup", "Failed to upload face image", uploadEx);
+                                        Toast.makeText(FaceSignupActivity.this, "Không thể tải ảnh lên máy chủ: " + uploadEx.getMessage(), Toast.LENGTH_LONG).show();
+                                        try { btnConfirm.setEnabled(true); btnConfirm.setText("Quét"); } catch (Exception ignore) {}
+                                    });
+                                }
+                            });
+                            } else {
+                            // No face image bytes, send request without image URL
+                            repoFinal.sendFaceAuthRequest(staffIdFinal, vectorFinal, detailsFinal, null).enqueue(new Callback<ResponseBody>() {
+                                @Override
+                                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                    try {
+                                        if (response.isSuccessful()) {
+                                            Toast.makeText(FaceSignupActivity.this, "Đã gửi yêu cầu quét khuôn mặt.", Toast.LENGTH_LONG).show();
+                                            finish();
+                                            return;
+                                        } else {
+                                            int code = response.code();
+                                            String err = null;
+                                            try { if (response.errorBody() != null) err = response.errorBody().string(); } catch (Exception ex) { }
+                                            Log.e("FaceSignup", "Face auth request failed. code=" + code + " err=" + err);
+                                            if (code == 400) {
+                                                repoFinal.sendFaceAuthRequestAsString(staffIdFinal, vectorFinal, detailsFinal, null).enqueue(new Callback<ResponseBody>() {
+                                                    @Override
+                                                    public void onResponse(Call<ResponseBody> call2, Response<ResponseBody> resp2) {
+                                                        if (resp2.isSuccessful()) {
+                                                            Toast.makeText(FaceSignupActivity.this, "Đã gửi yêu cầu (fallback).", Toast.LENGTH_LONG).show();
+                                                            finish();
+                                                        } else {
+                                                            Toast.makeText(FaceSignupActivity.this, "Gửi yêu cầu thất bại (mã: " + resp2.code() + ").", Toast.LENGTH_LONG).show();
+                                                            btnConfirm.setEnabled(true);
+                                                            btnConfirm.setText("Quét");
+                                                        }
+                                                    }
+
+                                                    @Override
+                                                    public void onFailure(Call<ResponseBody> call2, Throwable t2) {
+                                                        Log.e("FaceSignup", "Fallback send failed", t2);
+                                                        Toast.makeText(FaceSignupActivity.this, "Lỗi khi gửi yêu cầu: " + t2.getMessage(), Toast.LENGTH_LONG).show();
                                                         btnConfirm.setEnabled(true);
                                                         btnConfirm.setText("Quét");
                                                     }
-                                                }
-
-                                                @Override
-                                                public void onFailure(Call<ResponseBody> call2, Throwable t2) {
-                                                    Log.e("FaceSignup", "Fallback send failed", t2);
-                                                    Toast.makeText(FaceSignupActivity.this, "Lỗi khi gửi yêu cầu: " + t2.getMessage(), Toast.LENGTH_LONG).show();
-                                                    btnConfirm.setEnabled(true);
-                                                    btnConfirm.setText("Quét");
-                                                }
-                                            });
-                                            return;
+                                                });
+                                                return;
+                                            }
                                         }
+                                    } finally {
+                                        try { btnConfirm.setEnabled(true); btnConfirm.setText("Quét"); } catch (Exception ignore) {}
                                     }
-                                } finally {
+                                }
+
+                                @Override
+                                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                    Log.e("FaceSignup", "sendFaceAuthRequest onFailure", t);
+                                    Toast.makeText(FaceSignupActivity.this, "Lỗi khi gửi yêu cầu: " + t.getMessage(), Toast.LENGTH_LONG).show();
                                     try { btnConfirm.setEnabled(true); btnConfirm.setText("Quét"); } catch (Exception ignore) {}
                                 }
-                            }
-
-                            @Override
-                            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                                Log.e("FaceSignup", "sendFaceAuthRequest onFailure", t);
-                                Toast.makeText(FaceSignupActivity.this, "Lỗi khi gửi yêu cầu: " + t.getMessage(), Toast.LENGTH_LONG).show();
-                                try { btnConfirm.setEnabled(true); btnConfirm.setText("Quét"); } catch (Exception ignore) {}
-                            }
-                        });
+                            });
+                        }
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(FaceSignupActivity.this, "Lỗi khi phát hiện khuôn mặt: " + e.getMessage(), Toast.LENGTH_SHORT).show();
