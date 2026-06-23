@@ -81,7 +81,7 @@ public class AdminClinicalAdapter extends RecyclerView.Adapter<AdminClinicalAdap
             holder.ivClinicalIcon.setColorFilter(Color.parseColor("#8E24AA"));
             holder.cvIconContainer.setCardBackgroundColor(Color.parseColor("#F3E5F5"));
         } else {
-            holder.ivClinicalIcon.setImageResource(R.drawable.ic_stethoscope_vector);
+            holder.ivClinicalIcon.setImageResource(R.drawable.ic_cls_hearing);
             holder.ivClinicalIcon.setColorFilter(Color.parseColor("#0FAFBF"));
             holder.cvIconContainer.setCardBackgroundColor(Color.parseColor("#E6F7F8"));
         }

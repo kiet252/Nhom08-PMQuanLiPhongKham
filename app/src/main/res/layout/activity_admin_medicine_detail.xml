@@ -55,7 +55,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Banner Block (Styled like project gradient) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -70,7 +69,6 @@
                     android:background="@drawable/bg_gradient_dark_blue"
                     android:padding="16dp">
 
-                    <!-- Pill Circle icon on the left -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cvBannerIcon"
                         android:layout_width="56dp"
@@ -88,7 +86,6 @@
                             android:src="@drawable/ic_pill" />
                     </com.google.android.material.card.MaterialCardView>
 
-                    <!-- Text on the right -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -111,14 +108,13 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="Điền đầy đủ thông tin bên dưới"
+                            android:text="Điền đầy đủ tên, hoạt chất, hàm lượng, chức năng và đơn giá"
                             android:textColor="#CCFFFFFF"
                             android:textSize="13sp" />
                     </LinearLayout>
                 </RelativeLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Form Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -143,7 +139,6 @@
                         android:textStyle="bold"
                         android:letterSpacing="0.08" />
 
-                    <!-- Input 1: Tên thuốc -->
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
@@ -166,7 +161,6 @@
                             android:textSize="15sp" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Input 2: Hoạt chất -->
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
@@ -189,7 +183,28 @@
                             android:textSize="15sp" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Input 3: Đơn vị tính -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:hint="Hàm lượng *"
+                        app:boxCornerRadiusBottomEnd="14dp"
+                        app:boxCornerRadiusBottomStart="14dp"
+                        app:boxCornerRadiusTopEnd="14dp"
+                        app:boxCornerRadiusTopStart="14dp"
+                        app:boxStrokeColor="#2F80ED"
+                        app:hintTextColor="#2F80ED">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etMedStrength"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text"
+                            android:textColor="#1E293B"
+                            android:textSize="15sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                         android:layout_width="match_parent"
@@ -212,13 +227,35 @@
                             android:textSize="15sp" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Row: Tồn kho & Đơn giá -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:hint="Chức năng"
+                        app:boxCornerRadiusBottomEnd="14dp"
+                        app:boxCornerRadiusBottomStart="14dp"
+                        app:boxCornerRadiusTopEnd="14dp"
+                        app:boxCornerRadiusTopStart="14dp"
+                        app:boxStrokeColor="#2F80ED"
+                        app:hintTextColor="#2F80ED">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etMedFunction"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textMultiLine"
+                            android:minLines="2"
+                            android:gravity="top"
+                            android:textColor="#1E293B"
+                            android:textSize="15sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
 
-                        <!-- Input 4: Tồn kho -->
                         <com.google.android.material.textfield.TextInputLayout
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                             android:layout_width="0dp"
@@ -242,7 +279,6 @@
                                 android:textSize="15sp" />
                         </com.google.android.material.textfield.TextInputLayout>
 
-                        <!-- Input 5: Đơn giá -->
                         <com.google.android.material.textfield.TextInputLayout
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                             android:layout_width="0dp"
@@ -271,7 +307,6 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Bottom Save Button -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="88dp"
@@ -293,7 +328,7 @@
             app:iconGravity="textStart"
             app:iconPadding="10dp"
             app:iconTint="@android:color/white"
-            app:backgroundTint="#2F80ED"
+            app:backgroundTint="#0D3F6E"
             app:cornerRadius="14dp" />
     </LinearLayout>
 

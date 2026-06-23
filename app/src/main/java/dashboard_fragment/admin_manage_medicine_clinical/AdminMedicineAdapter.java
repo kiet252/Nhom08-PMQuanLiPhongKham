@@ -47,18 +47,17 @@ public class AdminMedicineAdapter extends RecyclerView.Adapter<AdminMedicineAdap
         MedicineItem medicine = medicineList.get(position);
         Context context = holder.itemView.getContext();
 
-        holder.tvMedName.setText(medicine.getTen_thuoc() != null ? medicine.getTen_thuoc() : "");
+        holder.tvMedName.setText(buildMedicineName(medicine));
         holder.tvMedActive.setText(medicine.getHoat_chat() != null ? "Hoạt chất: " + medicine.getHoat_chat() : "Hoạt chất: --");
         holder.tvMedUnitTag.setText(medicine.getDon_vi() != null ? medicine.getDon_vi() : "Đơn vị");
 
         int stock = medicine.getTon_kho();
         holder.tvMedStockTag.setText("Tồn: " + stock);
 
-        // Dynamic styling for stock level
         if (stock <= 0) {
             holder.tvMedStockTag.setText("Hết hàng");
             holder.tvMedStockTag.setTextColor(ContextCompat.getColor(context, android.R.color.holo_red_dark));
-            holder.tvMedStockTag.setBackgroundResource(R.drawable.bg_badge_orange); // low stock background
+            holder.tvMedStockTag.setBackgroundResource(R.drawable.bg_badge_orange);
         } else if (stock <= 50) {
             holder.tvMedStockTag.setTextColor(ContextCompat.getColor(context, android.R.color.holo_orange_dark));
             holder.tvMedStockTag.setBackgroundResource(R.drawable.bg_badge_orange);
@@ -75,6 +74,19 @@ public class AdminMedicineAdapter extends RecyclerView.Adapter<AdminMedicineAdap
                 listener.onItemClick(medicine);
             }
         });
+    }
+
+    private String buildMedicineName(MedicineItem medicine) {
+        String name = medicine.getTen_thuoc() == null ? "" : medicine.getTen_thuoc().trim();
+        String strength = medicine.getHam_luong() == null ? "" : medicine.getHam_luong().trim();
+
+        if (name.isEmpty()) return "";
+
+        if (strength.isEmpty()) {
+            return name;
+        }
+
+        return name + " (" + strength + ")";
     }
 
     @Override

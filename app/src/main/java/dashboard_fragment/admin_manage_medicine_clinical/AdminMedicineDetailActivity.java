@@ -2,7 +2,7 @@ package dashboard_fragment.admin_manage_medicine_clinical;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
+import android.text.TextUtils;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
@@ -18,6 +18,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 
 import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineItem;
 import okhttp3.ResponseBody;
@@ -29,8 +30,10 @@ public class AdminMedicineDetailActivity extends BaseActivity {
 
     private TextInputEditText etMedName;
     private TextInputEditText etMedActive;
+    private TextInputEditText etMedStrength;
     private AutoCompleteTextView actvMedUnit;
     private TextInputEditText etMedStock;
+    private TextInputEditText etMedFunction;
     private TextInputEditText etMedPrice;
     private MaterialButton btnSave;
 
@@ -43,25 +46,23 @@ public class AdminMedicineDetailActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_medicine_detail);
 
-        // Bind Views
         etMedName = findViewById(R.id.etMedName);
         etMedActive = findViewById(R.id.etMedActive);
+        etMedStrength = findViewById(R.id.etMedStrength);
         actvMedUnit = findViewById(R.id.actvMedUnit);
         etMedStock = findViewById(R.id.etMedStock);
+        etMedFunction = findViewById(R.id.etMedFunction);
         etMedPrice = findViewById(R.id.etMedPrice);
         btnSave = findViewById(R.id.btnSave);
 
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
-        // Setup Dropdown for units
-        String[] units = {"viên", "chai","lọ", "ống", "gói", "ml", "hộp","vỉ", "tuýp", "cái", "viên nén", "viên sủi"};
+        String[] units = {"viên", "chai", "lọ", "ống", "gói", "ml", "hộp", "vỉ", "tuýp", "cái", "viên nén", "viên sủi"};
         ArrayAdapter<String> unitAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, units);
         actvMedUnit.setAdapter(unitAdapter);
 
-        // Setup API Service
         apiService = SupabaseClientProvider.getClient(this).create(AdminMedClsApiService.class);
 
-        // Check Intent for Edit mode
         if (getIntent().hasExtra("id")) {
             medicineId = getIntent().getIntExtra("id", -1);
             if (medicineId != -1) {
@@ -74,14 +75,12 @@ public class AdminMedicineDetailActivity extends BaseActivity {
     }
 
     private void setupEditMode() {
-        // Change text titles for update form
         findViewById(R.id.tvHeaderTitle).post(() -> {
-            ((android.widget.TextView) findViewById(R.id.tvHeaderTitle)).setText("Cập nhật thông tin");
-            ((android.widget.TextView) findViewById(R.id.tvBannerTitle)).setText("Cập nhật thông tin");
-            ((android.widget.TextView) findViewById(R.id.tvBannerSubtitle)).setText("Cập nhật đơn giá và tồn kho");
+            ((android.widget.TextView) findViewById(R.id.tvHeaderTitle)).setText("Cập nhật thuốc");
+            ((android.widget.TextView) findViewById(R.id.tvBannerTitle)).setText("Cập nhật thông tin thuốc");
+            ((android.widget.TextView) findViewById(R.id.tvBannerSubtitle)).setText("Cập nhật hàm lượng, chức năng, đơn giá và tồn kho");
         });
 
-        // Load medicine details
         apiService.getMedicineById("eq." + medicineId, "*").enqueue(new Callback<List<MedicineItem>>() {
             @Override
             public void onResponse(Call<List<MedicineItem>> call, Response<List<MedicineItem>> response) {
@@ -105,21 +104,22 @@ public class AdminMedicineDetailActivity extends BaseActivity {
     private void populateFields(MedicineItem medicine) {
         etMedName.setText(medicine.getTen_thuoc());
         etMedActive.setText(medicine.getHoat_chat());
+        etMedStrength.setText(medicine.getHam_luong());
         actvMedUnit.setText(medicine.getDon_vi(), false);
         etMedStock.setText(String.valueOf(medicine.getTon_kho()));
-
-        // Format to show plain numbers in input field
-        etMedPrice.setText(String.format(java.util.Locale.US, "%.0f", medicine.getDon_gia()));
+        etMedFunction.setText(medicine.getChuc_nang());
+        etMedPrice.setText(String.format(Locale.US, "%.0f", medicine.getDon_gia()));
     }
 
     private void saveMedicine() {
         String name = etMedName.getText() != null ? etMedName.getText().toString().trim() : "";
         String active = etMedActive.getText() != null ? etMedActive.getText().toString().trim() : "";
+        String strength = etMedStrength.getText() != null ? etMedStrength.getText().toString().trim() : "";
         String unit = actvMedUnit.getText() != null ? actvMedUnit.getText().toString().trim() : "";
         String stockStr = etMedStock.getText() != null ? etMedStock.getText().toString().trim() : "";
+        String function = etMedFunction.getText() != null ? etMedFunction.getText().toString().trim() : "";
         String priceStr = etMedPrice.getText() != null ? etMedPrice.getText().toString().trim() : "";
 
-        // Validations
         if (name.isEmpty()) {
             etMedName.setError("Tên thuốc không được để trống");
             etMedName.requestFocus();
@@ -130,6 +130,11 @@ public class AdminMedicineDetailActivity extends BaseActivity {
             etMedActive.requestFocus();
             return;
         }
+        if (strength.isEmpty()) {
+            etMedStrength.setError("Hàm lượng không được để trống");
+            etMedStrength.requestFocus();
+            return;
+        }
         if (unit.isEmpty()) {
             actvMedUnit.setError("Đơn vị tính không được để trống");
             actvMedUnit.requestFocus();
@@ -138,6 +143,11 @@ public class AdminMedicineDetailActivity extends BaseActivity {
         if (stockStr.isEmpty()) {
             etMedStock.setError("Tồn kho không được để trống");
             etMedStock.requestFocus();
+            return;
+        }
+        if (priceStr.isEmpty()) {
+            etMedPrice.setError("Đơn giá không được để trống");
+            etMedPrice.requestFocus();
             return;
         }
 
@@ -155,12 +165,6 @@ public class AdminMedicineDetailActivity extends BaseActivity {
             return;
         }
 
-        if (priceStr.isEmpty()) {
-            etMedPrice.setError("Đơn giá không được để trống");
-            etMedPrice.requestFocus();
-            return;
-        }
-
         double price;
         try {
             price = Double.parseDouble(priceStr);
@@ -175,16 +179,16 @@ public class AdminMedicineDetailActivity extends BaseActivity {
             return;
         }
 
-        // Prepare request body
         Map<String, Object> body = new HashMap<>();
         body.put("ten_thuoc", name);
         body.put("hoat_chat", active);
+        body.put("ham_luong", strength);
         body.put("don_vi", unit);
         body.put("ton_kho", stock);
+        body.put("chuc_nang", function);
         body.put("don_gia", price);
 
         if (isEditMode) {
-            // Update
             apiService.updateMedicine("eq." + medicineId, body).enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -203,7 +207,6 @@ public class AdminMedicineDetailActivity extends BaseActivity {
                 }
             });
         } else {
-            // Create new
             apiService.createMedicine(body).enqueue(new Callback<List<MedicineItem>>() {
                 @Override
                 public void onResponse(Call<List<MedicineItem>> call, Response<List<MedicineItem>> response) {

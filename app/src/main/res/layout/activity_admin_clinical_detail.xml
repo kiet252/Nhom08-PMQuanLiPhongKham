@@ -258,12 +258,12 @@
             android:textColor="@android:color/white"
             android:textSize="15sp"
             android:textStyle="bold"
+            app:backgroundTint="#0D3F6E"
+            app:cornerRadius="14dp"
             app:icon="@drawable/ic_save"
             app:iconGravity="textStart"
             app:iconPadding="10dp"
-            app:iconTint="@android:color/white"
-            app:backgroundTint="#0FAFBF"
-            app:cornerRadius="14dp" />
+            app:iconTint="@android:color/white" />
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
