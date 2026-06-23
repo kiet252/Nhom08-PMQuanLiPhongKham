@@ -29,11 +29,14 @@ public class TimekeepingRepository {
         return apiService.createAuthRequest("return=minimal", body);
     }
 
-    public Call<ResponseBody> sendFaceAuthRequest(String staffId, java.util.List<Double> faceVector, String details) {
+    public Call<ResponseBody> sendFaceAuthRequest(String staffId, java.util.List<Double> faceVector, String details, String faceImageBase64) {
         Map<String, Object> body = new HashMap<>();
         body.put("type_of_request", "Face");
         body.put("face", faceVector);
         body.put("staff_id", staffId);
+        if (faceImageBase64 != null) {
+            body.put("face_image", faceImageBase64);
+        }
 
         // Log the outgoing body for debugging (helps diagnose 400 responses)
         try {
@@ -49,7 +52,7 @@ public class TimekeepingRepository {
     /**
      * Alternative: send face vector as JSON string (useful if the DB column expects a textual/vector literal)
      */
-    public Call<ResponseBody> sendFaceAuthRequestAsString(String staffId, java.util.List<Double> faceVector, String details) {
+    public Call<ResponseBody> sendFaceAuthRequestAsString(String staffId, java.util.List<Double> faceVector, String details, String faceImageBase64) {
         Map<String, Object> body = new HashMap<>();
         body.put("type_of_request", "Face");
         try {
@@ -61,6 +64,9 @@ public class TimekeepingRepository {
             body.put("face", null);
         }
         body.put("staff_id", staffId);
+        if (faceImageBase64 != null) {
+            body.put("face_image", faceImageBase64);
+        }
 
         try {
             Gson gson = new Gson();

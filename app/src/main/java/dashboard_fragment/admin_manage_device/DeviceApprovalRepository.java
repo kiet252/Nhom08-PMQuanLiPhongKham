@@ -20,13 +20,19 @@ public class DeviceApprovalRepository {
 
     public Call<List<DeviceApprovalRequest>> getPendingDeviceRequests() {
         return apiService.getPendingDeviceRequests(
-                "id,created_at,type_of_request,android_id,status,staff_id:profiles(id,ho_ten)"
+                "id,created_at,type_of_request,android_id,status,face,face_image,staff_id:profiles(id,ho_ten)"
         );
     }
 
     public Call<ResponseBody> approveProfileDevice(String staffId, String androidId) {
         Map<String, Object> updates = new HashMap<>();
         updates.put("android_id", androidId);
+        return apiService.updateProfileDevice("return=minimal", "eq." + staffId, updates);
+    }
+
+    public Call<ResponseBody> approveProfileFace(String staffId, String faceId) {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("face_id", faceId);
         return apiService.updateProfileDevice("return=minimal", "eq." + staffId, updates);
     }
 

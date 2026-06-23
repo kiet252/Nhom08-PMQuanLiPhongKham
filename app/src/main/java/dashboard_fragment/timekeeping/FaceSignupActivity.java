@@ -177,16 +177,34 @@ public class FaceSignupActivity extends BaseActivity {
                             finish();
                             return;
                         }
-
-                        // Non-verify mode: gửi request đăng ký khuôn mặt lên server
                         try {
                             btnConfirm.setEnabled(false);
                             btnConfirm.setText("Đang gửi...");
                         } catch (Exception ignore) {}
 
+                        String faceImageBase64Temp = null;
+                        try {
+                            Rect box = face.getBoundingBox();
+                            int left = Math.max(0, box.left);
+                            int top = Math.max(0, box.top);
+                            int right = Math.min(bmp.getWidth(), box.right);
+                            int bottom = Math.min(bmp.getHeight(), box.bottom);
+                            if (right - left > 0 && bottom - top > 0) {
+                                Bitmap faceBmp = Bitmap.createBitmap(bmp, left, top, right - left, bottom - top);
+                                Bitmap scaledFaceBmp = Bitmap.createScaledBitmap(faceBmp, 200, 200, true);
+                                java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+                                scaledFaceBmp.compress(Bitmap.CompressFormat.JPEG, 80, baos);
+                                byte[] b = baos.toByteArray();
+                                faceImageBase64Temp = android.util.Base64.encodeToString(b, android.util.Base64.NO_WRAP);
+                            }
+                        } catch (Exception e) {
+                            Log.e("FaceSignup", "Failed to convert face bitmap to base64", e);
+                        }
+                        final String faceImageBase64 = faceImageBase64Temp;
+
                         TimekeepingRepository repo = new TimekeepingRepository(FaceSignupActivity.this);
                         Log.e("FaceSignup", "Sending face auth request for staffId=" + staffId);
-                        repo.sendFaceAuthRequest(staffId, vector, details).enqueue(new Callback<ResponseBody>() {
+                        repo.sendFaceAuthRequest(staffId, vector, details, faceImageBase64).enqueue(new Callback<ResponseBody>() {
                             @Override
                             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                                 try {
@@ -200,7 +218,7 @@ public class FaceSignupActivity extends BaseActivity {
                                         try { if (response.errorBody() != null) err = response.errorBody().string(); } catch (Exception ex) { }
                                         Log.e("FaceSignup", "Face auth request failed. code=" + code + " err=" + err);
                                         if (code == 400) {
-                                            repo.sendFaceAuthRequestAsString(staffId, vector, details).enqueue(new Callback<ResponseBody>() {
+                                            repo.sendFaceAuthRequestAsString(staffId, vector, details, faceImageBase64).enqueue(new Callback<ResponseBody>() {
                                                 @Override
                                                 public void onResponse(Call<ResponseBody> call2, Response<ResponseBody> resp2) {
                                                     if (resp2.isSuccessful()) {

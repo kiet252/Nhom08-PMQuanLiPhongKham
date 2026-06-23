@@ -8,6 +8,26 @@ public class DeviceApprovalRequest {
     private String type_of_request;
     private String android_id;
     private String status;
+    private Object face;
+
+    @SerializedName("face_image")
+    private String faceImage;
+
+    public Object getFace() {
+        return face;
+    }
+
+    public void setFace(Object face) {
+        this.face = face;
+    }
+
+    public String getFaceImage() {
+        return faceImage;
+    }
+
+    public void setFaceImage(String faceImage) {
+        this.faceImage = faceImage;
+    }
 
     // Biến này để hứng Object chứa thông tin nhân viên đã join từ profiles
     @SerializedName("staff_id")

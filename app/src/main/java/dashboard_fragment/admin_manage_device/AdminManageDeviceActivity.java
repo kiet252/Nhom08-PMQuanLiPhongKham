@@ -115,6 +115,11 @@ public class AdminManageDeviceActivity extends BaseActivity {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.dialog_device_approval_detail);
 
+        TextView tvTitle = dialog.findViewById(R.id.tvDialogDeviceTitle);
+        if (tvTitle != null && "Face".equals(request.getTypeOfRequest())) {
+            tvTitle.setText("Chi tiết yêu cầu duyệt khuôn mặt");
+        }
+
         TextView tvStaffName = dialog.findViewById(R.id.tvDialogDeviceStaffName);
         TextView tvStaffId = dialog.findViewById(R.id.tvDialogDeviceStaffId);
         TextView tvAndroidId = dialog.findViewById(R.id.tvDialogDeviceAndroidId);
@@ -127,6 +132,38 @@ public class AdminManageDeviceActivity extends BaseActivity {
         tvStaffId.setText(request.getStaffId());
         tvAndroidId.setText(request.getAndroidId());
         tvCreatedAt.setText(DeviceApprovalAdapter.formatDetailDate(request.getCreatedAt()));
+
+        View layoutAndroidId = dialog.findViewById(R.id.layoutDialogDeviceAndroidId);
+        View layoutFaceImage = dialog.findViewById(R.id.layoutDialogDeviceFaceImage);
+        android.widget.ImageView imgFace = dialog.findViewById(R.id.imgDialogDeviceFace);
+
+        if ("Face".equals(request.getTypeOfRequest())) {
+            if (layoutAndroidId != null) layoutAndroidId.setVisibility(View.GONE);
+            if (layoutFaceImage != null) layoutFaceImage.setVisibility(View.VISIBLE);
+
+            String base64Image = request.getFaceImage();
+            if (base64Image != null && !base64Image.trim().isEmpty()) {
+                try {
+                    byte[] decodedString = android.util.Base64.decode(base64Image, android.util.Base64.DEFAULT);
+                    android.graphics.Bitmap decodedByte = android.graphics.BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                    if (imgFace != null && decodedByte != null) {
+                        imgFace.setImageBitmap(decodedByte);
+                    }
+                } catch (Exception e) {
+                    android.util.Log.e("DeviceApproval", "Lỗi hiển thị ảnh khuôn mặt", e);
+                    if (imgFace != null) {
+                        imgFace.setImageResource(R.drawable.userprofile_ic_name);
+                    }
+                }
+            } else {
+                if (imgFace != null) {
+                    imgFace.setImageResource(R.drawable.userprofile_ic_name);
+                }
+            }
+        } else {
+            if (layoutAndroidId != null) layoutAndroidId.setVisibility(View.VISIBLE);
+            if (layoutFaceImage != null) layoutFaceImage.setVisibility(View.GONE);
+        }
 
         if (tvStatus != null) {
             String status = request.getStatus();
@@ -166,18 +203,22 @@ public class AdminManageDeviceActivity extends BaseActivity {
     }
 
     private void confirmApprove(DeviceApprovalRequest request, Dialog dialog) {
+        String title = "Face".equals(request.getTypeOfRequest()) ? "Duyệt khuôn mặt" : "Duyệt thiết bị";
+        String message = "Face".equals(request.getTypeOfRequest()) ? "Bạn có chắc muốn duyệt khuôn mặt này cho nhân viên?" : "Bạn có chắc muốn duyệt thiết bị này cho nhân viên?";
         new AlertDialog.Builder(this)
-                .setTitle("Duyệt thiết bị")
-                .setMessage("Bạn có chắc muốn duyệt thiết bị này cho nhân viên?")
+                .setTitle(title)
+                .setMessage(message)
                 .setNegativeButton("Hủy", null)
                 .setPositiveButton("Duyệt", (d, which) -> approveRequest(request, dialog))
                 .show();
     }
 
     private void confirmReject(DeviceApprovalRequest request, Dialog dialog) {
+        String title = "Face".equals(request.getTypeOfRequest()) ? "Từ chối duyệt khuôn mặt" : "Từ chối yêu cầu";
+        String message = "Face".equals(request.getTypeOfRequest()) ? "Bạn có chắc muốn từ chối yêu cầu duyệt khuôn mặt này?" : "Bạn có chắc muốn từ chối yêu cầu duyệt thiết bị này?";
         new AlertDialog.Builder(this)
-                .setTitle("Từ chối yêu cầu")
-                .setMessage("Bạn có chắc muốn từ chối yêu cầu duyệt thiết bị này?")
+                .setTitle(title)
+                .setMessage(message)
                 .setNegativeButton("Hủy", null)
                 .setPositiveButton("Từ chối", (d, which) -> rejectRequest(request, dialog))
                 .show();
@@ -186,23 +227,55 @@ public class AdminManageDeviceActivity extends BaseActivity {
     private void approveRequest(DeviceApprovalRequest request, Dialog dialog) {
         if (request == null) return;
         setLoading(true);
-        repository.approveProfileDevice(request.getStaffId(), request.getAndroidId()).enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
-                if (!response.isSuccessful()) {
-                    setLoading(false);
-                    Toast.makeText(AdminManageDeviceActivity.this, "Không thể cập nhật thiết bị nhân viên", Toast.LENGTH_SHORT).show();
-                    return;
+        if ("Face".equals(request.getTypeOfRequest())) {
+            Object faceObj = request.getFace();
+            String faceStr = null;
+            if (faceObj instanceof String) {
+                faceStr = (String) faceObj;
+            } else if (faceObj != null) {
+                try {
+                    com.google.gson.Gson gson = new com.google.gson.Gson();
+                    faceStr = gson.toJson(faceObj);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                updateRequestStatus(request, "Đã duyệt", "Đã duyệt thiết bị", dialog);
             }
+            repository.approveProfileFace(request.getStaffId(), faceStr).enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+                    if (!response.isSuccessful()) {
+                        setLoading(false);
+                        Toast.makeText(AdminManageDeviceActivity.this, "Không thể cập nhật khuôn mặt nhân viên", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    updateRequestStatus(request, "Đã duyệt", "Đã duyệt khuôn mặt", dialog);
+                }
 
-            @Override
-            public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-                setLoading(false);
-                Toast.makeText(AdminManageDeviceActivity.this, "Lỗi kết nối khi duyệt thiết bị", Toast.LENGTH_SHORT).show();
-            }
-        });
+                @Override
+                public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                    setLoading(false);
+                    Toast.makeText(AdminManageDeviceActivity.this, "Lỗi kết nối khi duyệt khuôn mặt", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            repository.approveProfileDevice(request.getStaffId(), request.getAndroidId()).enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+                    if (!response.isSuccessful()) {
+                        setLoading(false);
+                        Toast.makeText(AdminManageDeviceActivity.this, "Không thể cập nhật thiết bị nhân viên", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    updateRequestStatus(request, "Đã duyệt", "Đã duyệt thiết bị", dialog);
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                    setLoading(false);
+                    Toast.makeText(AdminManageDeviceActivity.this, "Lỗi kết nối khi duyệt thiết bị", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     private void rejectRequest(DeviceApprovalRequest request, Dialog dialog) {

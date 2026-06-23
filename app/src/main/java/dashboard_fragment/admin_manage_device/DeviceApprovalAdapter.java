@@ -159,6 +159,7 @@ public class DeviceApprovalAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         TextView tvStaffId;
         TextView tvTime;
         TextView tvStatus;
+        android.widget.ImageView imgIcon;
 
         RequestViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -167,13 +168,27 @@ public class DeviceApprovalAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             tvStaffId = itemView.findViewById(R.id.tvDeviceApprovalStaffId);
             tvTime = itemView.findViewById(R.id.tvDeviceApprovalTime);
             tvStatus = itemView.findViewById(R.id.tvDeviceApprovalStatus);
+            imgIcon = itemView.findViewById(R.id.imgDeviceApprovalIcon);
         }
 
         void bind(DeviceApprovalRequest request) {
             tvStaffName.setText(request.getStaffName());
-            tvAndroidId.setText(request.getAndroidId());
             tvStaffId.setText("Mã NV: " + request.getStaffId());
             tvTime.setText(formatTime(request.getCreatedAt()));
+
+            if ("Face".equals(request.getTypeOfRequest())) {
+                tvAndroidId.setText("Duyệt khuôn mặt");
+                tvAndroidId.setEllipsize(android.text.TextUtils.TruncateAt.END);
+                if (imgIcon != null) {
+                    imgIcon.setImageResource(R.drawable.ic_camera);
+                }
+            } else {
+                tvAndroidId.setText(request.getAndroidId());
+                tvAndroidId.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);
+                if (imgIcon != null) {
+                    imgIcon.setImageResource(R.drawable.ic_device_phone);
+                }
+            }
             
             String status = request.getStatus();
             if ("Đã duyệt".equals(status)) {
