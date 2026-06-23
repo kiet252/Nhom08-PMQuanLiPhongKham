@@ -46,7 +46,9 @@ public class TimekeepingFixRequestRepository {
         if (item.getRequestedCheckIn() != null && !item.getRequestedCheckIn().trim().isEmpty()) {
             body.put("start_time", item.getRequestedCheckIn());
         }
-        body.put("end_time", item.getRequestedCheckOut());
+        if (item.getRequestedCheckOut() != null && !item.getRequestedCheckOut().trim().isEmpty()) {
+            body.put("end_time", item.getRequestedCheckOut());
+        }
         return apiService.updateShift("eq." + item.getShiftId(), "return=minimal", body);
     }
 }

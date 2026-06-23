@@ -286,6 +286,7 @@
                 android:padding="14dp">
 
                 <LinearLayout
+                    android:id="@+id/layoutFixRequestedStart"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
@@ -315,6 +316,7 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/layoutFixRequestedEnd"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"

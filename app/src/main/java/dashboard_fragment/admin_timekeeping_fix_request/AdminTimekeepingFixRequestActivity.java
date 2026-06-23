@@ -197,6 +197,8 @@ public class AdminTimekeepingFixRequestActivity extends BaseActivity {
         TextView tvOriginalStatus = dialog.findViewById(R.id.tvFixOriginalStatus);
         TextView tvRequestedStart = dialog.findViewById(R.id.tvFixRequestedStart);
         TextView tvRequestedEnd = dialog.findViewById(R.id.tvFixRequestedEnd);
+        LinearLayout layoutRequestedStart = dialog.findViewById(R.id.layoutFixRequestedStart);
+        LinearLayout layoutRequestedEnd = dialog.findViewById(R.id.layoutFixRequestedEnd);
         TextView tvReason = dialog.findViewById(R.id.tvFixReason);
         TextView tvEvidenceTitle = dialog.findViewById(R.id.tvFixEvidenceTitle);
         LinearLayout layoutEvidence = dialog.findViewById(R.id.layoutFixEvidenceImages);
@@ -210,8 +212,22 @@ public class AdminTimekeepingFixRequestActivity extends BaseActivity {
         tvOriginalStart.setText(TimekeepingFixRequestAdapter.formatTime(item.getOriginalStartTime()));
         tvOriginalEnd.setText(TimekeepingFixRequestAdapter.formatTime(item.getOriginalEndTime()));
         tvOriginalStatus.setText(item.getOriginalStatus());
-        tvRequestedStart.setText(TimekeepingFixRequestAdapter.formatTime(item.getRequestedCheckIn()));
-        tvRequestedEnd.setText(TimekeepingFixRequestAdapter.formatTime(item.getRequestedCheckOut()));
+        String reqStart = item.getRequestedCheckIn();
+        String reqEnd = item.getRequestedCheckOut();
+
+        if (reqStart != null && !reqStart.trim().isEmpty()) {
+            layoutRequestedStart.setVisibility(View.VISIBLE);
+            tvRequestedStart.setText(TimekeepingFixRequestAdapter.formatTime(reqStart));
+        } else {
+            layoutRequestedStart.setVisibility(View.GONE);
+        }
+
+        if (reqEnd != null && !reqEnd.trim().isEmpty()) {
+            layoutRequestedEnd.setVisibility(View.VISIBLE);
+            tvRequestedEnd.setText(TimekeepingFixRequestAdapter.formatTime(reqEnd));
+        } else {
+            layoutRequestedEnd.setVisibility(View.GONE);
+        }
         tvReason.setText(item.getReason());
         applyDialogStatus(tvStatus, item.getStatus(), btnApprove, btnReject);
         loadAvatar(ivAvatar, item.getStaffAvatar());
