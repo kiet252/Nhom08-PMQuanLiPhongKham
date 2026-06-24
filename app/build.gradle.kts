@@ -147,5 +147,8 @@ dependencies {
     //Gemini
     implementation("com.google.genai:google-genai:1.16.0")
 
+    //Xuất PDF
+    implementation("com.itextpdf:itext7-core:7.2.5")
+
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }

@@ -279,6 +279,7 @@ public class HomeFragment_staff extends Fragment {
         TextView tvExamDate = dialogView.findViewById(R.id.tvDetailExamDate);
         TextView tvExamTime = dialogView.findViewById(R.id.tvDetailExamTime);
         TextView tvSequence = dialogView.findViewById(R.id.tvDetailSequence);
+        TextView tvDoctor = dialogView.findViewById(R.id.tvDetailDoctor);
         TextView tvStatus = dialogView.findViewById(R.id.tvDetailStatus);
         TextView tvSymptoms = dialogView.findViewById(R.id.tvDetailSymptoms);
         com.google.android.material.button.MaterialButton btnClose =
@@ -295,6 +296,7 @@ public class HomeFragment_staff extends Fragment {
         tvExamDate.setText("Ngày khám: " + (form.getNgay_kham() != null ? sdf.format(form.getNgay_kham()) : "--"));
         tvExamTime.setText("Giờ dự kiến: " + (form.getGio_du_kien() != null ? form.getGio_du_kien() : "--"));
         tvSequence.setText("Số tiếp nhận: " + form.getSo_tiep_nhan());
+        tvDoctor.setText("Bác sĩ: " + (form.getDoctor() != null ? form.getDoctor().getHo_ten() : "--"));
         tvStatus.setText("Trạng thái: " + (form.getTrang_thai() != null ? form.getTrang_thai() : "--"));
         tvSymptoms.setText(form.getTrieu_chung_ban_dau() != null ? form.getTrieu_chung_ban_dau() : "--");
 

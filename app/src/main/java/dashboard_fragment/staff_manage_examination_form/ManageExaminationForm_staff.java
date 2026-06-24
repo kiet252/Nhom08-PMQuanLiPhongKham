@@ -1,6 +1,16 @@
 package dashboard_fragment.staff_manage_examination_form;
 
+import android.content.ContentValues;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.pdf.PdfDocument;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,13 +36,19 @@ import com.example.nhom08_quanlyphongkham.BaseActivity;
 import com.example.nhom08_quanlyphongkham.R;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+
 
 import dashboard_fragment.staff_create_examination_form.ExaminationFormRepository;
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
@@ -366,6 +382,7 @@ public class ManageExaminationForm_staff extends BaseActivity {
         android.widget.TextView tvExamDate = dialogView.findViewById(R.id.tvDetailExamDate);
         android.widget.TextView tvExamTime = dialogView.findViewById(R.id.tvDetailExamTime);
         android.widget.TextView tvSequence = dialogView.findViewById(R.id.tvDetailSequence);
+        android.widget.TextView tvDoctor = dialogView.findViewById(R.id.tvDetailDoctor);
         android.widget.TextView tvStatus = dialogView.findViewById(R.id.tvDetailStatus);
         android.widget.TextView tvSymptoms = dialogView.findViewById(R.id.tvDetailSymptoms);
         com.google.android.material.button.MaterialButton btnClose =
@@ -381,6 +398,7 @@ public class ManageExaminationForm_staff extends BaseActivity {
         tvExamDate.setText("Ngày khám: " + (form.getNgay_kham() != null ? sdf.format(form.getNgay_kham()) : "--"));
         tvExamTime.setText("Giờ dự kiến: " + (form.getGio_du_kien() != null ? form.getGio_du_kien() : "--"));
         tvSequence.setText("Số tiếp nhận: " + form.getSo_tiep_nhan());
+        tvDoctor.setText("Bác sĩ: " + (form.getDoctor() != null ? form.getDoctor().getHo_ten() : "--"));
         tvStatus.setText("Trạng thái: " + (form.getTrang_thai() != null ? form.getTrang_thai() : "--"));
         tvSymptoms.setText(form.getTrieu_chung_ban_dau() != null ? form.getTrieu_chung_ban_dau() : "--");
 
@@ -400,6 +418,7 @@ public class ManageExaminationForm_staff extends BaseActivity {
         );
 
         View layoutActionDetail = dialogView.findViewById(R.id.layoutActionDetail);
+        View layoutActionExport = dialogView.findViewById(R.id.layoutActionExport);
         View layoutActionCancel = dialogView.findViewById(R.id.layoutActionCancel);
 
         androidx.appcompat.app.AlertDialog dialog =
@@ -410,6 +429,11 @@ public class ManageExaminationForm_staff extends BaseActivity {
         layoutActionDetail.setOnClickListener(v -> {
             dialog.dismiss();
             showExaminationFormDetails(form);
+        });
+
+        layoutActionExport.setOnClickListener(v -> {
+            exportExaminationFormToPdf(form);
+            dialog.dismiss();
         });
 
         layoutActionCancel.setOnClickListener(v -> {
@@ -484,5 +508,250 @@ public class ManageExaminationForm_staff extends BaseActivity {
                 Log.e("CANCEL_EX_FORM", "Code: " + t.getMessage());
             }
         });
+    }
+    private void exportExaminationFormToPdf(ExaminationFormWithPatientDto form) {
+
+        PdfDocument document = new PdfDocument();
+
+        PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(595, 842, 1).create();
+        PdfDocument.Page page = document.startPage(pageInfo);
+
+        Canvas canvas = page.getCanvas();
+        Bitmap logo = BitmapFactory.decodeResource(
+                getResources(),
+                R.drawable.clinic_management_system
+        );
+        Bitmap scaledLogo = Bitmap.createScaledBitmap(
+                logo,
+                60,
+                60,
+                true
+        );
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        Paint paint = new Paint();
+        Paint titlePaint = new Paint();
+
+        paint.setTextSize(14f);
+
+        int leftCol = 50;
+        int rightCol = 320;
+        int y = 120;
+
+        canvas.drawBitmap(
+                scaledLogo,
+                40,
+                20,
+                null
+        );
+
+        titlePaint.setTextSize(22f);
+        titlePaint.setFakeBoldText(true);
+
+        canvas.drawText(
+                "PHIẾU KHÁM BỆNH",
+                130,
+                55,
+                titlePaint
+        );
+
+        paint.setTextSize(12f);
+
+        canvas.drawText(
+                "Phòng khám TMH",
+                130,
+                80,
+                paint
+        );
+
+        canvas.drawLine(40, 90, 555, 90, paint);
+
+        canvas.drawText("Mã phiếu: " + form.getId(), leftCol, y, paint);
+        canvas.drawText("Số tiếp nhận: " + form.getSo_tiep_nhan(), rightCol, y, paint);
+
+        y += 30;
+
+        canvas.drawText(
+                "Họ tên: " +
+                        (form.getPatient() != null
+                                ? form.getPatient().getHo_ten()
+                                : "N/A"),
+                leftCol,
+                y,
+                paint
+        );
+
+        canvas.drawText(
+                "Giới tính: " +
+                        (form.getPatient() != null
+                                ? form.getPatient().getGioi_tinh()
+                                : "N/A"),
+                rightCol,
+                y,
+                paint
+        );
+
+        y += 30;
+
+        canvas.drawText(
+                "Ngày khám: " +
+                        (form.getNgay_kham() != null
+                                ? sdf.format(form.getNgay_kham())
+                                : "N/A"),
+                leftCol,
+                y,
+                paint
+        );
+
+        canvas.drawText(
+                "Giờ khám: " + form.getGio_du_kien(),
+                rightCol,
+                y,
+                paint
+        );
+
+        y += 30;
+
+        canvas.drawText(
+                "Bác sĩ: " +
+                        (form.getDoctor() != null
+                                ? form.getDoctor().getHo_ten()
+                                : "N/A"),
+                leftCol,
+                y,
+                paint
+        );
+
+        canvas.drawText(
+                "Phí khám: " +
+                        String.format("%,d VNĐ", form.getPhi_kham()),
+                rightCol,
+                y,
+                paint
+        );
+
+        y += 30;
+
+        canvas.drawText(
+                "Trạng thái: " + form.getTrang_thai(),
+                leftCol,
+                y,
+                paint
+        );
+
+        y += 20;
+
+        canvas.drawLine(40, y, 555, y, paint);
+
+        y += 35;
+
+        Paint boldPaint = new Paint(paint);
+        boldPaint.setFakeBoldText(true);
+
+        canvas.drawText(
+                "TRIỆU CHỨNG BAN ĐẦU",
+                leftCol,
+                y,
+                boldPaint
+        );
+
+        y += 30;
+
+        canvas.drawText(
+                form.getTrieu_chung_ban_dau() != null
+                        ? form.getTrieu_chung_ban_dau()
+                        : "Không có",
+                leftCol,
+                y,
+                paint
+        );
+        document.finishPage(page);
+
+        String patientName =
+                form.getPatient() != null
+                        ? form.getPatient().getHo_ten().replaceAll("[^a-zA-Z0-9]", "_")
+                        : "Unknown";
+
+        String date =
+                form.getNgay_kham() != null
+                        ? new SimpleDateFormat("ddMMyyyy", Locale.getDefault())
+                        .format(form.getNgay_kham())
+                        : "UnknownDate";
+
+        String fileName =
+                "PhieuKham_" + form.getId()
+                        + "_" + patientName
+                        + "_" + date + ".pdf";
+
+        try {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
+
+            Uri uri;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+
+                values.put(
+                        MediaStore.MediaColumns.RELATIVE_PATH,
+                        Environment.DIRECTORY_DOWNLOADS + "/PhieuKham"
+                );
+
+                uri = getContentResolver().insert(
+                        MediaStore.Files.getContentUri("external"),
+                        values
+                );
+
+            } else {
+
+                File downloadsDir =
+                        Environment.getExternalStoragePublicDirectory(
+                                Environment.DIRECTORY_DOWNLOADS
+                        );
+
+                File pdfDir = new File(downloadsDir, "PhieuKham");
+
+                if (!pdfDir.exists()) {
+                    pdfDir.mkdirs();
+                }
+
+                File file = new File(pdfDir, fileName);
+
+                uri = Uri.fromFile(file);
+            }
+
+            if (uri == null) {
+                throw new IOException("Không tạo được file PDF");
+            }
+
+            OutputStream outputStream =
+                    getContentResolver().openOutputStream(uri);
+
+            if (outputStream == null) {
+                throw new IOException("Không mở được OutputStream");
+            }
+
+            document.writeTo(outputStream);
+
+            outputStream.flush();
+            outputStream.close();
+
+            Toast.makeText(
+                    this,
+                    "Đã xuất PDF vào Downloads/PhieuKham",
+                    Toast.LENGTH_LONG
+            ).show();
+
+        } catch (Exception e) {
+
+            Log.e("PDF_EXPORT", "Export PDF failed", e);
+
+            Toast.makeText(
+                    this,
+                    "Lỗi xuất PDF: " + e.getMessage(),
+                    Toast.LENGTH_LONG
+            ).show();
+        }
+
+        document.close();
     }
 }
