@@ -16,96 +16,128 @@
         android:label="@string/app_name"
         android:roundIcon="@drawable/ic_launcher_icon"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Nhom08QuanLyPhongKham">
+        android:theme="@style/Theme.Nhom08QuanLyPhongKham"
+        android:forceDarkAllowed="false">
         <activity
             android:name="dashboard_fragment.staff_add_update_patient.add_patient_logic.OCRCameraActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".account_forgot_password.ForgotPassword_account"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="dashboard_fragment.doctor_create_appointment.CreateAppointment_doctor"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="dashboard_fragment.doctor_view_medical_record.ViewMedicalRecord_doctor"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.ExaminationFormDetail_doctor"
             android:exported="false"
-            android:parentActivityName="dashboard_fragment.doctor_examination_list.ExaminationList_doctor" />
+            android:parentActivityName="dashboard_fragment.doctor_examination_list.ExaminationList_doctor"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="dashboard_fragment.doctor_examination_list.ExaminationList_doctor"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="dashboard_fragment.account_edit_profile.EditProfile"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="dashboard_fragment.staff_manage_bill.BillDetail_staff"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="dashboard_fragment.staff_manage_bill.ManageBill_staff"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="dashboard_fragment.staff_manage_examination_form.ManageExaminationForm_staff"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="dashboard_fragment.staff_add_update_patient.AddUpdatePatientInfo_staff"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="dashboard_fragment.staff_create_examination_form.CreateExaminationForm_staff"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="dashboard_fragment.admin_manage_medicine_clinical.AdminManageMedicineClinicalActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="dashboard_fragment.admin_manage_medicine_clinical.AdminMedicineDetailActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="dashboard_fragment.admin_manage_medicine_clinical.AdminClinicalDetailActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".login"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".admin_manage_staff.admin_manage_staff" />
+        <activity
+            android:name=".admin_manage_staff.admin_manage_staff"
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".dashboard"
             android:exported="true"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:configChanges="uiMode"/>
         <activity
             android:name=".admin_manage_staff.staff_detail"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="dashboard_fragment.account_change_password_request.set_staff_detail"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".admin_manage_staff.create_staff"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".admin_reports.ReportsActivity_Admin"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="dashboard_fragment.timekeeping.Timekeeping"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="dashboard_fragment.admin_timekeeping_schedule.AdminTimekeepingScheduleActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="dashboard_fragment.admin_manage_device.AdminManageDeviceActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
-        android:name="dashboard_fragment.timekeeping.FaceSignupActivity"
-        android:exported="false" />
-        <activity android:name="dashboard_fragment.timekeeping.timekeeping_request"
-            android:exported="false" />
+            android:name="dashboard_fragment.timekeeping.FaceSignupActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name="dashboard_fragment.timekeeping.timekeeping_request"
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="dashboard_fragment.admin_timekeeping_fix_request.AdminTimekeepingFixRequestActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

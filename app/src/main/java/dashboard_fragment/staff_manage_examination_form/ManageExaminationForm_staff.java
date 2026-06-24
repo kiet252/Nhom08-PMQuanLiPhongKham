@@ -22,6 +22,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.nhom08_quanlyphongkham.BaseActivity;
 import com.example.nhom08_quanlyphongkham.R;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -37,7 +38,7 @@ import dashboard_fragment.staff_create_examination_form.ExaminationFormRepositor
 import dashboard_fragment.staff_manage_examination_form.get_all_ex_form_logic.ExaminationFormWithPatientDto;
 import retrofit2.Call;
 
-public class ManageExaminationForm_staff extends AppCompatActivity {
+public class ManageExaminationForm_staff extends BaseActivity {
     Button BtnSearch, BtnFilter, BtnSort;
     ImageButton BtnBack;
     EditText EdtSearch;

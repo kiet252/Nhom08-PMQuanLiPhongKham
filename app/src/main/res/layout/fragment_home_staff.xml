@@ -98,23 +98,23 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:paddingStart="24dp"
-                    android:paddingTop="35dp"
+                    android:paddingTop="25dp"
                     android:paddingEnd="24dp"
                     android:paddingBottom="50dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Chức năng chính"
+                        android:text="Chấm công &amp; Ca làm"
                         android:textColor="#0D3F6E"
                         android:textSize="20sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"/>
 
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/btnTimekeeping"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="14dp"
+                        android:layout_marginTop="10dp"
                         android:clickable="true"
                         android:focusable="true"
                         android:foreground="?android:attr/selectableItemBackground"
@@ -265,10 +265,20 @@
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Chức năng chính"
+                        android:textColor="#0D3F6E"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="16dp"/>
+
                     <GridLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
+                        android:layout_marginTop="10dp"
                         android:alignmentMode="alignMargins"
                         android:columnCount="2"
                         android:columnOrderPreserved="false">
