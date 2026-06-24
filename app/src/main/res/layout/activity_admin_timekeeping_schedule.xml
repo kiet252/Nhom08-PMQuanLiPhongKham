@@ -29,17 +29,6 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:tint="@android:color/white" />
 
-            <LinearLayout
-                android:id="@+id/linearLayout"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"
-                android:orientation="vertical"
-                app:layout_constraintEnd_toStartOf="@id/btnRefreshSchedule"
-                tools:layout_editor_absoluteY="39dp">
-
-            </LinearLayout>
-
             <ImageButton
                 android:id="@+id/btnRefreshSchedule"
                 android:layout_width="42dp"
@@ -48,8 +37,9 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@android:drawable/ic_popup_sync"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:tint="@android:color/white"
-                tools:layout_editor_absoluteY="31dp" />
+                app:layout_constraintTop_toTopOf="@id/btnBackSchedule"
+                app:layout_constraintBottom_toBottomOf="@id/btnBackSchedule"
+                app:tint="@android:color/white" />
 
             <TextView
                 android:layout_width="wrap_content"

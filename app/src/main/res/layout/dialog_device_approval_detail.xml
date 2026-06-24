@@ -261,7 +261,7 @@
                     android:layout_width="34dp"
                     android:layout_height="28dp"
                     android:paddingEnd="10dp"
-                    android:src="@drawable/ic_calendar"
+                    android:src="@drawable/ic_calendar_month"
                     app:tint="#76798A" />
 
                 <LinearLayout
