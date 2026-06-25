@@ -153,21 +153,9 @@
                     android:visibility="gone">
 
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnRefreshRecommendation"
-                        android:layout_width="wrap_content"
-                        android:layout_height="42dp"
-                        android:backgroundTint="#F3E8FF"
-                        android:text="Cập nhật"
-                        android:textAllCaps="false"
-                        android:textColor="#6D28D9"
-                        android:textSize="14sp"
-                        app:cornerRadius="12dp" />
-
-                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnApplyRecommendation"
                         android:layout_width="wrap_content"
                         android:layout_height="42dp"
-                        android:layout_marginStart="8dp"
                         android:backgroundTint="#7C3AED"
                         android:text="Áp dụng"
                         android:textAllCaps="false"

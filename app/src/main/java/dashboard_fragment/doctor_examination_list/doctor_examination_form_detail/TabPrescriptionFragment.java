@@ -35,6 +35,7 @@ import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail
 import retrofit2.Call;
 
 public class TabPrescriptionFragment extends Fragment {
+    private static final String TAG = "PrescriptionSuggest";
 
     private PrescriptionRepository prescriptionRepository;
     private MedicalRecordRepository medicalRecordRepository;
@@ -92,7 +93,6 @@ public class TabPrescriptionFragment extends Fragment {
         View btnAddMedicine = view.findViewById(R.id.btnAddMedicine);
         View btnSavePrescription = view.findViewById(R.id.btnSavePrescription);
         View btnApplyRecommendation = view.findViewById(R.id.btnApplyRecommendation);
-        View btnRefreshRecommendation = view.findViewById(R.id.btnRefreshRecommendation);
 
         if (btnAddMedicine != null) {
             btnAddMedicine.setOnClickListener(v -> showMedicineDialog());
@@ -100,13 +100,6 @@ public class TabPrescriptionFragment extends Fragment {
 
         if (btnApplyRecommendation != null) {
             btnApplyRecommendation.setOnClickListener(v -> applyRecommendationWithConfirmation());
-        }
-
-        if (btnRefreshRecommendation != null) {
-            btnRefreshRecommendation.setOnClickListener(v -> {
-                lastRecommendationSignature = "";
-                scheduleAutomaticRecommendation();
-            });
         }
 
         if (btnSavePrescription != null) {
@@ -324,14 +317,15 @@ public class TabPrescriptionFragment extends Fragment {
     }
 
     private void showRecommendationError(String message) {
+        Log.e(TAG, "Unable to load medicine recommendation: " + (message == null ? "" : message));
         pendingRecommendationItems = new ArrayList<>();
         if (cardMedicineRecommendation == null) {
             return;
         }
 
         cardMedicineRecommendation.setVisibility(View.VISIBLE);
-        tvRecommendationStatus.setText("Chưa thể tạo gợi ý thuốc.");
-        tvRecommendationContent.setText(message == null ? "Vui lòng thử lại sau." : message);
+        tvRecommendationStatus.setText("Không thể lấy gợi ý thuốc, hãy liên hệ quản trị viên");
+        tvRecommendationContent.setText("");
         tvRecommendationWarning.setVisibility(View.GONE);
         layoutRecommendationActions.setVisibility(View.GONE);
     }
