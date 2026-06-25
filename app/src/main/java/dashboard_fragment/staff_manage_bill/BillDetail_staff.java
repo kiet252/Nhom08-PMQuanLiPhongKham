@@ -167,7 +167,6 @@ public class BillDetail_staff extends BaseActivity {
             updateTransferContent();
         }
 
-        //Exit early if any required data is missing or doesn't match
         if (examFormData.getMedical_record() == null || examFormData.getMedical_record().getBill() == null) {
             updateEditableState();
             return;
@@ -179,11 +178,9 @@ public class BillDetail_staff extends BaseActivity {
             return;
         }
 
-        //Format Status & Method (Capitalize first letter cleanly)
         String status = capitalizeText(bill.getTrang_thai_thanh_toan());
         String method = capitalizeText(bill.getPhuong_thuc_thanh_toan());
 
-        //Update UI and State
         actvInvoiceStatus.setText(status, false);
         actvPaymentMethod.setText(method, false);
 
@@ -338,7 +335,6 @@ public class BillDetail_staff extends BaseActivity {
                 return;
             }
         } else {
-            // 2. If it IS a paid status, safely extract the text
             CharSequence text = actvPaymentMethod.getText();
             finalMethod = (text != null) ? text.toString().trim() : "";
         }
@@ -370,16 +366,20 @@ public class BillDetail_staff extends BaseActivity {
                 });
     }
 
+    private PdfDocument invoiceDocument;
+    private PdfDocument.Page invoicePage;
+    private Canvas invoiceCanvas;
+    private int invoicePageNumber = 1;
+
     private void exportInvoiceToPDF() {
         if (examFormData == null) {
             Toast.makeText(this, "Không có dữ liệu để xuất hóa đơn!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        PdfDocument document = new PdfDocument();
-        PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(595, 842, 1).create();
-        PdfDocument.Page page = document.startPage(pageInfo);
-        Canvas canvas = page.getCanvas();
+        invoiceDocument = new PdfDocument();
+        invoicePageNumber = 1;
+        createNewInvoicePage();
 
         Paint paint = new Paint();
         paint.setColor(android.graphics.Color.BLACK);
@@ -400,145 +400,149 @@ public class BillDetail_staff extends BaseActivity {
         try {
             Bitmap logo = BitmapFactory.decodeResource(getResources(), R.drawable.clinic_management_system);
             Bitmap scaledLogo = Bitmap.createScaledBitmap(logo, 60, 60, true);
-            canvas.drawBitmap(scaledLogo, 40, 25, null);
+            invoiceCanvas.drawBitmap(scaledLogo, 40, 25, null);
         } catch (Exception e) {
             Log.e("PDF_Export", "Không tìm thấy ảnh logo");
         }
 
-        canvas.drawText("HÓA ĐƠN THANH TOÁN", 140, 50, titlePaint);
+        String displayInvoiceDate = "--/--/----";
+        String rawInvoiceDate = null;
+
+        if (examFormData.getMedical_record() != null && examFormData.getMedical_record().getBill() != null) {
+            rawInvoiceDate = examFormData.getMedical_record().getBill().getCreated_at();
+        }
+
+        if (rawInvoiceDate == null || rawInvoiceDate.trim().isEmpty()) {
+            rawInvoiceDate = examFormData.getNgay_kham();
+        }
+
+        if (rawInvoiceDate != null && !rawInvoiceDate.trim().isEmpty()) {
+            try {
+                String rawDate = rawInvoiceDate.trim();
+                java.text.SimpleDateFormat inputFormat;
+
+                if (rawDate.contains("T")) {
+                    inputFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault());
+                } else if (rawDate.contains(" ")) {
+                    inputFormat = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault());
+                } else {
+                    inputFormat = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault());
+                }
+
+                java.util.Date parsedDate = inputFormat.parse(rawDate);
+                java.text.SimpleDateFormat outputFormat = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
+                displayInvoiceDate = outputFormat.format(parsedDate);
+
+            } catch (Exception e) {
+                displayInvoiceDate = rawInvoiceDate;
+                Log.e("PDF_INVOICE_DATE", "Lỗi định dạng ngày: " + e.getMessage());
+            }
+        }
+
+
+        invoiceCanvas.drawText("HÓA ĐƠN THANH TOÁN NGÀY " + displayInvoiceDate, 140, 55, titlePaint);
         paint.setTextSize(13f);
-        canvas.drawText("Phòng khám TMH", 140, 75, paint);
-        canvas.drawLine(40, 95, 555, 95, paint);
+        invoiceCanvas.drawText("Phòng khám TMH", 140, 80, paint);
+        invoiceCanvas.drawLine(40, 95, 555, 95, paint);
 
         int leftCol = 50;
         int rightCol = 320;
         int y = 130;
 
         paint.setTextSize(14f);
-        canvas.drawText("THÔNG TIN BỆNH NHÂN", leftCol, y, boldPaint);
-        canvas.drawLine(40, y + 8, 555, y + 8, paint);
+        invoiceCanvas.drawText("THÔNG TIN BỆNH NHÂN", leftCol, y, boldPaint);
+        invoiceCanvas.drawLine(40, y + 8, 555, y + 8, paint);
         y += 35;
         paint.setTextSize(13f);
 
         String patientName = (examFormData.getPatient() != null) ? examFormData.getPatient().getHo_ten() : "N/A";
-        canvas.drawText("Họ tên: " + patientName, leftCol, y, paint);
-        canvas.drawText("Mã BN: " + (examFormData.getPatient() != null ? examFormData.getPatient().getId() : "--"), rightCol, y, paint);
+        invoiceCanvas.drawText("Họ tên: " + patientName, leftCol, y, paint);
+        invoiceCanvas.drawText("Mã BN: " + (examFormData.getPatient() != null ? examFormData.getPatient().getId() : "--"), rightCol, y, paint);
         y += 25;
-        canvas.drawText("SĐT: " + (examFormData.getPatient() != null ? examFormData.getPatient().getSo_dien_thoai() : "--"), leftCol, y, paint);
-        canvas.drawText("Địa chỉ: " + (examFormData.getPatient() != null ? examFormData.getPatient().getDia_chi() : "--"), rightCol, y, paint);
+        invoiceCanvas.drawText("SĐT: " + (examFormData.getPatient() != null ? examFormData.getPatient().getSo_dien_thoai() : "--"), leftCol, y, paint);
+        invoiceCanvas.drawText("Địa chỉ: " + (examFormData.getPatient() != null ? examFormData.getPatient().getDia_chi() : "--"), rightCol, y, paint);
 
         if (examFormData.getMedical_record() != null) {
-            y += 40;
-            canvas.drawText("THÔNG TIN DỊCH VỤ", leftCol, y, boldPaint);
-            canvas.drawLine(40, y + 8, 555, y + 8, paint);
+            y = checkInvoicePageBoundary(y, 40, 0, boldPaint, paint);
+            invoiceCanvas.drawText("THÔNG TIN DỊCH VỤ", leftCol, y, boldPaint);
+            invoiceCanvas.drawLine(40, y + 8, 555, y + 8, paint);
 
-            y += 30;
-            canvas.drawText("Tên dịch vụ", leftCol, y, boldPaint);
-            canvas.drawText("SL", 340, y, boldPaint);
-            canvas.drawText("Đơn giá", 400, y, boldPaint);
-            canvas.drawText("Thành tiền", 490, y, boldPaint);
-
-            y += 10;
-            canvas.drawLine(40, y, 555, y, paint); // Đường gạch chân tiêu đề cột
+            y = checkInvoicePageBoundary(y, 30, 0, boldPaint, paint);
+            drawTableHeaderClinical(y, boldPaint, paint);
 
             if (examFormData.getMedical_record().getMedical_record_clinical() != null &&
                     !examFormData.getMedical_record().getMedical_record_clinical().isEmpty()) {
 
                 for (ExamFormWithBillDto.MedicalRecordClinicalDto service : examFormData.getMedical_record().getMedical_record_clinical()) {
                     if (service.getClinical() != null) {
-                        y += 25;
+                        y = checkInvoicePageBoundary(y, 25, 1, boldPaint, paint);
                         double price = service.getClinical().getDon_gia() != null ? service.getClinical().getDon_gia() : 0.0;
 
-                        canvas.drawText(service.getClinical().getTen_dich_vu(), leftCol, y, paint);
-                        canvas.drawText("1", 345, y, paint);
-                        canvas.drawText(String.format("%,.0f", price), 395, y, paint);
-                        canvas.drawText(String.format("%,.0fđ", price), 485, y, paint);
+                        invoiceCanvas.drawText(service.getClinical().getTen_dich_vu(), leftCol, y, paint);
+                        invoiceCanvas.drawText("1", 345, y, paint);
+                        invoiceCanvas.drawText(String.format("%,.0f", price), 395, y, paint);
+                        invoiceCanvas.drawText(String.format("%,.0fđ", price), 485, y, paint);
                     }
                 }
             } else {
-                y += 25;
-                canvas.drawText("Không sử dụng dịch vụ", leftCol, y, italicPaint);
+                y = checkInvoicePageBoundary(y, 25, 0, boldPaint, paint);
+                invoiceCanvas.drawText("Không sử dụng dịch vụ", leftCol, y, italicPaint);
             }
 
+            y = checkInvoicePageBoundary(y, 40, 0, boldPaint, paint);
+            invoiceCanvas.drawText("THÔNG TIN THUỐC ĐIỀU TRỊ", leftCol, y, boldPaint);
+            invoiceCanvas.drawLine(40, y + 8, 555, y + 8, paint);
 
-            y += 40;
-            canvas.drawText("THÔNG TIN THUỐC ĐIỀU TRỊ", leftCol, y, boldPaint);
-            canvas.drawLine(40, y + 8, 555, y + 8, paint);
-
-            y += 30;
-            canvas.drawText("Tên thuốc", leftCol, y, boldPaint);
-            canvas.drawText("SL", 340, y, boldPaint);
-            canvas.drawText("Đơn giá", 400, y, boldPaint);
-            canvas.drawText("Thành tiền", 490, y, boldPaint);
-
-            y += 10;
-            canvas.drawLine(40, y, 555, y, paint);
+            y = checkInvoicePageBoundary(y, 30, 0, boldPaint, paint);
+            drawTableHeaderMedicine(y, boldPaint, paint);
 
             if (examFormData.getMedical_record().getMedical_record_medicine() != null &&
                     !examFormData.getMedical_record().getMedical_record_medicine().isEmpty()) {
 
                 for (ExamFormWithBillDto.MedicalRecordMedicineDto med : examFormData.getMedical_record().getMedical_record_medicine()) {
                     if (med.getMedicine() != null) {
-                        y += 25;
+                        y = checkInvoicePageBoundary(y, 25, 2, boldPaint, paint);
                         long qty = med.getSo_luong() != null ? med.getSo_luong() : 0;
                         double price = med.getMedicine().getDon_gia() != null ? med.getMedicine().getDon_gia() : 0.0;
                         double total = price * qty;
 
-                        canvas.drawText(med.getMedicine().getTen_thuoc(), leftCol, y, paint);
-                        canvas.drawText(String.valueOf(qty), 345, y, paint);
-                        canvas.drawText(String.format("%,.0f", price), 395, y, paint);
-                        canvas.drawText(String.format("%,.0fđ", total), 485, y, paint);
+                        invoiceCanvas.drawText(med.getMedicine().getTen_thuoc(), leftCol, y, paint);
+                        invoiceCanvas.drawText(String.valueOf(qty), 345, y, paint);
+                        invoiceCanvas.drawText(String.format("%,.0f", price), 395, y, paint);
+                        invoiceCanvas.drawText(String.format("%,.0fđ", total), 485, y, paint);
                     }
                 }
             } else {
-                y += 25;
-                canvas.drawText("Không có thuốc điều trị", leftCol, y, italicPaint);
+                y = checkInvoicePageBoundary(y, 25, 0, boldPaint, paint);
+                invoiceCanvas.drawText("Không có thuốc điều trị", leftCol, y, italicPaint);
             }
         }
 
-        y += 40;
-        canvas.drawLine(40, y, 555, y, paint);
-        y += 30;
+        y = checkInvoicePageBoundary(y, 40, 0, boldPaint, paint);
+        invoiceCanvas.drawLine(40, y, 555, y, paint);
+
+        y = checkInvoicePageBoundary(y, 30, 0, boldPaint, paint);
         String statusStr = actvInvoiceStatus.getText().toString();
         String methodStr = actvPaymentMethod.getText().toString();
 
-        canvas.drawText("Trạng thái: " + statusStr, leftCol, y, paint);
-        canvas.drawText("TỔNG THANH TOÁN: ", 280, y, boldPaint);
+        invoiceCanvas.drawText("Trạng thái: " + statusStr, leftCol, y, paint);
+        invoiceCanvas.drawText("TỔNG THANH TOÁN: ", 280, y, boldPaint);
         Paint redPaint = new Paint(boldPaint);
         redPaint.setColor(android.graphics.Color.RED);
-        canvas.drawText(String.format("%,.0f VNĐ", computedGrandTotal), 435, y, redPaint);
+        invoiceCanvas.drawText(String.format("%,.0f VNĐ", computedGrandTotal), 435, y, redPaint);
 
-        y += 25;
+        y = checkInvoicePageBoundary(y, 25, 0, boldPaint, paint);
         paint.setTextSize(13f);
-        canvas.drawText("Phương thức: " + methodStr, leftCol, y, paint);
+        invoiceCanvas.drawText("Phương thức: " + methodStr, leftCol, y, paint);
 
-        y += 40;
-
-        italicPaint = new Paint(paint);
-        italicPaint.setTextSize(11f);
-        italicPaint.setLinearText(true);
-        italicPaint.setSubpixelText(true);
-        italicPaint.setTextSkewX(-0.25f);
-
+        y = checkInvoicePageBoundary(y, 50, 0, boldPaint, paint);
         int signatureX = 350;
+        invoiceCanvas.drawText("Chữ ký nhân viên", signatureX, y, boldPaint);
 
-        canvas.drawText(
-                "Chữ ký nhân viên",
-                signatureX,
-                y,
-                boldPaint
-        );
+        y = checkInvoicePageBoundary(y, 20, 0, boldPaint, paint);
+        invoiceCanvas.drawText("(Ký và ghi rõ họ tên)", signatureX, y, italicPaint);
 
-        y += 20;
-
-        canvas.drawText(
-                "(Ký và ghi rõ họ tên)",
-                signatureX,
-                y,
-                italicPaint
-        );
-
-        document.finishPage(page);
+        invoiceDocument.finishPage(invoicePage);
 
         String cleanPatientName = removeVietnameseTones(patientName).replaceAll("[^a-zA-Z0-9]", "_");
         String fileName = "HoaDon_" + selectedBillId + "_" + cleanPatientName + ".pdf";
@@ -547,61 +551,73 @@ public class BillDetail_staff extends BaseActivity {
             ContentValues values = new ContentValues();
             values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
             values.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
-
             Uri uri;
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                values.put(
-                        MediaStore.MediaColumns.RELATIVE_PATH,
-                        Environment.DIRECTORY_DOWNLOADS + "/HoaDon"
-                );
-
-                uri = getContentResolver().insert(
-                        MediaStore.Downloads.EXTERNAL_CONTENT_URI,
-                        values
-                );
+                values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/HoaDon");
+                uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
             } else {
                 File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                 File pdfDir = new File(downloadsDir, "HoaDon");
-
-                if (!pdfDir.exists()) {
-                    pdfDir.mkdirs();
-                }
-
+                if (!pdfDir.exists()) pdfDir.mkdirs();
                 File file = new File(pdfDir, fileName);
                 uri = Uri.fromFile(file);
             }
 
-            if (uri == null) {
-                throw new IOException("Không tạo được liên kết file PDF");
-            }
+            if (uri == null) throw new IOException("Không tạo được liên kết file PDF");
 
             OutputStream outputStream = getContentResolver().openOutputStream(uri);
+            if (outputStream == null) throw new IOException("Không mở được OutputStream");
 
-            if (outputStream == null) {
-                throw new IOException("Không mở được OutputStream");
-            }
-
-            document.writeTo(outputStream);
-
+            invoiceDocument.writeTo(outputStream);
             outputStream.flush();
             outputStream.close();
 
-            Toast.makeText(
-                    this,
-                    "Xuất hóa đơn thành công! Lưu tại Downloads/HoaDon",
-                    Toast.LENGTH_LONG
-            ).show();
-
+            Toast.makeText(this, "Xuất hóa đơn thành công! Lưu tại Downloads/HoaDon", Toast.LENGTH_LONG).show();
         } catch (Exception e) {
             Log.e("PDF_EXPORT", "Export PDF failed", e);
-            Toast.makeText(
-                    this,
-                    "Lỗi xuất file PDF: " + e.getMessage(),
-                    Toast.LENGTH_LONG
-            ).show();
+            Toast.makeText(this, "Lỗi xuất file PDF: " + e.getMessage(), Toast.LENGTH_LONG).show();
         } finally {
-            document.close();
+            invoiceDocument.close();
         }
+    }
+
+    private int checkInvoicePageBoundary(int currentY, int increment, int headerType, Paint boldPaint, Paint paint) {
+        if (currentY + increment > 780) {
+            invoiceDocument.finishPage(invoicePage);
+            invoicePageNumber++;
+            createNewInvoicePage();
+
+            int newY = 50;
+            if (headerType == 1) {
+                drawTableHeaderClinical(newY, boldPaint, paint);
+                newY += 35;
+            } else if (headerType == 2) {
+                drawTableHeaderMedicine(newY, boldPaint, paint);
+                newY += 35;
+            }
+            return newY;
+        }
+        return currentY + increment;
+    }
+
+    private void createNewInvoicePage() {
+        PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(595, 842, invoicePageNumber).create();
+        invoicePage = invoiceDocument.startPage(pageInfo);
+        invoiceCanvas = invoicePage.getCanvas();
+    }
+    private void drawTableHeaderMedicine(int targetY, Paint boldPaint, Paint paint) {
+        invoiceCanvas.drawText("Tên thuốc", 50, targetY, boldPaint);
+        invoiceCanvas.drawText("SL", 340, targetY, boldPaint);
+        invoiceCanvas.drawText("Đơn giá", 400, targetY, boldPaint);
+        invoiceCanvas.drawText("Thành tiền", 490, targetY, boldPaint);
+        invoiceCanvas.drawLine(40, targetY + 10, 555, targetY + 10, paint);
+    }
+    private void drawTableHeaderClinical(int targetY, Paint boldPaint, Paint paint) {
+        invoiceCanvas.drawText("Tên dịch vụ", 50, targetY, boldPaint);
+        invoiceCanvas.drawText("SL", 340, targetY, boldPaint);
+        invoiceCanvas.drawText("Đơn giá", 400, targetY, boldPaint);
+        invoiceCanvas.drawText("Thành tiền", 490, targetY, boldPaint);
+        invoiceCanvas.drawLine(40, targetY + 10, 555, targetY + 10, paint);
     }
 }

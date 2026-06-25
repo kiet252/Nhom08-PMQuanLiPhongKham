@@ -182,13 +182,37 @@
                     android:layout_marginBottom="12dp"
                     android:background="#E6EEF5" />
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <RelativeLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="TRIỆU CHỨNG"
-                    android:textColor="#94A3B8"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerInParent="true"
+                        android:text="TRIỆU CHỨNG"
+                        android:textColor="#94A3B8"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:id="@+id/btnExportMedicalRecord"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerInParent="true"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="Xuất bệnh án >"
+                        android:textColor="#0D3F6E"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:drawablePadding="4dp" />
+                </RelativeLayout>
 
                 <TextView
                     android:id="@+id/tvRecordSymptomDetail"

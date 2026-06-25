@@ -1,9 +1,19 @@
 package dashboard_fragment.doctor_view_medical_record;
 
+import android.content.ContentValues;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.pdf.PdfDocument;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -25,6 +35,9 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
+import java.io.File;
+import java.io.OutputStream;
+import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -132,7 +145,7 @@ public class ViewMedicalRecord_doctor extends BaseActivity {
                             List<ExaminationFormHistoryResponse> histories = response.body();
                             Log.d(TAG, "History loaded: " + histories.size() + " examination_form rows for patient " + patient.getId());
                             renderPatientInfo(patient, histories.size());
-                            renderHistoryItems(histories);
+                            renderHistoryItems(patient, histories);
                         } else {
                             logApiError("getExaminationFormHistoryByPatientId", response);
                             renderPatientInfo(patient, 0);
@@ -149,7 +162,7 @@ public class ViewMedicalRecord_doctor extends BaseActivity {
                 });
     }
 
-    private void renderHistoryItems(List<ExaminationFormHistoryResponse> histories) {
+    private void renderHistoryItems(PatientProfile patient, List<ExaminationFormHistoryResponse> histories) {
         for (int i = 0; i < histories.size(); i++) {
             ExaminationFormHistoryResponse history = histories.get(i);
             View historyView = getLayoutInflater().inflate(
@@ -166,6 +179,7 @@ public class ViewMedicalRecord_doctor extends BaseActivity {
             TextView tvMedicineCount = historyView.findViewById(R.id.tvMedicineCount);
             TextView tvClinicalCount = historyView.findViewById(R.id.tvClinicalCount);
             TextView tvRecordSymptomDetail = historyView.findViewById(R.id.tvRecordSymptomDetail);
+            TextView btnExportMedicalRecord = historyView.findViewById(R.id.btnExportMedicalRecord);
 
             LinearLayout containerClinicalItems = historyView.findViewById(R.id.containerClinicalItems);
             LinearLayout containerDiagnosisItems = historyView.findViewById(R.id.containerDiagnosisItems);
@@ -244,6 +258,9 @@ public class ViewMedicalRecord_doctor extends BaseActivity {
             tvMedicineCount.setText(medicineItems.size() + " thuốc");
             tvClinicalCount.setText(clinicalItems.size() + " CLS");
 
+            btnExportMedicalRecord.setOnClickListener(v -> {
+                exportMedicalRecordToPDF(patient, history, diagnosisItems, medicineItems, clinicalItems);
+            });
             LinearLayout layoutRecordHeader = historyView.findViewById(R.id.layoutRecordHeader);
             LinearLayout containerRecordDetail = historyView.findViewById(R.id.containerRecordDetail);
             android.widget.ImageView ivRecordArrow = historyView.findViewById(R.id.ivRecordArrow);
@@ -268,6 +285,235 @@ public class ViewMedicalRecord_doctor extends BaseActivity {
 
             containerMedicalRecordResult.addView(historyView);
         }
+    }
+
+    private PdfDocument document;
+    private PdfDocument.Page page;
+    private Canvas canvas;
+    private int pageNumber = 1;
+
+    private void exportMedicalRecordToPDF(PatientProfile patient, ExaminationFormHistoryResponse history, Set<String> diagnosisItems, List<String> medicineItems, List<String> clinicalItems) {
+        document = new PdfDocument();
+        pageNumber = 1;
+
+        createNewPage();
+
+        Paint paint = new Paint();
+        paint.setColor(Color.BLACK);
+        paint.setTextSize(12f);
+        paint.setAntiAlias(true);
+
+        Paint titlePaint = new Paint(paint);
+        titlePaint.setTextSize(22f);
+        titlePaint.setFakeBoldText(true);
+
+        Paint boldPaint = new Paint(paint);
+        boldPaint.setFakeBoldText(true);
+
+        Paint italicPaint = new Paint(paint);
+        italicPaint.setTextSize(11f);
+        italicPaint.setTextSkewX(-0.25f);
+
+        try {
+            Bitmap logo = BitmapFactory.decodeResource(getResources(), R.drawable.clinic_management_system);
+            Bitmap scaledLogo = Bitmap.createScaledBitmap(logo, 60, 60, true);
+            canvas.drawBitmap(scaledLogo, 40, 25, null);
+        } catch (Exception e) {
+            Log.e(TAG, "Không tìm thấy ảnh R.drawable.clinic_management_system");
+        }
+
+        String displayDate = "--/--/----";
+
+        if (history.getNgay_kham() != null && !history.getNgay_kham().trim().isEmpty()) {
+            try {
+                String rawDate = history.getNgay_kham().trim();
+                SimpleDateFormat inputFormat;
+                if (rawDate.contains("T")) {
+                    inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+                } else if (rawDate.contains(" ")) {
+                    inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                } else {
+                    inputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                }
+
+                java.util.Date date = inputFormat.parse(rawDate);
+
+                SimpleDateFormat outputFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                displayDate = outputFormat.format(date);
+
+            } catch (Exception e) {
+                displayDate = history.getNgay_kham();
+                Log.e("PDF_DATE_ERROR", "Lỗi định dạng ngày khám: " + e.getMessage());
+            }
+        }
+
+        canvas.drawText("BỆNH ÁN NGÀY " + displayDate , 140, 55, titlePaint);
+        paint.setTextSize(13f);
+        canvas.drawText("Phòng khám TMH", 140, 80, paint);
+        canvas.drawLine(40, 95, 555, 95, paint);
+
+        int leftCol = 50;
+        int rightCol = 320;
+        int y = 130;
+
+        paint.setTextSize(14f);
+        canvas.drawText("THÔNG TIN BỆNH NHÂN", leftCol, y, boldPaint);
+        canvas.drawLine(40, y + 8, 555, y + 8, paint);
+
+        y += 35;
+        paint.setTextSize(13f);
+
+        String patientName = patient != null ? safeText(patient.getHo_ten()) : "N/A";
+        String patientId = (patient != null && patient.getId() != null) ? safeText(patient.getId()) : "--";
+        String patientPhone = patient != null ? safeText(patient.getSo_dien_thoai()) : "--";
+        String patientAddress = patient != null ? safeText(patient.getDia_chi()) : "--";
+
+        String birthDateStr = "--";
+        if (patient != null && patient.getNgay_sinh() != null) {
+            birthDateStr = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(patient.getNgay_sinh());
+        }
+        String genderStr = patient != null ? safeText(patient.getGioi_tinh()) : "--";
+
+        canvas.drawText("Họ tên: " + patientName, leftCol, y, paint);
+        canvas.drawText("Mã bệnh nhân: " + patientId, rightCol, y, paint);
+        y += 25;
+        canvas.drawText("Ngày sinh: " + birthDateStr, leftCol, y, paint);
+        canvas.drawText("Giới tính: " + genderStr, rightCol, y, paint);
+        y += 25;
+        canvas.drawText("Số điện thoại: " + patientPhone, leftCol, y, paint);
+        canvas.drawText("Địa chỉ: " + patientAddress, rightCol, y, paint);
+
+        y = checkPageBoundary(y, 40);
+        canvas.drawText("TRIỆU CHỨNG", leftCol, y, boldPaint);
+        canvas.drawLine(40, y + 8, 555, y + 8, paint);
+
+        y = checkPageBoundary(y, 30);
+        String symptomStr = safeText(history.getTrieu_chung_ban_dau());
+        canvas.drawText(symptomStr.isEmpty() ? "Không ghi nhận" : symptomStr, leftCol, y, paint);
+
+        y = checkPageBoundary(y, 40);
+        canvas.drawText("CẬN LÂM SÀNG ĐÃ THỰC HIỆN", leftCol, y, boldPaint);
+        canvas.drawLine(40, y + 8, 555, y + 8, paint);
+
+        if (!clinicalItems.isEmpty()) {
+            for (String cls : clinicalItems) {
+                y = checkPageBoundary(y, 25);
+                canvas.drawText("• " + cls, leftCol + 10, y, paint);
+            }
+        } else {
+            y = checkPageBoundary(y, 25);
+            canvas.drawText("Không thực hiện cận lâm sàng", leftCol, y, italicPaint);
+        }
+
+        y = checkPageBoundary(y, 40);
+        canvas.drawText("CHẨN ĐOÁN CỦA BÁC SĨ", leftCol, y, boldPaint);
+        canvas.drawLine(40, y + 8, 555, y + 8, paint);
+
+        if (!diagnosisItems.isEmpty()) {
+            for (String diag : diagnosisItems) {
+                y = checkPageBoundary(y, 25);
+                canvas.drawText("• " + diag, leftCol + 10, y, paint);
+            }
+        } else {
+            y = checkPageBoundary(y, 25);
+            canvas.drawText("Chưa có chẩn đoán xác định", leftCol, y, italicPaint);
+        }
+
+        y = checkPageBoundary(y, 40);
+        canvas.drawText("ĐƠN THUỐC ĐÃ KÊ", leftCol, y, boldPaint);
+        canvas.drawLine(40, y + 8, 555, y + 8, paint);
+
+        if (!medicineItems.isEmpty()) {
+            int index = 1;
+            for (String med : medicineItems) {
+                y = checkPageBoundary(y, 25);
+                canvas.drawText(index + ". " + med, leftCol + 10, y, paint);
+                index++;
+            }
+        } else {
+            y = checkPageBoundary(y, 25);
+            canvas.drawText("Không kê đơn thuốc điều trị", leftCol, y, italicPaint);
+        }
+
+        y = checkPageBoundary(y, 60);
+        int signatureX = 370;
+        canvas.drawText("Bác sĩ khám bệnh", signatureX, y, boldPaint);
+
+
+        y = checkPageBoundary(y,100);
+
+        String doctorName = (history.getProfiles() != null && history.getProfiles().getHo_ten() != null)
+                ? history.getProfiles().getHo_ten().trim()
+                : "Bác sĩ điều trị";
+
+        canvas.drawText("BS. "+doctorName, signatureX + 20, y, boldPaint);
+
+        document.finishPage(page);
+
+        String cleanPatientName = removeTonesAndSpaces(patientName);
+        String examDateStr = safeText(history.getNgay_kham()).replaceAll("/", "");
+        String fileName = "BenhAn_" + cleanPatientName + "_" + examDateStr + ".pdf";
+
+        try {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
+
+            Uri uri;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/BenhAn");
+                uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+            } else {
+                File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                File pdfDir = new File(downloadsDir, "BenhAn");
+                if (!pdfDir.exists()) {
+                    pdfDir.mkdirs();
+                }
+                File file = new File(pdfDir, fileName);
+                uri = Uri.fromFile(file);
+            }
+
+            if (uri == null) throw new IOException("Không tạo được liên kết lưu file PDF");
+
+            OutputStream outputStream = getContentResolver().openOutputStream(uri);
+            if (outputStream == null) throw new IOException("Không mở được OutputStream");
+
+            document.writeTo(outputStream);
+            outputStream.flush();
+            outputStream.close();
+
+            Toast.makeText(this, "Đã xuất PDF vào Downloads/BenhAn thành công!", Toast.LENGTH_LONG).show();
+
+        } catch (Exception e) {
+            Log.e("PDF_EXPORT", "Lỗi trong quá trình xuất bệnh án PDF", e);
+            Toast.makeText(this, "Lỗi xuất PDF: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        } finally {
+            document.close();
+        }
+    }
+
+    private int checkPageBoundary(int currentY, int increment) {
+        if (currentY + increment > 780) {
+            document.finishPage(page);
+            pageNumber++;
+            createNewPage();
+            return 50;
+        }
+        return currentY + increment;
+    }
+
+    private void createNewPage() {
+        PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(595, 842, pageNumber).create();
+        page = document.startPage(pageInfo);
+        canvas = page.getCanvas();
+    }
+
+    private String removeTonesAndSpaces(String input) {
+        if (input == null) return "Unknown";
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
+        normalized = normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        normalized = normalized.replace('đ', 'd').replace('Đ', 'D');
+        return normalized.replaceAll("[^a-zA-Z0-9]", "_");
     }
 
     private void renderPatientInfo(PatientProfile patient, int recordCount) {
