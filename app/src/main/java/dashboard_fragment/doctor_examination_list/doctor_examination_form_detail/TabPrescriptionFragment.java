@@ -1,6 +1,8 @@
 package dashboard_fragment.doctor_examination_list.doctor_examination_form_detail;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -27,6 +29,7 @@ import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail
 import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.medical_join_diagnosis_join_prescription.MedicalRecordMedicineWrapper;
 import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.MedicineItem;
 import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionItem;
+import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.prescription_logic.PrescriptionRecommendationAssistant;
 import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.send_full_medical_record_db.SaveFullMedicalRecordMedicinePayload;
 import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail.send_full_medical_record_db.SaveFullMedicalRecordRequest;
 import retrofit2.Call;
@@ -35,13 +38,24 @@ public class TabPrescriptionFragment extends Fragment {
 
     private PrescriptionRepository prescriptionRepository;
     private MedicalRecordRepository medicalRecordRepository;
+    private PrescriptionRecommendationAssistant recommendationAssistant;
     private List<PrescriptionItem> selectedMedicines = new ArrayList<>();
+    private List<PrescriptionRecommendationAssistant.RecommendationItem> pendingRecommendationItems = new ArrayList<>();
 
     private android.widget.LinearLayout containerSelectedMedicines;
     private View layoutPrescriptionEmptyState;
     private View cardPrescriptionSummary;
+    private View cardMedicineRecommendation;
+    private View layoutRecommendationActions;
     private android.widget.TextView tvPrescriptionSummary;
+    private android.widget.TextView tvRecommendationStatus;
+    private android.widget.TextView tvRecommendationContent;
+    private android.widget.TextView tvRecommendationWarning;
     private DoctorExDetailViewModel doctorExDetailViewModel;
+    private final Handler recommendationHandler = new Handler(Looper.getMainLooper());
+    private String lastRecommendationSignature = "";
+
+    private final Runnable recommendationRunnable = this::loadAutomaticRecommendation;
 
     public TabPrescriptionFragment() {
     }
@@ -56,11 +70,17 @@ public class TabPrescriptionFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         prescriptionRepository = new PrescriptionRepository(requireContext());
         medicalRecordRepository = new MedicalRecordRepository(requireContext());
+        recommendationAssistant = new PrescriptionRecommendationAssistant();
 
         containerSelectedMedicines = view.findViewById(R.id.containerSelectedMedicines);
         layoutPrescriptionEmptyState = view.findViewById(R.id.layoutPrescriptionEmptyState);
         cardPrescriptionSummary = view.findViewById(R.id.cardPrescriptionSummary);
+        cardMedicineRecommendation = view.findViewById(R.id.cardMedicineRecommendation);
+        layoutRecommendationActions = view.findViewById(R.id.layoutRecommendationActions);
         tvPrescriptionSummary = view.findViewById(R.id.tvPrescriptionSummary);
+        tvRecommendationStatus = view.findViewById(R.id.tvRecommendationStatus);
+        tvRecommendationContent = view.findViewById(R.id.tvRecommendationContent);
+        tvRecommendationWarning = view.findViewById(R.id.tvRecommendationWarning);
         doctorExDetailViewModel =
                 new ViewModelProvider(requireActivity()).get(DoctorExDetailViewModel.class);
         selectedMedicines = doctorExDetailViewModel.getSelectedMedicines();
@@ -71,14 +91,35 @@ public class TabPrescriptionFragment extends Fragment {
 
         View btnAddMedicine = view.findViewById(R.id.btnAddMedicine);
         View btnSavePrescription = view.findViewById(R.id.btnSavePrescription);
+        View btnApplyRecommendation = view.findViewById(R.id.btnApplyRecommendation);
+        View btnRefreshRecommendation = view.findViewById(R.id.btnRefreshRecommendation);
 
         if (btnAddMedicine != null) {
             btnAddMedicine.setOnClickListener(v -> showMedicineDialog());
         }
 
+        if (btnApplyRecommendation != null) {
+            btnApplyRecommendation.setOnClickListener(v -> applyRecommendationWithConfirmation());
+        }
+
+        if (btnRefreshRecommendation != null) {
+            btnRefreshRecommendation.setOnClickListener(v -> {
+                lastRecommendationSignature = "";
+                scheduleAutomaticRecommendation();
+            });
+        }
+
         if (btnSavePrescription != null) {
             btnSavePrescription.setOnClickListener(v -> saveFullMedicalRecord());
         }
+
+        observeDiagnosisForRecommendation();
+    }
+
+    @Override
+    public void onDestroyView() {
+        recommendationHandler.removeCallbacks(recommendationRunnable);
+        super.onDestroyView();
     }
 
     private void observeMedicalRecord() {
@@ -151,6 +192,287 @@ public class TabPrescriptionFragment extends Fragment {
                 }
             });
         });
+    }
+
+    private void observeDiagnosisForRecommendation() {
+        doctorExDetailViewModel.getDiagnosisInputVersion().observe(getViewLifecycleOwner(), ignored ->
+                scheduleAutomaticRecommendation()
+        );
+        scheduleAutomaticRecommendation();
+    }
+
+    private void scheduleAutomaticRecommendation() {
+        recommendationHandler.removeCallbacks(recommendationRunnable);
+
+        if (TextUtils.isEmpty(buildDiagnosisText())) {
+            pendingRecommendationItems = new ArrayList<>();
+            lastRecommendationSignature = "";
+            if (cardMedicineRecommendation != null) {
+                cardMedicineRecommendation.setVisibility(View.GONE);
+            }
+            return;
+        }
+
+        recommendationHandler.postDelayed(recommendationRunnable, 3000);
+    }
+
+    private void loadAutomaticRecommendation() {
+        if (!isAdded()) {
+            return;
+        }
+
+        String primaryDiagnosis = buildDiagnosisText();
+        String additionalDiagnosis = doctorExDetailViewModel.getAdditionalDiagnosis();
+        String clinicalNote = doctorExDetailViewModel.getClinicalNote();
+        String signature = buildRecommendationSignature(primaryDiagnosis, additionalDiagnosis, clinicalNote);
+
+        if (TextUtils.isEmpty(primaryDiagnosis)) {
+            return;
+        }
+
+        if (signature.equals(lastRecommendationSignature) && !pendingRecommendationItems.isEmpty()) {
+            return;
+        }
+
+        lastRecommendationSignature = signature;
+        showRecommendationLoading();
+
+        prescriptionRepository.getAllMedicines().enqueue(new retrofit2.Callback<List<MedicineItem>>() {
+            @Override
+            public void onResponse(
+                    @NonNull Call<List<MedicineItem>> call,
+                    @NonNull retrofit2.Response<List<MedicineItem>> response
+            ) {
+                if (!isAdded()) {
+                    return;
+                }
+
+                if (!response.isSuccessful() || response.body() == null) {
+                    showRecommendationError("Không tải được danh mục thuốc để gợi ý.");
+                    return;
+                }
+
+                recommendationAssistant.recommend(
+                        primaryDiagnosis,
+                        additionalDiagnosis,
+                        clinicalNote,
+                        response.body(),
+                        new PrescriptionRecommendationAssistant.RecommendationCallback() {
+                            @Override
+                            public void onSuccess(PrescriptionRecommendationAssistant.RecommendationResult result) {
+                                if (!isAdded()) {
+                                    return;
+                                }
+                                requireActivity().runOnUiThread(() -> {
+                                    if (signature.equals(currentRecommendationSignature())) {
+                                        renderRecommendationResult(result);
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onError(String message) {
+                                if (!isAdded()) {
+                                    return;
+                                }
+                                requireActivity().runOnUiThread(() -> {
+                                    if (signature.equals(currentRecommendationSignature())) {
+                                        showRecommendationError(message);
+                                    }
+                                });
+                            }
+                        }
+                );
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<MedicineItem>> call, @NonNull Throwable t) {
+                if (!isAdded()) {
+                    return;
+                }
+                showRecommendationError("Lỗi kết nối khi tải danh mục thuốc.");
+            }
+        });
+    }
+
+    private String currentRecommendationSignature() {
+        return buildRecommendationSignature(
+                buildDiagnosisText(),
+                doctorExDetailViewModel.getAdditionalDiagnosis(),
+                doctorExDetailViewModel.getClinicalNote()
+        );
+    }
+
+    private String buildRecommendationSignature(
+            String primaryDiagnosis,
+            String additionalDiagnosis,
+            String clinicalNote
+    ) {
+        return safeTrim(primaryDiagnosis) + "\n" + safeTrim(additionalDiagnosis) + "\n" + safeTrim(clinicalNote);
+    }
+
+    private void showRecommendationLoading() {
+        if (cardMedicineRecommendation == null) {
+            return;
+        }
+
+        cardMedicineRecommendation.setVisibility(View.VISIBLE);
+        tvRecommendationStatus.setText("Đang phân tích chẩn đoán sau khi bác sĩ ngừng nhập...");
+        tvRecommendationContent.setText("");
+        tvRecommendationWarning.setVisibility(View.GONE);
+        layoutRecommendationActions.setVisibility(View.GONE);
+    }
+
+    private void showRecommendationError(String message) {
+        pendingRecommendationItems = new ArrayList<>();
+        if (cardMedicineRecommendation == null) {
+            return;
+        }
+
+        cardMedicineRecommendation.setVisibility(View.VISIBLE);
+        tvRecommendationStatus.setText("Chưa thể tạo gợi ý thuốc.");
+        tvRecommendationContent.setText(message == null ? "Vui lòng thử lại sau." : message);
+        tvRecommendationWarning.setVisibility(View.GONE);
+        layoutRecommendationActions.setVisibility(View.GONE);
+    }
+
+    private void renderRecommendationResult(PrescriptionRecommendationAssistant.RecommendationResult result) {
+        pendingRecommendationItems = result == null
+                ? new ArrayList<>()
+                : result.getMatchedItems();
+
+        if (cardMedicineRecommendation == null) {
+            return;
+        }
+
+        cardMedicineRecommendation.setVisibility(View.VISIBLE);
+
+        if (pendingRecommendationItems.isEmpty()) {
+            tvRecommendationStatus.setText("Không có thuốc phù hợp trong danh mục hiện tại.");
+            tvRecommendationContent.setText("Gemini có thể đã gợi ý thuốc ngoài danh mục thuốc của phòng khám.");
+            layoutRecommendationActions.setVisibility(View.GONE);
+        } else {
+            tvRecommendationStatus.setText("Gợi ý tham khảo từ Gemini, bác sĩ cần kiểm tra trước khi lưu.");
+            tvRecommendationContent.setText(buildRecommendationDisplayText(pendingRecommendationItems));
+            layoutRecommendationActions.setVisibility(View.VISIBLE);
+        }
+
+        if (result != null && !result.getUnmatchedNames().isEmpty()) {
+            tvRecommendationWarning.setVisibility(View.VISIBLE);
+            tvRecommendationWarning.setText(
+                    "Không áp dụng thuốc ngoài danh mục: "
+                            + TextUtils.join(", ", result.getUnmatchedNames())
+            );
+        } else {
+            tvRecommendationWarning.setVisibility(View.GONE);
+        }
+    }
+
+    private String buildRecommendationDisplayText(
+            List<PrescriptionRecommendationAssistant.RecommendationItem> items
+    ) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < items.size(); i++) {
+            PrescriptionRecommendationAssistant.RecommendationItem item = items.get(i);
+            MedicineItem medicine = item.getMedicine();
+            String donVi = medicine.getDon_vi() == null || medicine.getDon_vi().trim().isEmpty()
+                    ? "đơn vị"
+                    : medicine.getDon_vi().trim();
+
+            builder.append("• ")
+                    .append(medicine.getTen_thuoc())
+                    .append(" - ")
+                    .append(item.getDose())
+                    .append(" ")
+                    .append(donVi)
+                    .append(", ")
+                    .append(item.getFrequency())
+                    .append(", ")
+                    .append(item.getDuration());
+
+            if (!TextUtils.isEmpty(item.getNote())) {
+                builder.append(", ").append(item.getNote());
+            }
+
+            if (!TextUtils.isEmpty(item.getReason())) {
+                builder.append("\n  Lý do: ").append(item.getReason());
+            }
+
+            if (i < items.size() - 1) {
+                builder.append("\n");
+            }
+        }
+        return builder.toString();
+    }
+
+    private void applyRecommendationWithConfirmation() {
+        if (pendingRecommendationItems == null || pendingRecommendationItems.isEmpty()) {
+            Toast.makeText(requireContext(), "Chưa có gợi ý thuốc để áp dụng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (doctorExDetailViewModel.getSelectedMedicines().isEmpty()) {
+            replacePrescriptionWithRecommendation();
+            return;
+        }
+
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Áp dụng gợi ý thuốc")
+                .setMessage("Đơn thuốc hiện tại đã có thuốc. Bạn muốn thêm thuốc gợi ý hay thay thế toàn bộ đơn hiện tại?")
+                .setPositiveButton("Thêm vào đơn", (dialog, which) -> appendRecommendationToPrescription())
+                .setNegativeButton("Thay thế", (dialog, which) -> replacePrescriptionWithRecommendation())
+                .setNeutralButton("Hủy", null)
+                .show();
+    }
+
+    private void appendRecommendationToPrescription() {
+        List<PrescriptionItem> merged = new ArrayList<>(doctorExDetailViewModel.getSelectedMedicines());
+        Set<Integer> existingIds = new LinkedHashSet<>();
+
+        for (PrescriptionItem item : merged) {
+            if (item != null && item.getMedicine() != null) {
+                existingIds.add(item.getMedicine().getId());
+            }
+        }
+
+        for (PrescriptionRecommendationAssistant.RecommendationItem item : pendingRecommendationItems) {
+            if (item == null || item.getMedicine() == null || existingIds.contains(item.getMedicine().getId())) {
+                continue;
+            }
+            merged.add(toPrescriptionItem(item));
+            existingIds.add(item.getMedicine().getId());
+        }
+
+        doctorExDetailViewModel.replaceSelectedMedicines(merged);
+        selectedMedicines = doctorExDetailViewModel.getSelectedMedicines();
+        renderSelectedMedicines();
+        Toast.makeText(requireContext(), "Đã thêm thuốc gợi ý vào đơn", Toast.LENGTH_SHORT).show();
+    }
+
+    private void replacePrescriptionWithRecommendation() {
+        List<PrescriptionItem> medicines = new ArrayList<>();
+        for (PrescriptionRecommendationAssistant.RecommendationItem item : pendingRecommendationItems) {
+            if (item != null && item.getMedicine() != null) {
+                medicines.add(toPrescriptionItem(item));
+            }
+        }
+
+        doctorExDetailViewModel.replaceSelectedMedicines(medicines);
+        selectedMedicines = doctorExDetailViewModel.getSelectedMedicines();
+        renderSelectedMedicines();
+        Toast.makeText(requireContext(), "Đã áp dụng gợi ý thuốc", Toast.LENGTH_SHORT).show();
+    }
+
+    private PrescriptionItem toPrescriptionItem(
+            PrescriptionRecommendationAssistant.RecommendationItem recommendation
+    ) {
+        PrescriptionItem item = new PrescriptionItem(recommendation.getMedicine());
+        item.setLieuDung(Math.max(1, recommendation.getDose()));
+        item.setTanSuat(safeTrim(recommendation.getFrequency()));
+        item.setThoiGian(safeTrim(recommendation.getDuration()));
+        item.setGhiChu(safeTrim(recommendation.getNote()));
+        item.setSoLuong(calculateQuantity(item));
+        return item;
     }
 
     private void showMedicineDialog() {

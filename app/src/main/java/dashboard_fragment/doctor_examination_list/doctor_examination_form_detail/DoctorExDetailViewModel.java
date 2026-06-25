@@ -15,6 +15,7 @@ import dashboard_fragment.doctor_examination_list.doctor_examination_form_detail
 
 public class DoctorExDetailViewModel extends ViewModel {
     private final MutableLiveData<FullMedicalRecordResponse> medicalRecord = new MutableLiveData<>();
+    private final MutableLiveData<Integer> diagnosisInputVersion = new MutableLiveData<>(0);
     private final LinkedHashSet<Integer> selectedClinicalIds = new LinkedHashSet<>();
     private final LinkedHashSet<String> selectedDiagnoses = new LinkedHashSet<>();
     private final ArrayList<PrescriptionItem> selectedMedicines = new ArrayList<>();
@@ -34,6 +35,15 @@ public class DoctorExDetailViewModel extends ViewModel {
 
     public FullMedicalRecordResponse getMedicalRecordValue() {
         return medicalRecord.getValue();
+    }
+
+    public LiveData<Integer> getDiagnosisInputVersion() {
+        return diagnosisInputVersion;
+    }
+
+    private void notifyDiagnosisInputChanged() {
+        Integer current = diagnosisInputVersion.getValue();
+        diagnosisInputVersion.setValue(current == null ? 1 : current + 1);
     }
 
     public boolean hasClinicalSelectionInitialized() {
@@ -87,6 +97,7 @@ public class DoctorExDetailViewModel extends ViewModel {
             }
         }
         diagnosisSelectionInitialized = true;
+        notifyDiagnosisInputChanged();
     }
 
     public void setSelectedDiagnoses(Collection<String> diagnoses) {
@@ -99,6 +110,7 @@ public class DoctorExDetailViewModel extends ViewModel {
             }
         }
         diagnosisSelectionInitialized = true;
+        notifyDiagnosisInputChanged();
     }
 
     public Set<String> getSelectedDiagnoses() {
@@ -111,6 +123,7 @@ public class DoctorExDetailViewModel extends ViewModel {
 
     public void setAdditionalDiagnosis(String additionalDiagnosis) {
         this.additionalDiagnosis = additionalDiagnosis;
+        notifyDiagnosisInputChanged();
     }
 
     public String getClinicalNote() {
@@ -119,6 +132,7 @@ public class DoctorExDetailViewModel extends ViewModel {
 
     public void setClinicalNote(String clinicalNote) {
         this.clinicalNote = clinicalNote;
+        notifyDiagnosisInputChanged();
     }
 
     public boolean hasPrescriptionSelectionInitialized() {
