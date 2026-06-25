@@ -664,6 +664,35 @@ public class ManageExaminationForm_staff extends BaseActivity {
                 y,
                 paint
         );
+
+        y += 40;
+
+        Paint italicPaint = new Paint(paint);
+        italicPaint.setTextSize(11f);
+        italicPaint.setLinearText(true);
+        italicPaint.setSubpixelText(true);
+        italicPaint.setTextSkewX(-0.25f);
+
+        int signatureX = 350;
+
+        canvas.drawText(
+                "Chữ ký nhân viên",
+                signatureX,
+                y,
+                boldPaint
+        );
+
+        y += 20;
+
+        canvas.drawText(
+                "(Ký và ghi rõ họ tên)",
+                signatureX,
+                y,
+                italicPaint
+        );
+
+        y += 80;
+
         document.finishPage(page);
 
         String patientName =

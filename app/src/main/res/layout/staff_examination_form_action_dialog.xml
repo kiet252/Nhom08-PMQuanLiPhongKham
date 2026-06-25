@@ -61,7 +61,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
-            android:text="Xuất file PDF"
+            android:text="Xuất phiếu khám (*.pdf)"
             android:textColor="@color/app_primary_text_color"
             android:textSize="15sp"
             android:textStyle="bold" />
