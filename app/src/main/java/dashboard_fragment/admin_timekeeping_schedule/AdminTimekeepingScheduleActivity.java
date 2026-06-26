@@ -265,6 +265,20 @@ public class AdminTimekeepingScheduleActivity extends BaseActivity {
             list.setVisibility(View.VISIBLE);
             ShiftStaffAdapter adapter = new ShiftStaffAdapter();
             adapter.setMode(ShiftStaffAdapter.Mode.ASSIGNED);
+            adapter.setOnStaffActionListener(new ShiftStaffAdapter.OnStaffActionListener() {
+                @Override
+                public void onRemove(TimekeepingItem item) {
+                    if (!"Chưa checkin".equals(item.getStatus())) {
+                        Toast.makeText(AdminTimekeepingScheduleActivity.this,
+                                "Chỉ xóa được ca chưa checkin", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    removeShift(item, null, slot, null, null, null, null, null);
+                }
+                @Override
+                public void onAdd(ShiftStaffAdapter.StaffOption staff) {}
+            });
+            // HẾT
             adapter.setAssignedItems(items);
             list.setAdapter(adapter);
         }
@@ -422,8 +436,15 @@ public class AdminTimekeepingScheduleActivity extends BaseActivity {
                 if (response.isSuccessful()) {
                     Toast.makeText(AdminTimekeepingScheduleActivity.this,
                             "Đã xóa ca làm việc", Toast.LENGTH_SHORT).show();
-                    loadWeekShiftsAndRefreshSheet(dialog, slot, assignedAdapter, availableAdapter,
-                            tvAssignedHeader, tvAvailableHeader, layoutAssignedEmpty);
+                    if (dialog != null && dialog.isShowing()) {
+                        loadWeekShiftsAndRefreshSheet(dialog, slot, assignedAdapter, availableAdapter,
+                                tvAssignedHeader, tvAvailableHeader, layoutAssignedEmpty);
+                    }
+                    else
+                    {
+                        weekShifts.remove(item);
+                        refreshDayView();
+                    }
                 } else {
                     Toast.makeText(AdminTimekeepingScheduleActivity.this,
                             "Không thể xóa ca (" + response.code() + ")", Toast.LENGTH_SHORT).show();
@@ -460,6 +481,7 @@ public class AdminTimekeepingScheduleActivity extends BaseActivity {
                     refreshBottomSheetLists(assigned, assignedAdapter, availableAdapter,
                             tvAssignedHeader, tvAvailableHeader, layoutAssignedEmpty);
                 }
+
             }
 
             @Override
