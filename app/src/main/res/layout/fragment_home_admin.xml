@@ -204,7 +204,7 @@
                                         android:layout_width="28dp"
                                         android:layout_height="28dp"
                                         android:layout_gravity="center"
-                                        android:src="@drawable/dashboard_icon_manage"
+                                        android:src="@drawable/dashboard_icon_clinical_medicine"
                                         android:scaleType="fitCenter" />
                                 </FrameLayout>
 
@@ -248,9 +248,8 @@
                                         android:layout_width="28dp"
                                         android:layout_height="28dp"
                                         android:layout_gravity="center"
-                                        android:src="@drawable/ic_clock"
-                                        android:scaleType="fitCenter"
-                                        app:tint="#0D3F6E" />
+                                        android:src="@drawable/dashboard_icon_assignment"
+                                        android:scaleType="fitCenter" />
                                 </FrameLayout>
 
                                 <TextView
@@ -303,9 +302,8 @@
                                         android:layout_width="28dp"
                                         android:layout_height="28dp"
                                         android:layout_gravity="center"
-                                        android:src="@drawable/ic_save"
-                                        android:scaleType="fitCenter"
-                                        app:tint="#4569E8" />
+                                        android:src="@drawable/dashboard_icon_request"
+                                        android:scaleType="fitCenter" />
                                 </FrameLayout>
 
                                 <TextView
@@ -349,9 +347,8 @@
                                         android:layout_width="28dp"
                                         android:layout_height="28dp"
                                         android:layout_gravity="center"
-                                        android:src="@drawable/ic_device_phone"
-                                        android:scaleType="fitCenter"
-                                        app:tint="#0D3F6E" />
+                                        android:src="@drawable/dashboard_icon_smartphone"
+                                        android:scaleType="fitCenter" />
                                 </FrameLayout>
 
                                 <TextView
