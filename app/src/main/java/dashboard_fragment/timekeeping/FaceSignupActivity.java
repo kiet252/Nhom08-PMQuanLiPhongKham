@@ -378,12 +378,19 @@ public class FaceSignupActivity extends BaseActivity {
                 .build();
         detector = FaceDetection.getClient(options);
 
-        try {
-            tflite = new Interpreter(FaceEmbeddingUtil.loadModelFile(this, "facenet.tflite"));
-        } catch (Exception ex) {
-            Log.w("FaceSignup", "TFLite not loaded: " + ex.getMessage());
-            tflite = null;
-        }
+        btnConfirm.setEnabled(false);
+        new Thread(() -> {
+            try {
+                Interpreter loaded = new Interpreter(FaceEmbeddingUtil.loadModelFile(this, "facenet.tflite"));
+                runOnUiThread(() -> {
+                    tflite = loaded;
+                    btnConfirm.setEnabled(true);
+                });
+            } catch (Exception ex) {
+                Log.w("FaceSignup", "TFLite not loaded: " + ex.getMessage());
+                runOnUiThread(() -> btnConfirm.setEnabled(true));
+            }
+        }).start();
     }
     private void startCamera() {
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);

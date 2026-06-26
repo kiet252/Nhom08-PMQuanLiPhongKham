@@ -24,6 +24,7 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import com.bumptech.glide.Glide;
 
 public class AdminManageDeviceActivity extends BaseActivity {
     private DeviceApprovalRepository repository;
@@ -143,18 +144,11 @@ public class AdminManageDeviceActivity extends BaseActivity {
 
             String base64Image = request.getFaceImage();
             if (base64Image != null && !base64Image.trim().isEmpty()) {
-                try {
-                    byte[] decodedString = android.util.Base64.decode(base64Image, android.util.Base64.DEFAULT);
-                    android.graphics.Bitmap decodedByte = android.graphics.BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                    if (imgFace != null && decodedByte != null) {
-                        imgFace.setImageBitmap(decodedByte);
-                    }
-                } catch (Exception e) {
-                    android.util.Log.e("DeviceApproval", "Lỗi hiển thị ảnh khuôn mặt", e);
-                    if (imgFace != null) {
-                        imgFace.setImageResource(R.drawable.userprofile_ic_name);
-                    }
-                }
+                Glide.with(dialog.getContext())
+                        .load(base64Image)
+                        .placeholder(R.drawable.userprofile_ic_name)
+                        .error(R.drawable.userprofile_ic_name)
+                        .into(imgFace);
             } else {
                 if (imgFace != null) {
                     imgFace.setImageResource(R.drawable.userprofile_ic_name);

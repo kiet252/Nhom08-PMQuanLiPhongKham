@@ -479,6 +479,7 @@
 
                             // Pipeline: crop margin -> resize -> embedding -> L2 normalize (dùng chung)
                             float[] emb = FaceEmbeddingUtil.getEmbedding(tflite, bmp, face.getBoundingBox());
+                            Log.d("FACE_DEBUG", "live emb[0..2]: " + emb[0] + ", " + emb[1] + ", " + emb[2]);
                             if (emb == null) {
                                 Toast.makeText(Timekeeping.this, "Không thể xử lý khuôn mặt. Hãy thử lại.", Toast.LENGTH_SHORT).show();
                                 return;
@@ -486,7 +487,8 @@
 
                             // Parse embedding đã lưu trong DB
                             java.util.List<Double> expectedVec = FaceEmbeddingUtil.parseVector(fetchedFaceId);
-
+                            Log.d("FACE_DEBUG", "stored size: " + (expectedVec == null ? "null" : expectedVec.size()));
+                            Log.d("FACE_DEBUG", "stored[0..2]: " + expectedVec.get(0) + ", " + expectedVec.get(1) + ", " + expectedVec.get(2));
                             double distance = -1.0;
                             boolean match = false;
 
@@ -505,7 +507,7 @@
                             Log.d("FaceVerify", "match=" + match + " distance=" + distance);
 
                             if (match) chamCong(distance);
-                            else Toast.makeText(Timekeeping.this, "Xác thực khuôn mặt: thất bại (dist=" + String.format(Locale.US, "%.4f", distance) + ")", Toast.LENGTH_SHORT).show();
+                            else Toast.makeText(Timekeeping.this, "Khuôn mặt không trùng khớp", Toast.LENGTH_SHORT).show();
                         })
                         .addOnFailureListener(e -> {
                             Toast.makeText(Timekeeping.this, "Lỗi khi phát hiện khuôn mặt: " + e.getMessage(), Toast.LENGTH_SHORT).show();
