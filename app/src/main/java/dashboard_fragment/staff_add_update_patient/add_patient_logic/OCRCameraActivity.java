@@ -347,7 +347,7 @@ public class OCRCameraActivity extends BaseActivity {
 
             String normalized = normalizeText(lines[i]);
 
-            if (normalized.contains("que quan")) {
+            if (normalized.contains("noi thuong tru")) {
 
                 StringBuilder address = new StringBuilder();
 
@@ -370,7 +370,7 @@ public class OCRCameraActivity extends BaseActivity {
                         continue;
                     }
 
-                    if (nextNormalized.contains("noi thuong tru")
+                    if (nextNormalized.contains("que quan")
                             || nextNormalized.contains("ho va ten")
                             || nextNormalized.contains("ngay sinh")
                             || nextNormalized.contains("gioi tinh")
