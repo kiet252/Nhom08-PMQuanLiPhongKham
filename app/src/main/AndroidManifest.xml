@@ -139,6 +139,11 @@
             android:name="dashboard_fragment.admin_timekeeping_fix_request.AdminTimekeepingFixRequestActivity"
             android:exported="false"
             android:screenOrientation="portrait"/>
+        <activity
+            android:name="dashboard_fragment.NotificationSettingsActivity_Admin"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            />
     </application>
 
 </manifest>

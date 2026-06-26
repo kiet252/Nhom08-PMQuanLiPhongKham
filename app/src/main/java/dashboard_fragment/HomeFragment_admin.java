@@ -49,7 +49,7 @@ import retrofit2.Response;
 
 public class HomeFragment_admin extends Fragment {
 
-    private Button mngStaff;
+    private LinearLayout mngStaff;
     private TextView txtName;
     private ViewPager2 viewPagerCharts;
     private LinearLayout layoutIndicators;
@@ -88,12 +88,8 @@ public class HomeFragment_admin extends Fragment {
         btnCaiDatThongBao.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                NotificationSettingsFragment_Admin notificationsettingsFragment = new NotificationSettingsFragment_Admin();
-
-                getActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, notificationsettingsFragment)
-                        .addToBackStack(null)
-                        .commit();
+                Intent intent = new Intent(getActivity(), NotificationSettingsActivity_Admin.class);
+                startActivity(intent);
             }
         });
         return view;
@@ -123,7 +119,7 @@ public class HomeFragment_admin extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
+
         txtName = view.findViewById(R.id.admin_home_name);
         mngStaff = view.findViewById(R.id.btn_mngStaff);
         viewPagerCharts = view.findViewById(R.id.view_pager_admin_charts);

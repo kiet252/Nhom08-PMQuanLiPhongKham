@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F0F7FF"
-    tools:context="dashboard_fragment.NotificationSettingsFragment_Admin">
+    tools:context="dashboard_fragment.NotificationSettingsActivity_Admin">
 
     <LinearLayout
         android:id="@+id/layout_admin_notification_list_screen"
