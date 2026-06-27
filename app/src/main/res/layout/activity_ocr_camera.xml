@@ -12,6 +12,29 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="28dp"
+        android:text="Quét CCCD"
+        android:textColor="@android:color/white"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvInstruction"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="68dp"
+        android:gravity="center"
+        android:text="Đặt mặt trước CCCD vào trong khung.\nGiữ điện thoại ổn định để nhận diện."
+        android:textColor="@android:color/white"
+        android:textSize="15sp" />
+
     <View
         android:layout_width="340dp"
         android:layout_height="220dp"

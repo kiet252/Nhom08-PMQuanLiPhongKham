@@ -44,9 +44,10 @@ public class CreatePatientFragment extends Fragment {
     private RadioGroup RgGender;
     private RadioButton selectedRadioButton;
     private Spinner SpnBirthDay, SpnBirthMonth, SpnBirthYear;
-    private CardView btnOCR;
+    private CardView btnOCR, btnQR;
     private PatientRepository repository;
     private ActivityResultLauncher<Intent> ocrLauncher;
+    private ActivityResultLauncher<Intent> qrLauncher;
 
     public CreatePatientFragment() {
     }
@@ -60,6 +61,16 @@ public class CreatePatientFragment extends Fragment {
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                         updateUIWithOCR(result.getData());
+                    }
+                }
+        );
+
+        qrLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK
+                            && result.getData() != null) {
+                        updateUIWithQR(result.getData());
                     }
                 }
         );
@@ -91,6 +102,7 @@ public class CreatePatientFragment extends Fragment {
         SpnBirthYear = view.findViewById(R.id.spnCreatePatientYear);
 
         btnOCR = view.findViewById(R.id.btnOCR);
+        btnQR = view.findViewById(R.id.btnQRCCCD);
     }
 
     private void initializeValuesForMonthAndYearSpinners() {
@@ -135,6 +147,10 @@ public class CreatePatientFragment extends Fragment {
         btnOCR.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), OCRCameraActivity.class);
             ocrLauncher.launch(intent);
+        });
+        btnQR.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), QRCCCDCameraActivity.class);
+            qrLauncher.launch(intent);
         });
     }
 
@@ -396,6 +412,30 @@ public class CreatePatientFragment extends Fragment {
                 updateDaySpinner();
 
                 setSpinnerValue(SpnBirthDay, parts[0]);
+            }
+        }
+    }
+
+    private void updateUIWithQR(Intent data) {
+        String fullName = trimToNull(data.getStringExtra("full_name"));
+        String idNumber = trimToNull(data.getStringExtra("id_number"));
+        String dob = trimToNull(data.getStringExtra("dob"));
+        String gender = trimToNull(data.getStringExtra("gender"));
+        String address = trimToNull(data.getStringExtra("address"));
+
+        if (fullName != null) EdtFullName.setText(fullName);
+        if (idNumber != null) EdtCCCD.setText(idNumber);
+        if (address != null) EdtAddress.setText(address);
+        if (gender != null) selectGender(gender);
+        if (dob != null && dob.contains("/")) {
+
+            String[] parts = dob.split("/");
+            if (parts.length == 3) {
+                setSpinnerValue(SpnBirthYear, parts[2]);
+                setSpinnerValue(SpnBirthMonth, parts[1]);
+                updateDaySpinner();
+                setSpinnerValue(SpnBirthDay, parts[0]);
+
             }
         }
     }
