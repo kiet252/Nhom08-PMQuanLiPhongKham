@@ -37,7 +37,7 @@ import com.google.mlkit.vision.common.InputImage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@ExperimentalGetImage
+
 public class QRCCCDCameraActivity extends BaseActivity {
     private ImageButton btnBack;
     private PreviewView previewView;
@@ -86,6 +86,9 @@ public class QRCCCDCameraActivity extends BaseActivity {
                             finish();
                         }
                     });
+    @androidx.annotation.OptIn(
+            markerClass = androidx.camera.core.ExperimentalGetImage.class
+    )
     private void startCamera() {
 
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture =
@@ -143,7 +146,9 @@ public class QRCCCDCameraActivity extends BaseActivity {
         }, ContextCompat.getMainExecutor(this));
     }
 
-
+    @androidx.annotation.OptIn(
+            markerClass = androidx.camera.core.ExperimentalGetImage.class
+    )
     private void analyzeImage(ImageProxy imageProxy, BarcodeScanner scanner) {
         if (scanned) {
             imageProxy.close();
