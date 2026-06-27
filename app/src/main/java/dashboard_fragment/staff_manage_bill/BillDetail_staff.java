@@ -341,7 +341,7 @@ public class BillDetail_staff extends BaseActivity {
 
         Toast.makeText(this, "Đang xử lý cập nhật...", Toast.LENGTH_SHORT).show();
 
-        billRepository.updateBill(selectedBillId, finalMethod, finalStatus, computedGrandTotal).enqueue(new retrofit2.Callback<Void>() {
+        billRepository.updateBill(selectedBillId, finalMethod, finalStatus).enqueue(new retrofit2.Callback<Void>() {
                     @Override
                     public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
                         if (response.isSuccessful()) {
@@ -476,7 +476,7 @@ public class BillDetail_staff extends BaseActivity {
                 for (ExamFormWithBillDto.MedicalRecordClinicalDto service : examFormData.getMedical_record().getMedical_record_clinical()) {
                     if (service.getClinical() != null) {
                         y = checkInvoicePageBoundary(y, 25, 1, boldPaint, paint);
-                        double price = service.getClinical().getDon_gia() != null ? service.getClinical().getDon_gia() : 0.0;
+                        double price = service.getDon_gia_luc_chi_dinh() != null ? service.getDon_gia_luc_chi_dinh() : 0.0;
 
                         invoiceCanvas.drawText(service.getClinical().getTen_dich_vu(), leftCol, y, paint);
                         invoiceCanvas.drawText("1", 345, y, paint);
@@ -503,7 +503,7 @@ public class BillDetail_staff extends BaseActivity {
                     if (med.getMedicine() != null) {
                         y = checkInvoicePageBoundary(y, 25, 2, boldPaint, paint);
                         long qty = med.getSo_luong() != null ? med.getSo_luong() : 0;
-                        double price = med.getMedicine().getDon_gia() != null ? med.getMedicine().getDon_gia() : 0.0;
+                        double price = med.getDon_gia_luc_ke_don() != null ? med.getDon_gia_luc_ke_don() : 0.0;
                         double total = price * qty;
 
                         invoiceCanvas.drawText(med.getMedicine().getTen_thuoc(), leftCol, y, paint);

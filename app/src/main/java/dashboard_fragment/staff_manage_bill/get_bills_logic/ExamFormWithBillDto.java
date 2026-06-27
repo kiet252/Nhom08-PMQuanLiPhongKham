@@ -56,41 +56,41 @@ public class ExamFormWithBillDto implements Serializable {
     }
     public static class MedicalRecordClinicalDto implements Serializable {
         private Long id;
+        private Double don_gia_luc_chi_dinh;
         private ClinicalDetails clinical;
 
         public Long getId() { return id; }
+        public Double getDon_gia_luc_chi_dinh() { return don_gia_luc_chi_dinh; }
         public ClinicalDetails getClinical() { return clinical; }
 
         public static class ClinicalDetails implements Serializable {
             private Long id;
             private String ten_dich_vu;
-            private Double don_gia; // Fixed to match your 'don_gia' numeric column
 
             public Long getId() { return id; }
             public String getTen_dich_vu() { return ten_dich_vu; }
-            public Double getDon_gia() { return don_gia; }
         }
     }
 
     public static class MedicalRecordMedicineDto implements Serializable {
         private Long id;
         private Long so_luong;
+        private Double don_gia_luc_ke_don;
         private MedicineDetails medicine;
 
         public Long getId() { return id; }
         public Long getSo_luong() { return so_luong; }
+        public Double getDon_gia_luc_ke_don() { return don_gia_luc_ke_don; }
         public MedicineDetails getMedicine() { return medicine; }
 
         public static class MedicineDetails implements Serializable {
             private Long id;
             private String ten_thuoc;
             private String don_vi;
-            private Double don_gia; // Fixed to match your 'don_gia' numeric column
 
             public Long getId() { return id; }
             public String getTen_thuoc() { return ten_thuoc; }
             public String getDon_vi() { return don_vi; }
-            public Double getDon_gia() { return don_gia; }
         }
     }
 }

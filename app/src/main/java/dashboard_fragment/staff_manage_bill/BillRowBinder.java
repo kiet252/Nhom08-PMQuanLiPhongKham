@@ -29,7 +29,7 @@ public class BillRowBinder {
             TextView tvItemPrice = row.findViewById(R.id.tvItemPrice);
             TextView tvItemTotal = row.findViewById(R.id.tvItemTotal);
 
-            double price = details.getDon_gia() != null ? details.getDon_gia() : 0.0;
+            double price = dto.getDon_gia_luc_chi_dinh() != null ? dto.getDon_gia_luc_chi_dinh() : 0.0;
 
             tvItemName.setText(details.getTen_dich_vu() != null ? details.getTen_dich_vu() : "--");
             tvItemQuantity.setText("1"); // Services default to 1
@@ -58,7 +58,7 @@ public class BillRowBinder {
             TextView tvItemTotal = row.findViewById(R.id.tvItemTotal);
 
             long qty = dto.getSo_luong() != null ? dto.getSo_luong() : 0L;
-            double price = details.getDon_gia() != null ? details.getDon_gia() : 0.0;
+            double price = dto.getDon_gia_luc_ke_don() != null ? dto.getDon_gia_luc_ke_don() : 0.0;
             double total = qty * price;
 
             String label = details.getTen_thuoc() != null ? details.getTen_thuoc() : "--";
@@ -85,17 +85,17 @@ public class BillRowBinder {
 
         if (record.getMedical_record_clinical() != null) {
             for (ExamFormWithBillDto.MedicalRecordClinicalDto dto : record.getMedical_record_clinical()) {
-                if (dto != null && dto.getClinical() != null && dto.getClinical().getDon_gia() != null) {
-                    total += dto.getClinical().getDon_gia();
+                if (dto != null && dto.getDon_gia_luc_chi_dinh() != null) {
+                    total += dto.getDon_gia_luc_chi_dinh();
                 }
             }
         }
 
         if (record.getMedical_record_medicine() != null) {
             for (ExamFormWithBillDto.MedicalRecordMedicineDto dto : record.getMedical_record_medicine()) {
-                if (dto != null && dto.getMedicine() != null && dto.getMedicine().getDon_gia() != null) {
+                if (dto != null && dto.getDon_gia_luc_ke_don() != null) {
                     long qty = dto.getSo_luong() != null ? dto.getSo_luong() : 0L;
-                    total += (qty * dto.getMedicine().getDon_gia());
+                    total += (qty * dto.getDon_gia_luc_ke_don());
                 }
             }
         }
