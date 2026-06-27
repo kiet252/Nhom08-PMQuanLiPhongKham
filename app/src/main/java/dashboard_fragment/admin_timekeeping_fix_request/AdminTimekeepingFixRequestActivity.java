@@ -270,6 +270,7 @@ public class AdminTimekeepingFixRequestActivity extends BaseActivity {
     private void renderEvidence(LinearLayout container, TextView title, List<String> urls) {
         container.removeAllViews();
         title.setText("MINH CHỨNG (" + urls.size() + " ẢNH)");
+
         if (urls.isEmpty()) {
             TextView empty = new TextView(this);
             empty.setText("Không có minh chứng");
@@ -279,17 +280,38 @@ public class AdminTimekeepingFixRequestActivity extends BaseActivity {
             container.addView(empty);
             return;
         }
-        for (String url : urls) {
+
+        // Wrap sang HorizontalScrollView để chứa hàng ảnh
+        android.widget.HorizontalScrollView hsv = new android.widget.HorizontalScrollView(this);
+        hsv.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT));
+        hsv.setHorizontalScrollBarEnabled(false);
+
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        int size = dpToPx(80); // hình vuông 80dp
+        int margin = dpToPx(4);
+
+        for (int i = 0; i < urls.size(); i++) {
+            String url = urls.get(i);
+            int index = i;
+
             ImageView imageView = new ImageView(this);
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    0,
-                    dpToPx(132),
-                    1f
-            );
-            params.setMargins(dpToPx(4), dpToPx(6), dpToPx(4), dpToPx(6));
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
+            params.setMargins(margin, margin, margin, margin);
             imageView.setLayoutParams(params);
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
             imageView.setBackgroundResource(R.drawable.bg_prescription_field);
+
+            // Bo góc nếu muốn
+            imageView.setClipToOutline(true);
+            imageView.setOutlineProvider(android.view.ViewOutlineProvider.BACKGROUND);
+
             ImageRequest request = new ImageRequest.Builder(this)
                     .data(url)
                     .target(imageView)
@@ -298,10 +320,80 @@ public class AdminTimekeepingFixRequestActivity extends BaseActivity {
                     .error(R.drawable.bg_prescription_field)
                     .build();
             Coil.imageLoader(this).enqueue(request);
-            container.addView(imageView);
+
+            imageView.setOnClickListener(v -> showFullImage(url, urls, index));
+            row.addView(imageView);
         }
+
+        hsv.addView(row);
+        container.addView(hsv);
     }
 
+    private void showFullImage(String currentUrl, List<String> urls, int startIndex) {
+        Dialog fullDialog = new Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        fullDialog.setContentView(new android.widget.FrameLayout(this) {{
+            setBackgroundColor(android.graphics.Color.BLACK);
+
+            // ViewPager2 để swipe qua lại
+            androidx.viewpager2.widget.ViewPager2 pager = new androidx.viewpager2.widget.ViewPager2(getContext());
+            pager.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+            // Ngày giờ ở giữa trên cùng
+            TextView tvDateTime = new TextView(getContext());
+            tvDateTime.setText((startIndex + 1) + " / " + urls.size()); // tuỳ, hoặc để ngày giờ nếu có
+            tvDateTime.setTextColor(android.graphics.Color.WHITE);
+            tvDateTime.setTextSize(15);
+            tvDateTime.setPadding(0, dpToPx(44), 0, 0);
+            LayoutParams lpDate = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+            lpDate.gravity = android.view.Gravity.TOP | android.view.Gravity.CENTER_HORIZONTAL;
+            tvDateTime.setGravity(android.view.Gravity.CENTER);
+            tvDateTime.setLayoutParams(lpDate);
+            addView(tvDateTime);
+
+            pager.registerOnPageChangeCallback(new androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
+                @Override
+                public void onPageSelected(int position) {
+                    tvDateTime.setText((position + 1) + " / " + urls.size());
+                }
+            });
+            pager.setAdapter(new androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
+                @NonNull @Override
+                public androidx.recyclerview.widget.RecyclerView.ViewHolder onCreateViewHolder(@NonNull android.view.ViewGroup parent, int viewType) {
+                    ImageView iv = new ImageView(getContext());
+                    iv.setLayoutParams(new android.view.ViewGroup.LayoutParams(
+                            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                            android.view.ViewGroup.LayoutParams.MATCH_PARENT));
+                    iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                    return new androidx.recyclerview.widget.RecyclerView.ViewHolder(iv) {};
+                }
+                @Override
+                public void onBindViewHolder(@NonNull androidx.recyclerview.widget.RecyclerView.ViewHolder holder, int position) {
+                    ImageView iv = (ImageView) holder.itemView;
+                    ImageRequest req = new ImageRequest.Builder(getContext())
+                            .data(urls.get(position))
+                            .target(iv)
+                            .crossfade(true)
+                            .build();
+                    Coil.imageLoader(getContext()).enqueue(req);
+                }
+                @Override public int getItemCount() { return urls.size(); }
+            });
+            pager.setCurrentItem(startIndex, false);
+            addView(pager);
+
+            // Nút đóng
+            TextView btnClose = new TextView(getContext());
+            btnClose.setText("✕");
+            btnClose.setTextColor(android.graphics.Color.WHITE);
+            btnClose.setTextSize(22);
+            btnClose.setPadding(dpToPx(16), dpToPx(40), dpToPx(16), dpToPx(16));
+            btnClose.setOnClickListener(v -> fullDialog.dismiss());
+            LayoutParams lp = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+            lp.gravity = android.view.Gravity.TOP | android.view.Gravity.END;
+            btnClose.setLayoutParams(lp);
+            addView(btnClose);
+        }});
+        fullDialog.show();
+    }
     private void confirmApprove(TimekeepingFixRequestItem item, Dialog dialog) {
         new AlertDialog.Builder(this)
                 .setTitle("Phê duyệt yêu cầu")
