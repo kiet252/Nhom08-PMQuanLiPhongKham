@@ -25,16 +25,16 @@ public final class BillMapper {
             }
 
             String patientName = resolvePatientName(form);
-            String displayDate = formatDateString(form.getNgay_kham());
             BillSummaryDto bill = form.getMedical_record().getBill();
 
             if (bill == null || bill.getId() == null) {
                 continue;
             }
 
+            String displayDate = formatDateString(bill.getCreated_at());
             boolean paid = PAID_STATUS.equals(bill.getTrang_thai_thanh_toan());
             long amount = bill.getTong_thanh_toan() != null ? Math.round(bill.getTong_thanh_toan()) : 0L;
-            String date = displayDate != null ? displayDate : formatDateString(bill.getCreated_at());
+            String date = displayDate != null ? displayDate : formatDateString(form.getNgay_kham());
 
             items.add(
                     new StaffInvoiceItem(

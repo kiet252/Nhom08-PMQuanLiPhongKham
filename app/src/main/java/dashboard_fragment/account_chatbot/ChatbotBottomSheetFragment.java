@@ -591,8 +591,15 @@ public class ChatbotBottomSheetFragment extends BottomSheetDialogFragment {
                 for (int i = 0; i < limit; i++) {
                     com.google.gson.JsonObject a = arr.get(i).getAsJsonObject();
                     sb.append("• Ngày: ").append(getString(a, "ngay_hen", "?"));
+
                     String note = getString(a, "ghi_chu", "");
-                    if (!note.isEmpty()) sb.append(" | Ghi chú: ").append(note);
+                    if (!note.isEmpty()) {
+                        sb.append(" | Ghi chú: ").append(note);
+                    }
+
+                    sb.append(" | Mã BN: ")
+                            .append(getString(a, "patient_id", "?"));
+
                     sb.append("\n");
                 }
                 if (size > 10) sb.append("... và ").append(size - 10).append(" lịch khác.");

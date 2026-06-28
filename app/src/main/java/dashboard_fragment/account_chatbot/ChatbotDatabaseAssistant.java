@@ -273,6 +273,7 @@ public class ChatbotDatabaseAssistant {
                     || intent == IntentType.LIST_APPOINTMENTS
                     || intent == IntentType.LIST_EXAMINATIONS
                     || intent == IntentType.LIST_BILLS
+                    || intent == IntentType.COUNT_PATIENTS
                     || intent == IntentType.COUNT_APPOINTMENTS
                     || intent == IntentType.COUNT_EXAMINATIONS
                     || intent == IntentType.COUNT_BILLS;
@@ -315,7 +316,15 @@ public class ChatbotDatabaseAssistant {
 
         if (containsAnyNL(q, "bao nhieu benh nhan", "so luong benh nhan",
                 "dem benh nhan", "tong so benh nhan")) {
+
             spec.setIntent(IntentType.COUNT_PATIENTS);
+
+            extractDateRange(rawMessage, spec);
+
+            if (spec.getStartDate() == null) {
+                spec.setDate(extractDate(rawMessage));
+            }
+
             return spec;
         }
 
@@ -342,6 +351,12 @@ public class ChatbotDatabaseAssistant {
         if (containsAnyNL(q, "bao nhieu hoa don", "so luong hoa don",
                 "dem hoa don", "tong so hoa don")) {
             spec.setIntent(IntentType.COUNT_BILLS);
+
+            extractDateRange(rawMessage, spec);
+
+            if (spec.getStartDate() == null) {
+                spec.setDate(extractDate(rawMessage));
+            }
             return spec;
         }
 
@@ -350,6 +365,10 @@ public class ChatbotDatabaseAssistant {
             spec.setIntent(IntentType.LIST_PATIENTS);
 
             extractDateRange(rawMessage, spec);
+
+            if (spec.getStartDate() == null) {
+                spec.setDate(extractDate(rawMessage));
+            }
 
             return spec;
         }
@@ -396,7 +415,7 @@ public class ChatbotDatabaseAssistant {
             return spec;
         }
 
-        if (containsAnyNL(q, "hoa don hom nay", "hoa don ngay", "hoa don thang")) {
+        if (containsAnyNL(q, "hoa don hom nay", "hoa don ngay")) {
             spec.setIntent(IntentType.BILL_BY_DATE);
             extractDateRange(rawMessage, spec);
 
@@ -406,8 +425,7 @@ public class ChatbotDatabaseAssistant {
             return spec;
         }
 
-        if (containsAnyNL(q, "hoa don", "xem hoa don",
-                "tra cuu hoa don")) {
+        if (containsAnyNL(q, "hoa don", "xem hoa don", "tra cuu hoa don")) {
             spec.setIntent(IntentType.BILL_BY_PATIENT);
             String idOrCccd = extractPatientIdOrCccd(rawMessage);
             spec.setPatientId(idOrCccd);
@@ -428,7 +446,7 @@ public class ChatbotDatabaseAssistant {
         }
 
         if (containsAnyNL(q, "tra cuu thuoc", "tim thuoc", "thong tin thuoc",
-                "thuoc ten", "hoat chat")) {
+                "thuoc ten", "hoat chat", "danh sach thuoc")) {
             spec.setIntent(IntentType.MEDICINE_LOOKUP);
             spec.setMedicineName(extractNameAfterKeyword(rawMessage,
                     "thuốc", "hoạt chất", "tên thuốc", "tra cứu thuốc", "tìm thuốc"));
@@ -436,7 +454,7 @@ public class ChatbotDatabaseAssistant {
         }
 
         if (containsAnyNL(q, "tra cuu dich vu", "tim dich vu", "dich vu lam sang",
-                "can lam sang ten", "xet nghiem ten")) {
+                "can lam sang ten", "xet nghiem ten", "danh sach dich vu", "danh sach can lam sang")) {
             spec.setIntent(IntentType.CLINICAL_LOOKUP);
             spec.setClinicalName(extractNameAfterKeyword(rawMessage,
                     "dịch vụ", "xét nghiệm", "cận lâm sàng", "tra cứu dịch vụ"));
@@ -578,6 +596,42 @@ public class ChatbotDatabaseAssistant {
             spec.setEndDate(sdf.format(end));
             return;
         }
+        if (lower.contains("tuan truoc") || lower.contains("tuan vua roi")) {
+
+            cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+            cal.add(Calendar.WEEK_OF_YEAR, -1);
+
+            Date start = cal.getTime();
+
+            cal.add(Calendar.DAY_OF_MONTH, 6);
+
+            Date end = cal.getTime();
+
+            SimpleDateFormat sdf =
+                    new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+            spec.setStartDate(sdf.format(start));
+            spec.setEndDate(sdf.format(end));
+            return;
+        }
+        if (lower.contains("tuan sau") || lower.contains("tuan toi")) {
+
+            cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+            cal.add(Calendar.WEEK_OF_YEAR, 1);
+
+            Date start = cal.getTime();
+
+            cal.add(Calendar.DAY_OF_MONTH, 6);
+
+            Date end = cal.getTime();
+
+            SimpleDateFormat sdf =
+                    new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+            spec.setStartDate(sdf.format(start));
+            spec.setEndDate(sdf.format(end));
+            return;
+        }
 
         if (lower.contains("thang nay")) {
 
@@ -588,6 +642,42 @@ public class ChatbotDatabaseAssistant {
             cal.set(Calendar.DAY_OF_MONTH,
                     cal.getActualMaximum(Calendar.DAY_OF_MONTH));
 
+            Date end = cal.getTime();
+
+            SimpleDateFormat sdf =
+                    new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+            spec.setStartDate(sdf.format(start));
+            spec.setEndDate(sdf.format(end));
+            return;
+        }
+        if (lower.contains("thang truoc") || lower.contains("thang vua roi")) {
+
+            cal.add(Calendar.MONTH, -1);
+
+            cal.set(Calendar.DAY_OF_MONTH, 1);
+            Date start = cal.getTime();
+
+            cal.set(Calendar.DAY_OF_MONTH,
+                    cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+            Date end = cal.getTime();
+
+            SimpleDateFormat sdf =
+                    new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+            spec.setStartDate(sdf.format(start));
+            spec.setEndDate(sdf.format(end));
+            return;
+        }
+        if (lower.contains("thang sau") || lower.contains("thang toi")) {
+
+            cal.add(Calendar.MONTH, 1);
+
+            cal.set(Calendar.DAY_OF_MONTH, 1);
+            Date start = cal.getTime();
+
+            cal.set(Calendar.DAY_OF_MONTH,
+                    cal.getActualMaximum(Calendar.DAY_OF_MONTH));
             Date end = cal.getTime();
 
             SimpleDateFormat sdf =
@@ -639,10 +729,33 @@ public class ChatbotDatabaseAssistant {
         if (TextUtils.isEmpty(message)) return null;
 
         String lower = message.toLowerCase(Locale.getDefault());
+
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
         if (lower.contains("hôm nay") || lower.contains("hom nay") || lower.contains("today")) {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            return sdf.format(new Date());
+            return sdf.format(cal.getTime());
         }
+
+        if (lower.contains("hôm qua") || lower.contains("hom qua") || lower.contains("yesterday")) {
+            cal.add(Calendar.DAY_OF_MONTH, -1);
+            return sdf.format(cal.getTime());
+        }
+
+        if (lower.contains("hôm kia") || lower.contains("hom kia")) {
+            cal.add(Calendar.DAY_OF_MONTH, -2);
+            return sdf.format(cal.getTime());
+        }
+
+        if (lower.contains("ngày mai") || lower.contains("ngay mai") || lower.contains("tomorrow")) {
+            cal.add(Calendar.DAY_OF_MONTH, 1);
+            return sdf.format(cal.getTime());
+        }
+        if (lower.contains("ngày kia") || lower.contains("ngay kia") || lower.contains("ngày mốt") || lower.contains("ngay mot")) {
+            cal.add(Calendar.DAY_OF_MONTH, 2);
+            return sdf.format(cal.getTime());
+        }
+
 
         Pattern p1 = Pattern.compile("(\\d{1,2})[/\\-](\\d{1,2})[/\\-](\\d{4})");
         Matcher m1 = p1.matcher(message);
@@ -727,10 +840,20 @@ public class ChatbotDatabaseAssistant {
                 queryClinicalLookup(spec.getClinicalName(), callback);
                 break;
             case COUNT_PATIENTS:
-                queryCountPatients(callback);
+                queryCountPatients(
+                        spec.getDate(),
+                        spec.getStartDate(),
+                        spec.getEndDate(),
+                        callback
+                );
                 break;
             case LIST_PATIENTS:
-                queryListPatients(callback);
+                queryListPatients(
+                        spec.getDate(),
+                        spec.getStartDate(),
+                        spec.getEndDate(),
+                        callback
+                );
                 break;
             case COUNT_APPOINTMENTS:
                 queryCountAppointments(
@@ -748,6 +871,7 @@ public class ChatbotDatabaseAssistant {
                 break;
             case COUNT_EXAMINATIONS:
                 queryCountExaminations(
+                        spec.getDate(),
                         spec.getStartDate(),
                         spec.getEndDate(),
                         callback
@@ -761,7 +885,11 @@ public class ChatbotDatabaseAssistant {
                         callback);
                 break;
             case COUNT_BILLS:
-                queryCountBills(callback);
+                queryCountBills(
+                        spec.getDate(),
+                        spec.getStartDate(),
+                        spec.getEndDate(),
+                        callback);
                 break;
             case LIST_BILLS:
                 queryListBills(
@@ -1037,12 +1165,67 @@ public class ChatbotDatabaseAssistant {
         });
     }
 
-    private void queryCountPatients(AnswerCallback callback) {
+    private void queryCountPatients(
+            String date,
+            String startDate,
+            String endDate,
+            AnswerCallback callback) {
+
         patientRepository.getAllPatients().enqueue(new Callback<List<PatientProfile>>() {
+
             @Override
-            public void onResponse(Call<List<PatientProfile>> call, Response<List<PatientProfile>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    int count = response.body().size();
+            public void onResponse(Call<List<PatientProfile>> call,
+                                   Response<List<PatientProfile>> response) {
+
+                if (!response.isSuccessful() || response.body() == null) {
+                    callback.onAnswer(errorJson("Không lấy được số lượng bệnh nhân."));
+                    return;
+                }
+
+                List<PatientProfile> patients = response.body();
+
+                int count = 0;
+
+                try {
+
+                    SimpleDateFormat sdf =
+                            new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+                    if (startDate != null && endDate != null) {
+
+                        Date from = sdf.parse(startDate);
+                        Date to = sdf.parse(endDate);
+
+                        for (PatientProfile patient : patients) {
+
+                            if (patient.getCreated_at() == null) continue;
+
+                            Date createdDate = patient.getCreated_at();
+
+                            if (!createdDate.before(from) && !createdDate.after(to)) {
+                                count++;
+                            }
+                        }
+
+                    } else if (date != null) {
+
+                        for (PatientProfile patient : patients) {
+
+                            if (patient.getCreated_at() == null) continue;
+
+                            String createdDate =
+                                    sdf.format(patient.getCreated_at());
+
+                            if (createdDate.equals(date)) {
+                                count++;
+                            }
+                        }
+
+                    } else {
+
+                        count = patients.size();
+                    }
+
                     callback.onAnswer("{\n" +
                             "  \"success\": true,\n" +
                             "  \"intent\": \"COUNT_PATIENTS\",\n" +
@@ -1050,8 +1233,9 @@ public class ChatbotDatabaseAssistant {
                             "    \"count\": " + count + "\n" +
                             "  }\n" +
                             "}");
-                } else {
-                    callback.onAnswer(errorJson("Không lấy được số lượng bệnh nhân."));
+
+                } catch (Exception e) {
+                    callback.onAnswer(errorJson(e.getMessage()));
                 }
             }
 
@@ -1062,20 +1246,86 @@ public class ChatbotDatabaseAssistant {
         });
     }
 
-    private void queryListPatients(AnswerCallback callback) {
+    private void queryListPatients(
+            String date,
+            String startDate,
+            String endDate,
+            AnswerCallback callback) {
+
         patientRepository.getAllPatients().enqueue(new Callback<List<PatientProfile>>() {
+
             @Override
-            public void onResponse(Call<List<PatientProfile>> call, Response<List<PatientProfile>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    callback.onAnswer(successJson(IntentType.LIST_PATIENTS, formatPatientProfiles(response.body())));
-                } else {
+            public void onResponse(Call<List<PatientProfile>> call,
+                                   Response<List<PatientProfile>> response) {
+
+                if (!response.isSuccessful() || response.body() == null) {
                     callback.onAnswer(errorJson("Không lấy được danh sách bệnh nhân."));
+                    return;
+                }
+
+                List<PatientProfile> patients = response.body();
+
+                try {
+
+                    if (date == null && startDate == null && endDate == null) {
+                        callback.onAnswer(successJson(
+                                IntentType.LIST_PATIENTS,
+                                formatPatientProfiles(patients)
+                        ));
+                        return;
+                    }
+
+                    List<PatientProfile> filtered = new ArrayList<>();
+
+                    SimpleDateFormat sdf =
+                            new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+                    if (startDate != null && endDate != null) {
+
+                        Date from = sdf.parse(startDate);
+                        Date to = sdf.parse(endDate);
+
+                        for (PatientProfile patient : patients) {
+
+                            if (patient.getCreated_at() == null) continue;
+
+                            Date createdDate = patient.getCreated_at();
+
+                            if (!createdDate.before(from)
+                                    && !createdDate.after(to)) {
+                                filtered.add(patient);
+                            }
+                        }
+
+                    } else {
+
+                        for (PatientProfile patient : patients) {
+
+                            if (patient.getCreated_at() == null) continue;
+
+                            String createdDate =
+                                    sdf.format(patient.getCreated_at());
+
+                            if (createdDate.equals(date)) {
+                                filtered.add(patient);
+                            }
+                        }
+                    }
+
+                    callback.onAnswer(successJson(
+                            IntentType.LIST_PATIENTS,
+                            formatPatientProfiles(filtered)
+                    ));
+
+                } catch (Exception e) {
+                    callback.onAnswer(errorJson(e.getMessage()));
                 }
             }
 
             @Override
             public void onFailure(Call<List<PatientProfile>> call, Throwable t) {
-                callback.onAnswer(errorJson("Lỗi lấy danh sách bệnh nhân: " + t.getMessage()));
+                callback.onAnswer(
+                        errorJson("Lỗi lấy danh sách bệnh nhân: " + t.getMessage()));
             }
         });
     }
@@ -1213,6 +1463,7 @@ public class ChatbotDatabaseAssistant {
     }
 
     private void queryCountExaminations(
+            String date,
             String startDate,
             String endDate,
             AnswerCallback callback) {
@@ -1240,21 +1491,42 @@ public class ChatbotDatabaseAssistant {
                 int count = 0;
 
                 try {
+
                     SimpleDateFormat sdf =
                             new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
-                    Date from = sdf.parse(startDate);
-                    Date to = sdf.parse(endDate);
+                    if (startDate != null && endDate != null) {
 
-                    for (ExaminationFormWithPatientDto item : forms) {
+                        Date from = sdf.parse(startDate);
+                        Date to = sdf.parse(endDate);
 
-                        if (item.getNgay_kham() == null) continue;
+                        for (ExaminationFormWithPatientDto item : forms) {
 
-                        Date examDate = item.getNgay_kham();
+                            if (item.getNgay_kham() == null) continue;
 
-                        if (!examDate.before(from) && !examDate.after(to)) {
-                            count++;
+                            Date examDate = item.getNgay_kham();
+
+                            if (!examDate.before(from) && !examDate.after(to)) {
+                                count++;
+                            }
                         }
+
+                    } else if (date != null) {
+
+                        for (ExaminationFormWithPatientDto item : forms) {
+
+                            if (item.getNgay_kham() == null) continue;
+
+                            String examDate =
+                                    sdf.format(item.getNgay_kham());
+
+                            if (examDate.equals(date)) {
+                                count++;
+                            }
+                        }
+
+                    } else {
+                        count = forms.size();
                     }
 
                     callback.onAnswer("{\n" +
@@ -1367,12 +1639,88 @@ public class ChatbotDatabaseAssistant {
         });
     }
 
-    private void queryCountBills(AnswerCallback callback) {
+    private void queryCountBills(
+            String date,
+            String startDate,
+            String endDate,
+            AnswerCallback callback) {
+        Log.d("COUNT_BILLS", "date = " + date);
+        Log.d("COUNT_BILLS", "startDate = " + startDate);
+        Log.d("COUNT_BILLS", "endDate = " + endDate);
+
         billRepository.getAllBills().enqueue(new Callback<List<ExamFormWithBillDto>>() {
+
             @Override
-            public void onResponse(Call<List<ExamFormWithBillDto>> call, Response<List<ExamFormWithBillDto>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    int count = response.body().size();
+            public void onResponse(
+                    Call<List<ExamFormWithBillDto>> call,
+                    Response<List<ExamFormWithBillDto>> response) {
+
+                if (!response.isSuccessful() || response.body() == null) {
+                    callback.onAnswer(errorJson("Không lấy được số lượng hóa đơn."));
+                    return;
+                }
+
+                List<ExamFormWithBillDto> bills = response.body();
+
+                int count = 0;
+
+                try {
+
+                    SimpleDateFormat sdf =
+                            new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+                    if (startDate != null && endDate != null) {
+
+                        Date from = sdf.parse(startDate);
+                        Date to = sdf.parse(endDate);
+
+                        for (ExamFormWithBillDto bill : bills) {
+
+                            if (bill.getMedical_record() == null
+                                    || bill.getMedical_record().getBill() == null
+                                    || bill.getMedical_record().getBill().getCreated_at() == null) {
+                                continue;
+                            }
+
+                            String createdAt =
+                                    bill.getMedical_record()
+                                            .getBill()
+                                            .getCreated_at();
+
+                            Date billDate = sdf.parse(createdAt.substring(0, 10));
+
+                            if (!billDate.before(from) && !billDate.after(to)) {
+                                count++;
+                            }
+                        }
+
+                    } else if (date != null) {
+
+                        for (ExamFormWithBillDto bill : bills) {
+
+                            if (bill.getMedical_record() == null
+                                    || bill.getMedical_record().getBill() == null
+                                    || bill.getMedical_record().getBill().getCreated_at() == null) {
+                                continue;
+                            }
+
+                            String createdAt =
+                                    bill.getMedical_record()
+                                            .getBill()
+                                            .getCreated_at();
+
+                            String billDate = createdAt.substring(0, 10);
+
+                            if (billDate.equals(date)) {
+                                count++;
+                            }
+                        }
+
+                    } else {
+
+                        count = bills.size();
+                    }
+
                     callback.onAnswer("{\n" +
                             "  \"success\": true,\n" +
                             "  \"intent\": \"COUNT_BILLS\",\n" +
@@ -1380,14 +1728,19 @@ public class ChatbotDatabaseAssistant {
                             "    \"count\": " + count + "\n" +
                             "  }\n" +
                             "}");
-                } else {
-                    callback.onAnswer(errorJson("Không lấy được số lượng hóa đơn."));
+
+                } catch (Exception e) {
+                    callback.onAnswer(errorJson(e.getMessage()));
                 }
             }
 
             @Override
-            public void onFailure(Call<List<ExamFormWithBillDto>> call, Throwable t) {
-                callback.onAnswer(errorJson("Lỗi đếm số hóa đơn: " + t.getMessage()));
+            public void onFailure(
+                    Call<List<ExamFormWithBillDto>> call,
+                    Throwable t) {
+
+                callback.onAnswer(
+                        errorJson("Lỗi đếm số hóa đơn: " + t.getMessage()));
             }
         });
     }
