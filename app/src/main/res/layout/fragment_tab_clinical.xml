@@ -304,5 +304,24 @@
             app:iconPadding="8dp"
             app:iconTint="@android:color/white" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnExportClinicalPdf"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="@android:color/white"
+            android:text="Xuất yêu cầu (*.pdf)"
+            android:textAllCaps="false"
+            android:textColor="#0D3F6E"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:cornerRadius="16dp"
+            app:icon="@drawable/ic_export"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconTint="#0D3F6E"
+            app:strokeColor="#0D3F6E"
+            app:strokeWidth="1dp" />
+
     </LinearLayout>
 </ScrollView>
