@@ -536,6 +536,8 @@ public class timekeeping_request extends BaseActivity {
 	private static class EvidenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 		private static final int TYPE_IMAGE = 1;
 		private static final int TYPE_ADD = 2;
+		private int itemSize = 0;
+		private int itemSpacing = 0;
 		private final List<Uri> items;
 		private final Context ctx;
 
@@ -558,29 +560,62 @@ public class timekeeping_request extends BaseActivity {
 		@NonNull
 		@Override
 		public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+			if (itemSize == 0) {
+				int totalWidth = parent.getWidth();
+				if (totalWidth == 0) {
+					totalWidth = parent.getResources().getDisplayMetrics().widthPixels
+							- dpToPx(parent.getContext(), 64);
+				}
+				itemSpacing = dpToPx(parent.getContext(), 4);
+				itemSize = (totalWidth - itemSpacing * 4) / 3;
+			}
+			int spacing = itemSpacing;
+			int size = itemSize;
+
 			if (viewType == TYPE_IMAGE) {
-				ImageView iv = new ImageView(ctx);
-				int pad = dpToPx(ctx, 4);
-				iv.setPadding(pad, pad, pad, pad);
+				// Dùng FrameLayout để chồng nút X lên ảnh
+				android.widget.FrameLayout frame = new android.widget.FrameLayout(parent.getContext());
+				RecyclerView.LayoutParams frameLp = new RecyclerView.LayoutParams(size, size);
+				frameLp.setMargins(spacing / 2, spacing / 2, spacing / 2, spacing / 2);
+				frame.setLayoutParams(frameLp);
+
+				ImageView iv = new ImageView(parent.getContext());
 				iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
-				int size = parent.getMeasuredWidth() / 3 - dpToPx(ctx, 12);
-				RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(size, size);
-				iv.setLayoutParams(lp);
-				return new ImageVH(iv);
+				iv.setLayoutParams(new android.widget.FrameLayout.LayoutParams(
+						android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+						android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
+				iv.setBackgroundColor(0xFFE2E8F0);
+				frame.addView(iv);
+
+				// Nút X góc trên phải
+				TextView btnDelete = new TextView(parent.getContext());
+				btnDelete.setText("✕");
+				btnDelete.setTextColor(0xFFFFFFFF);
+				btnDelete.setTextSize(11);
+				btnDelete.setGravity(android.view.Gravity.CENTER);
+				btnDelete.setBackgroundColor(0xCC000000); // đen mờ
+				int btnSize = dpToPx(parent.getContext(), 20);
+				android.widget.FrameLayout.LayoutParams btnLp = new android.widget.FrameLayout.LayoutParams(btnSize, btnSize);
+				btnLp.gravity = android.view.Gravity.TOP | android.view.Gravity.END;
+				btnLp.setMargins(0, 4, 4, 0);
+				btnDelete.setLayoutParams(btnLp);
+				btnDelete.setTag("delete_btn");
+				frame.addView(btnDelete);
+
+				return new ImageVH(frame);
 			} else {
-				// add button
-				LayoutInflater inflater = LayoutInflater.from(ctx);
-				View v = inflater.inflate(android.R.layout.simple_list_item_1, parent, false);
-				TextView tv = v.findViewById(android.R.id.text1);
-				tv.setText("+ Thêm");
-				tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-				tv.setBackgroundColor(0xFFECEFF1);
-				int pad = dpToPx(ctx, 8);
-				tv.setPadding(pad, pad, pad, pad);
-				return new AddVH(v);
+				TextView tv = new TextView(parent.getContext());
+				tv.setText("+");
+				tv.setTextSize(28);
+				tv.setTextColor(0xFF64748B);
+				tv.setGravity(android.view.Gravity.CENTER);
+				tv.setBackgroundColor(0xFFF1F5F9);
+				RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(size, size); // cùng size với ảnh
+				lp.setMargins(spacing / 2, spacing / 2, spacing / 2, spacing / 2);
+				tv.setLayoutParams(lp);
+				return new AddVH(tv);
 			}
 		}
-
 		@Override
 		public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
 			if (getItemViewType(position) == TYPE_IMAGE) {
@@ -591,11 +626,12 @@ public class timekeeping_request extends BaseActivity {
 				} catch (Exception e) {
 					vh.imageView.setImageResource(android.R.drawable.ic_menu_report_image);
 				}
-				vh.imageView.setOnLongClickListener(v -> {
-					// remove on long press
-					items.remove(position);
-					notifyDataSetChanged();
-					return true;
+				vh.btnDelete.setOnClickListener(v -> {
+					int pos = vh.getAdapterPosition();
+					if (pos != RecyclerView.NO_ID && pos < items.size()) {
+						items.remove(pos);
+						notifyDataSetChanged();
+					}
 				});
 			} else {
 				AddVH avh = (AddVH) holder;
@@ -623,9 +659,12 @@ public class timekeeping_request extends BaseActivity {
 
 		static class ImageVH extends RecyclerView.ViewHolder {
 			ImageView imageView;
+			TextView btnDelete;
 			ImageVH(@NonNull View itemView) {
 				super(itemView);
-				imageView = (ImageView) itemView;
+				android.widget.FrameLayout frame = (android.widget.FrameLayout) itemView;
+				imageView = (ImageView) frame.getChildAt(0);
+				btnDelete = (TextView) frame.findViewWithTag("delete_btn");
 			}
 		}
 
