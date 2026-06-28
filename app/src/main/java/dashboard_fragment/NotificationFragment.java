@@ -19,6 +19,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -39,6 +40,7 @@ import com.example.nhom08_quanlyphongkham.UserProfile;
 import com.example.nhom08_quanlyphongkham.uilogin.AuthRepository;
 import com.example.nhom08_quanlyphongkham.uilogin.SharedPrefManager;
 import com.example.nhom08_quanlyphongkham.uilogin.ThongBao;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
 import java.text.ParseException;
@@ -60,6 +62,13 @@ public class NotificationFragment extends Fragment {
     private LinearLayout layoutDanhSachThongBao;
     private FrameLayout rootContainer;
     private View listView;
+    private boolean isSelectionMode = false;
+    private final Set<String> selectedKeys = new HashSet<>();
+    private MaterialButton btnSelectMode;
+    private LinearLayout layoutSelectionActions;
+    private MaterialButton btnSelectAll;
+    private MaterialButton btnMarkAsRead;
+
     private AuthRepository authRepository;
     private UserRole userRole = UserRole.NHAN_VIEN;
     private AlertDialog dialogChiTietThongBao;
@@ -72,7 +81,9 @@ public class NotificationFragment extends Fragment {
         @Override
         public void run() {
             if (isAdded() && layoutDanhSachThongBao != null) {
-                goiDuLieuRetrofit(false);
+                if (!isSelectionMode) {
+                    goiDuLieuRetrofit(false);
+                }
                 refreshHandler.postDelayed(this, AUTO_REFRESH_DELAY_MS);
             }
         }
@@ -114,6 +125,20 @@ public class NotificationFragment extends Fragment {
 
     private void cauHinhManHinhDanhSach(View view) {
         layoutDanhSachThongBao = view.findViewById(R.id.layout_danh_sach_thong_bao);
+
+        btnSelectMode = view.findViewById(R.id.btn_select_mode);
+        layoutSelectionActions = view.findViewById(R.id.layout_selection_actions);
+        btnSelectAll = view.findViewById(R.id.btn_select_all);
+        btnMarkAsRead = view.findViewById(R.id.btn_mark_as_read);
+        if (btnSelectMode != null) {
+            btnSelectMode.setOnClickListener(v -> toggleSelectionMode());
+        }
+        if (btnSelectAll != null) {
+            btnSelectAll.setOnClickListener(v -> toggleSelectAll());
+        }
+        if (btnMarkAsRead != null) {
+            btnMarkAsRead.setOnClickListener(v -> thucHienDanhDauDaDoc());
+        }
 
         SharedPreferences prefs = requireActivity().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
         String roleSaved = prefs.getString("ROLE", UserRole.NHAN_VIEN.name());
@@ -219,6 +244,36 @@ public class NotificationFragment extends Fragment {
         lopNgang.setGravity(Gravity.CENTER_VERTICAL);
         lopNgang.setPadding(dpToPx(16), dpToPx(16), dpToPx(16), dpToPx(16));
 
+        CheckBox cbSelect = new CheckBox(requireContext());
+        LinearLayout.LayoutParams cbParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        cbParams.setMargins(0, 0, dpToPx(12), 0);
+        cbSelect.setLayoutParams(cbParams);
+        cbSelect.setButtonTintList(android.content.res.ColorStateList.valueOf(Color.parseColor("#0D5FA8")));
+        cbSelect.setVisibility(isSelectionMode ? View.VISIBLE : View.GONE);
+        cbSelect.setChecked(selectedKeys.contains(notificationKey));
+        cbSelect.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                selectedKeys.add(notificationKey);
+            } else {
+                selectedKeys.remove(notificationKey);
+            }
+            if (btnMarkAsRead != null) {
+                boolean isEnabled = !selectedKeys.isEmpty();
+                btnMarkAsRead.setEnabled(isEnabled);
+                btnMarkAsRead.setAlpha(isEnabled ? 1.0f : 0.5f);
+            }
+            if (btnSelectAll != null) {
+                if (selectedKeys.size() == lastLoadedNotificationKeys.size()) {
+                    btnSelectAll.setText("Bỏ chọn tất cả");
+                } else {
+                    btnSelectAll.setText("Chọn tất cả");
+                }
+            }
+        });
+
         LinearLayout lopDoc = new LinearLayout(requireContext());
         lopDoc.setOrientation(LinearLayout.VERTICAL);
         lopDoc.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f));
@@ -273,26 +328,21 @@ public class NotificationFragment extends Fragment {
         unreadDot.setVisibility(daDoc ? View.GONE : View.VISIBLE);
 
         cardMoi.setOnClickListener(v -> {
-            danhDauDaDoc(notificationKey);
-
-            cardMoi.setCardBackgroundColor(Color.WHITE);
-
-            unreadDot.setVisibility(View.GONE);
-            ivMore.setVisibility(View.VISIBLE);
-
-            hienThiChiTietThongBao(
-                    tieuDe,
-                    noiDung,
-                    thoiGianTrongNgay
-            );
+            if (isSelectionMode) {
+                cbSelect.setChecked(!cbSelect.isChecked());
+            } else {
+                danhDauDaDoc(notificationKey);
+                cardMoi.setCardBackgroundColor(Color.WHITE);
+                unreadDot.setVisibility(View.GONE);
+                ivMore.setVisibility(View.VISIBLE);
+                hienThiChiTietThongBao(tieuDe, noiDung, thoiGianTrongNgay);
+            }
         });
-
         actionArea.addView(unreadDot, dotParams);
-
+        lopNgang.addView(cbSelect);
         lopNgang.addView(lopDoc);
         lopNgang.addView(actionArea);
         cardMoi.addView(lopNgang);
-
         layoutDanhSachThongBao.addView(cardMoi);
     }
 
@@ -598,4 +648,81 @@ public class NotificationFragment extends Fragment {
         drawable.setColor(Color.parseColor("#2563EB"));
         return drawable;
     }
+    private void toggleSelectionMode() {
+        isSelectionMode = !isSelectionMode;
+        selectedKeys.clear();
+
+        if (isSelectionMode) {
+            if (btnSelectMode != null) btnSelectMode.setText("Hủy");
+            if (layoutSelectionActions != null) {
+                layoutSelectionActions.setVisibility(View.VISIBLE);
+            }
+            if (btnMarkAsRead != null) {
+                boolean isEnabled = !selectedKeys.isEmpty();
+                btnMarkAsRead.setEnabled(isEnabled);
+                btnMarkAsRead.setAlpha(isEnabled ? 1.0f : 0.5f);
+            }
+            if (btnSelectAll != null) {
+                btnSelectAll.setText("Chọn tất cả");
+            }
+        } else {
+            if (btnSelectMode != null) btnSelectMode.setText("Chọn");
+            if (layoutSelectionActions != null) {
+                layoutSelectionActions.setVisibility(View.GONE);
+            }
+        }
+
+        lastLoadedNotificationKeys.clear();
+        goiDuLieuRetrofit(true);
+    }
+
+    private void toggleSelectAll() {
+        if (layoutDanhSachThongBao == null) return;
+
+        boolean selectAll = selectedKeys.size() < lastLoadedNotificationKeys.size();
+
+        for (int i = 0; i < layoutDanhSachThongBao.getChildCount(); i++) {
+            View child = layoutDanhSachThongBao.getChildAt(i);
+            if (child instanceof MaterialCardView) {
+                MaterialCardView card = (MaterialCardView) child;
+                if (card.getChildCount() > 0 && card.getChildAt(0) instanceof LinearLayout) {
+                    LinearLayout lopNgang = (LinearLayout) card.getChildAt(0);
+                    if (lopNgang.getChildCount() > 0 && lopNgang.getChildAt(0) instanceof CheckBox) {
+                        CheckBox cb = (CheckBox) lopNgang.getChildAt(0);
+                        cb.setChecked(selectAll);
+                    }
+                }
+            }
+        }
+
+        if (selectAll) {
+            if (btnSelectAll != null) btnSelectAll.setText("Bỏ chọn tất cả");
+        } else {
+            if (btnSelectAll != null) btnSelectAll.setText("Chọn tất cả");
+        }
+    }
+
+    private void thucHienDanhDauDaDoc() {
+        if (selectedKeys.isEmpty()) return;
+
+        for (String key : selectedKeys) {
+            danhDauDaDoc(key);
+        }
+
+        isSelectionMode = false;
+        selectedKeys.clear();
+
+        if (btnSelectMode != null) {
+            btnSelectMode.setText("Chọn");
+        }
+        if (layoutSelectionActions != null) {
+            layoutSelectionActions.setVisibility(View.GONE);
+        }
+
+        lastLoadedNotificationKeys.clear();
+        goiDuLieuRetrofit(true);
+
+        Toast.makeText(getContext(), "Đã đánh dấu các thông báo đã chọn là đã đọc", Toast.LENGTH_SHORT).show();
+    }
+
 }
