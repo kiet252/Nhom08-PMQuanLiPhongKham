@@ -575,7 +575,7 @@ public class ChatbotDatabaseAssistant {
 
     private void extractDateRange(String message, QuerySpec spec) {
 
-        String lower = normalizeNL(message);
+        String lower = message.toLowerCase(Locale.getDefault());
 
         Calendar cal = Calendar.getInstance();
 
@@ -679,6 +679,70 @@ public class ChatbotDatabaseAssistant {
             cal.set(Calendar.DAY_OF_MONTH,
                     cal.getActualMaximum(Calendar.DAY_OF_MONTH));
             Date end = cal.getTime();
+
+            SimpleDateFormat sdf =
+                    new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+            spec.setStartDate(sdf.format(start));
+            spec.setEndDate(sdf.format(end));
+            return;
+        }
+
+
+        Pattern monthRange = Pattern.compile(
+                "thang\\s*(\\d{1,2})[/-](\\d{4})\\s*(?:den|toi|-)\\s*(?:thang\\s*)?(\\d{1,2})[/-](\\d{4})",
+                Pattern.CASE_INSENSITIVE
+        );
+        Matcher mr = monthRange.matcher(lower);
+
+        if (mr.find()) {
+
+            int startMonth = Integer.parseInt(mr.group(1));
+            int startYear = Integer.parseInt(mr.group(2));
+
+            int endMonth = Integer.parseInt(mr.group(3));
+            int endYear = Integer.parseInt(mr.group(4));
+
+            Calendar c = Calendar.getInstance();
+            c.clear();
+
+            c.set(startYear, startMonth - 1, 1);
+            Date start = c.getTime();
+
+            c.set(endYear, endMonth - 1, 1);
+            c.set(Calendar.DAY_OF_MONTH,
+                    c.getActualMaximum(Calendar.DAY_OF_MONTH));
+            Date end = c.getTime();
+
+            SimpleDateFormat sdf =
+                    new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+            spec.setStartDate(sdf.format(start));
+            spec.setEndDate(sdf.format(end));
+            return;
+        }
+
+
+        Pattern singleMonth = Pattern.compile(
+                "thang\\s*(\\d{1,2})[/-](\\d{4})",
+                Pattern.CASE_INSENSITIVE);
+
+        Matcher sm = singleMonth.matcher(lower);
+
+        if (sm.find()) {
+
+            int month = Integer.parseInt(sm.group(1));
+            int year = Integer.parseInt(sm.group(2));
+
+            Calendar c = Calendar.getInstance();
+            c.clear();
+
+            c.set(year, month - 1, 1);
+            Date start = c.getTime();
+
+            c.set(Calendar.DAY_OF_MONTH,
+                    c.getActualMaximum(Calendar.DAY_OF_MONTH));
+            Date end = c.getTime();
 
             SimpleDateFormat sdf =
                     new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -1644,9 +1708,6 @@ public class ChatbotDatabaseAssistant {
             String startDate,
             String endDate,
             AnswerCallback callback) {
-        Log.d("COUNT_BILLS", "date = " + date);
-        Log.d("COUNT_BILLS", "startDate = " + startDate);
-        Log.d("COUNT_BILLS", "endDate = " + endDate);
 
         billRepository.getAllBills().enqueue(new Callback<List<ExamFormWithBillDto>>() {
 
