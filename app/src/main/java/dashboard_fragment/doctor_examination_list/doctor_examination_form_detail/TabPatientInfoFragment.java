@@ -59,6 +59,16 @@ public class TabPatientInfoFragment extends Fragment {
         setupStatusClicks(activity);
         setupContinueButton(activity);
     }
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (getActivity() instanceof ExaminationFormDetail_doctor) {
+            ExaminationFormDetail_doctor activity = (ExaminationFormDetail_doctor) getActivity();
+            currentExaminationStatus = activity.getCurrentStatus();
+            applyStatus(currentExaminationStatus);
+            updateBottomButton(activity);
+        }
+    }
 
     private void setupStatusClicks(ExaminationFormDetail_doctor activity) {
         if (btnWaiting != null) {

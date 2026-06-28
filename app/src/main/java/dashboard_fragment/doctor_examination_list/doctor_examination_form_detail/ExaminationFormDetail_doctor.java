@@ -211,6 +211,9 @@ public class ExaminationFormDetail_doctor extends BaseActivity {
         selectTab(DetailTab.PRESCRIPTION);
     }
 
+    public void navigateToPatientInfoTab() {
+        selectTab(DetailTab.PATIENT_INFO);
+    }
     private void updateSelectedTab(DetailTab selectedTab) {
         applyTabState(tabExformPatient, selectedTab == DetailTab.PATIENT_INFO);
         applyTabState(tabCanLamSang, selectedTab == DetailTab.CLINICAL);

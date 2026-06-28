@@ -824,8 +824,10 @@ public class TabPrescriptionFragment extends Fragment {
                 if (response.isSuccessful()) {
                     Toast.makeText(requireContext(), "Lưu bệnh án thành công", Toast.LENGTH_SHORT).show();
                     ExaminationFormDetail_doctor activity = (ExaminationFormDetail_doctor) requireActivity();
-                    activity.updateCurrentStatus(DoctorExaminationStatus.DONE);
-                    activity.requestListReload(true);
+
+                    activity.navigateToPatientInfoTab();
+
+                    activity.requestListReload(false);
                     return;
                 }
 
