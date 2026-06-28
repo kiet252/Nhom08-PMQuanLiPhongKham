@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.nhom08_quanlyphongkham.R;
 
 import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -75,6 +76,7 @@ public class TabClinicalFragment extends Fragment {
         attachSectionBadges();
         setupSectionClicks(view);
         setupPreviewButton(view);
+        setupClinicalPdfExportButton(view);
         observeMedicalRecord();
         loadClinicalItems();
     }
@@ -192,6 +194,37 @@ public class TabClinicalFragment extends Fragment {
                     ((ExaminationFormDetail_doctor) requireActivity()).navigateToDiagnosisTab()
             );
         }
+    }
+
+    private void setupClinicalPdfExportButton(View view) {
+        View btnExport = view.findViewById(R.id.btnExportClinicalPdf);
+        if (btnExport != null) {
+            btnExport.setOnClickListener(v -> exportSelectedClinicalPdf());
+        }
+    }
+
+    private void exportSelectedClinicalPdf() {
+        if (availableClinicalItems == null) {
+            Toast.makeText(requireContext(), "Chưa tải dữ liệu cận lâm sàng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Set<Integer> selectedIds = doctorExDetailViewModel.getSelectedClinicalIds();
+        List<String> selectedClinicalNames = new ArrayList<>();
+
+        for (ClinicalItem item : availableClinicalItems) {
+            if (item == null || !selectedIds.contains(item.getId())) {
+                continue;
+            }
+
+            String clinicalName = item.getTen_dich_vu();
+            if (clinicalName != null && !clinicalName.trim().isEmpty()) {
+                selectedClinicalNames.add(clinicalName.trim());
+            }
+        }
+
+        ((ExaminationFormDetail_doctor) requireActivity())
+                .exportClinicalMedicalRecordToPdf(selectedClinicalNames);
     }
 
     private void toggleSection(String sectionKey) {

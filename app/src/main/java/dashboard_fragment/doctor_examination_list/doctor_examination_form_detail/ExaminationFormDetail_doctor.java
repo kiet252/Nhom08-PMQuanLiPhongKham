@@ -1,9 +1,20 @@
 package dashboard_fragment.doctor_examination_list.doctor_examination_form_detail;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.pdf.PdfDocument;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -27,7 +38,10 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.nhom08_quanlyphongkham.BaseActivity;
 import com.example.nhom08_quanlyphongkham.R;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
@@ -76,6 +90,8 @@ public class ExaminationFormDetail_doctor extends BaseActivity {
     public static final String EXTRA_PATIENT_CCCD = "extra_patient_cccd";
     public static final String EXTRA_PATIENT_GENDER = "extra_patient_gender";
     public static final String EXTRA_PATIENT_PHONE = "extra_patient_phone";
+    public static final String EXTRA_EXAM_DATE = "extra_exam_date";
+    public static final String EXTRA_DOCTOR_NAME = "extra_doctor_name";
 
     private LinearLayout tabExformPatient;
     private LinearLayout tabCanLamSang;
@@ -87,6 +103,10 @@ public class ExaminationFormDetail_doctor extends BaseActivity {
     private DoctorExDetailViewModel doctorExDetailViewModel;
     private static FullMedicalRecordResponse currentMedicalRecord;
     private static String currentFormId;
+    private PdfDocument clinicalPdfDocument;
+    private PdfDocument.Page clinicalPdfPage;
+    private Canvas clinicalPdfCanvas;
+    private int clinicalPdfPageNumber = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,7 +147,11 @@ public class ExaminationFormDetail_doctor extends BaseActivity {
                 .putExtra(EXTRA_PATIENT_ADDRESS, patient != null ? safeText(patient.getDia_chi(), "--") : "--")
                 .putExtra(EXTRA_PATIENT_CCCD, patient != null ? safeText(patient.getCccd(), "--") : "--")
                 .putExtra(EXTRA_PATIENT_GENDER, patient != null ? safeText(patient.getGioi_tinh(), "--") : "--")
-                .putExtra(EXTRA_PATIENT_PHONE, patient != null ? safeText(patient.getSo_dien_thoai(), "--") : "--");
+                .putExtra(EXTRA_PATIENT_PHONE, patient != null ? safeText(patient.getSo_dien_thoai(), "--") : "--")
+                .putExtra(EXTRA_EXAM_DATE, formatDate(form.getNgay_kham()))
+                .putExtra(EXTRA_DOCTOR_NAME, form.getDoctor() != null
+                        ? safeText(form.getDoctor().getHo_ten(), "--")
+                        : "--");
     }
 
     private void bindHeaderData() {
@@ -290,6 +314,182 @@ public class ExaminationFormDetail_doctor extends BaseActivity {
 
     static String safeText(String value, String fallback) {
         return value == null || value.trim().isEmpty() ? fallback : value;
+    }
+
+    public void exportClinicalMedicalRecordToPdf(List<String> clinicalItems) {
+        clinicalPdfDocument = new PdfDocument();
+        clinicalPdfPageNumber = 1;
+        createNewClinicalPdfPage();
+
+        Paint paint = new Paint();
+        paint.setColor(Color.BLACK);
+        paint.setTextSize(12f);
+        paint.setAntiAlias(true);
+
+        Paint titlePaint = new Paint(paint);
+        titlePaint.setTextSize(22f);
+        titlePaint.setFakeBoldText(true);
+
+        Paint boldPaint = new Paint(paint);
+        boldPaint.setFakeBoldText(true);
+
+        Paint italicPaint = new Paint(paint);
+        italicPaint.setTextSize(11f);
+        italicPaint.setTextSkewX(-0.25f);
+
+        try {
+            Bitmap logo = BitmapFactory.decodeResource(getResources(), R.drawable.clinic_management_system);
+            if (logo != null) {
+                Bitmap scaledLogo = Bitmap.createScaledBitmap(logo, 60, 60, true);
+                clinicalPdfCanvas.drawBitmap(scaledLogo, 50, 25, paint);
+            }
+
+            String displayDate = readExtra(EXTRA_EXAM_DATE, "--");
+            clinicalPdfCanvas.drawText("YÊU CẦU CẬN LÂM SÀNG NGÀY " + displayDate, 140, 55, titlePaint);
+            paint.setTextSize(13f);
+            clinicalPdfCanvas.drawText("Phòng khám TMH", 140, 80, paint);
+            clinicalPdfCanvas.drawLine(40, 95, 555, 95, paint);
+
+            int leftCol = 50;
+            int rightCol = 320;
+            int y = 130;
+
+            paint.setTextSize(14f);
+            clinicalPdfCanvas.drawText("THÔNG TIN BỆNH NHÂN", leftCol, y, boldPaint);
+            clinicalPdfCanvas.drawLine(40, y + 8, 555, y + 8, paint);
+
+            y += 35;
+            paint.setTextSize(13f);
+
+            String patientName = readExtra(EXTRA_PATIENT_NAME, "N/A");
+            String patientId = readExtra(EXTRA_PATIENT_ID, "--");
+            String patientBirthday = readExtra(EXTRA_PATIENT_BIRTHDAY, "--");
+            String patientGender = readExtra(EXTRA_PATIENT_GENDER, "--");
+            String patientPhone = readExtra(EXTRA_PATIENT_PHONE, "--");
+            String patientAddress = readExtra(EXTRA_PATIENT_ADDRESS, "--");
+
+            clinicalPdfCanvas.drawText("Họ tên: " + patientName, leftCol, y, paint);
+            clinicalPdfCanvas.drawText("Mã bệnh nhân: " + patientId, rightCol, y, paint);
+            y += 25;
+            clinicalPdfCanvas.drawText("Ngày sinh: " + patientBirthday, leftCol, y, paint);
+            clinicalPdfCanvas.drawText("Giới tính: " + patientGender, rightCol, y, paint);
+            y += 25;
+            clinicalPdfCanvas.drawText("Số điện thoại: " + patientPhone, leftCol, y, paint);
+            clinicalPdfCanvas.drawText("Địa chỉ: " + patientAddress, rightCol, y, paint);
+
+            y = checkClinicalPdfPageBoundary(y, 40);
+            clinicalPdfCanvas.drawText("TRIỆU CHỨNG", leftCol, y, boldPaint);
+            clinicalPdfCanvas.drawLine(40, y + 8, 555, y + 8, paint);
+
+            y = checkClinicalPdfPageBoundary(y, 30);
+            String symptomStr = readExtra(EXTRA_SYMPTOMS, "Không ghi nhận");
+            clinicalPdfCanvas.drawText(symptomStr.isEmpty() ? "Không ghi nhận" : symptomStr, leftCol, y, paint);
+
+            y = checkClinicalPdfPageBoundary(y, 40);
+            clinicalPdfCanvas.drawText("CẬN LÂM SÀNG CẦN THỰC HIỆN", leftCol, y, boldPaint);
+            clinicalPdfCanvas.drawLine(40, y + 8, 555, y + 8, paint);
+
+            if (clinicalItems != null && !clinicalItems.isEmpty()) {
+                for (String clinicalItem : clinicalItems) {
+                    if (clinicalItem == null || clinicalItem.trim().isEmpty()) {
+                        continue;
+                    }
+                    y = checkClinicalPdfPageBoundary(y, 25);
+                    clinicalPdfCanvas.drawText("• " + clinicalItem.trim(), leftCol + 10, y, paint);
+                }
+            } else {
+                y = checkClinicalPdfPageBoundary(y, 25);
+                clinicalPdfCanvas.drawText("Không thực hiện cận lâm sàng", leftCol, y, italicPaint);
+            }
+
+            y = checkClinicalPdfPageBoundary(y, 60);
+            int signatureX = 370;
+            clinicalPdfCanvas.drawText("Bác sĩ khám bệnh", signatureX, y, boldPaint);
+
+            y = checkClinicalPdfPageBoundary(y, 100);
+            String doctorName = readExtra(EXTRA_DOCTOR_NAME, "Bác sĩ điều trị");
+            if ("--".equals(doctorName)) {
+                doctorName = "Bác sĩ điều trị";
+            }
+            clinicalPdfCanvas.drawText("BS. " + doctorName, signatureX + 20, y, boldPaint);
+
+            clinicalPdfDocument.finishPage(clinicalPdfPage);
+
+            String cleanPatientId = removeTonesAndSpaces(patientId);
+            String cleanPatientName = removeTonesAndSpaces(patientName);
+            String examDateStr = displayDate.replaceAll("/", "");
+            if (examDateStr.trim().isEmpty() || "--".equals(examDateStr)) {
+                examDateStr = "UnknownDate";
+            }
+            String fileName = "YeuCau_" + cleanPatientId + "_" + cleanPatientName + "_" + examDateStr + ".pdf";
+
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
+
+            Uri uri;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/YeuCau");
+                uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+            } else {
+                File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                File pdfDir = new File(downloadsDir, "YeuCau");
+                if (!pdfDir.exists()) {
+                    pdfDir.mkdirs();
+                }
+                File file = new File(pdfDir, fileName);
+                uri = Uri.fromFile(file);
+            }
+
+            if (uri == null) {
+                throw new IOException("Không tạo được liên kết lưu file PDF");
+            }
+
+            try (OutputStream outputStream = getContentResolver().openOutputStream(uri)) {
+                if (outputStream == null) {
+                    throw new IOException("Không mở được OutputStream");
+                }
+                clinicalPdfDocument.writeTo(outputStream);
+                outputStream.flush();
+            }
+
+            Toast.makeText(this, "Đã xuất PDF vào Downloads/YeuCau thành công!", Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Log.e("PDF_EXPORT", "Lỗi trong quá trình xuất bệnh án PDF", e);
+            Toast.makeText(this, "Lỗi xuất PDF: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        } finally {
+            try {
+                clinicalPdfDocument.close();
+            } catch (Exception closeException) {
+                Log.e("PDF_EXPORT", "Không thể đóng tài liệu PDF", closeException);
+            }
+        }
+    }
+
+    private int checkClinicalPdfPageBoundary(int currentY, int increment) {
+        if (currentY + increment > 780) {
+            clinicalPdfDocument.finishPage(clinicalPdfPage);
+            clinicalPdfPageNumber++;
+            createNewClinicalPdfPage();
+            return 50;
+        }
+        return currentY + increment;
+    }
+
+    private void createNewClinicalPdfPage() {
+        PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(595, 842, clinicalPdfPageNumber).create();
+        clinicalPdfPage = clinicalPdfDocument.startPage(pageInfo);
+        clinicalPdfCanvas = clinicalPdfPage.getCanvas();
+    }
+
+    private String removeTonesAndSpaces(String input) {
+        if (input == null) {
+            return "Unknown";
+        }
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
+        normalized = normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        normalized = normalized.replace('đ', 'd').replace('Đ', 'D');
+        return normalized.replaceAll("[^a-zA-Z0-9]", "_");
     }
 
     private static class DoctorExDetailPagerAdapter extends FragmentStateAdapter {
