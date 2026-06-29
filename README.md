@@ -1,9 +1,9 @@
 # Ứng dụng quản lí phòng khám (Clinic Management System)
 
-[Platform - Android](https://img.shields.io/badge/Platform-Android-3DDC84?style=flat-square)
-[Language - Java](https://img.shields.io/badge/Language-Java-ED8B00?style=flat-square)
-[Backend - Supabase](https://img.shields.io/badge/Backend-Supabase-3ECF8E?style=flat-square)
-[Build System - Gradle Kotlin DSL](https://img.shields.io/badge/Build-Gradle_Kotlin_DSL-02303A?style=flat-square)
+![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?style=flat-square)
+![Language](https://img.shields.io/badge/Language-Java-ED8B00?style=flat-square)
+![Backend](https://img.shields.io/badge/Backend-Supabase-3ECF8E?style=flat-square)
+![Build System](https://img.shields.io/badge/Build--System-Gradle__Kotlin__DSL-02303A?style=flat-square)
 
 Một ứng dụng di động trên nền tảng Android (Java) giúp số hóa toàn diện quy trình vận hành và quản lý tại phòng khám y tế. Dự án tích hợp các công nghệ hiện đại như nhận diện khuôn mặt (AI), bản đồ số, quét mã QR/OCR căn cước công dân và trợ lý thông minh (Gemini AI).
 
