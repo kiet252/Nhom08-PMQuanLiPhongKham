@@ -43,7 +43,103 @@ Một ứng dụng di động trên nền tảng Android (Java) giúp số hóa 
 
 ---
 
-## 4. Hướng dẫn cấu hình và Bảo mật API Key
+## 4. Cấu trúc đồ án
+
+```text
+Nhom08QuanLyPhongKham
+│
+├── app
+│   ├── build.gradle.kts
+│   ├── proguard-rules.pro
+│   │
+│   └── src
+│       ├── main
+│       │   ├── AndroidManifest.xml
+│       │   │
+│       │   ├── java
+│       │   │   └── com.example.nhom08_quanlyphongkham
+│       │   │       ├── BaseActivity.java
+│       │   │       ├── login.java
+│       │   │       ├── dashboard.java
+│       │   │       ├── UserProfile.java
+│       │   │       │
+│       │   │       ├── uilogin
+│       │   │       │   ├── AuthRepository.java
+│       │   │       │   ├── AuthApiService.java
+│       │   │       │   ├── SharedPrefManager.java
+│       │   │       │   └── SupabaseClientProvider.java
+│       │   │       │
+│       │   │       ├── admin_manage_staff
+│       │   │       │   ├── admin_manage_staff.java
+│       │   │       │   ├── create_staff.java
+│       │   │       │   └── staff_detail.java
+│       │   │       │
+│       │   │       ├── admin_reports
+│       │   │       │   ├── ReportsActivity_Admin.java
+│       │   │       │   └── ReportApiService.java
+│       │   │       │
+│       │   │       ├── dashboard_fragment
+│       │   │       │   ├── HomeFragment_admin.java
+│       │   │       │   ├── HomeFragment_doctor.java
+│       │   │       │   ├── HomeFragment_staff.java
+│       │   │       │   ├── AccountFragment.java
+│       │   │       │   └── NotificationFragment.java
+│       │   │       │
+│       │   │       ├── admin_location_setting
+│       │   │       │   ├── location_setting.java
+│       │   │       │   ├── map_picker.java
+│       │   │       │   └── ClinicLocationRepository.java
+│       │   │       │
+│       │   │       ├── admin_manage_device
+│       │   │       ├── admin_manage_medicine_clinical
+│       │   │       ├── admin_timekeeping_schedule
+│       │   │       ├── admin_timekeeping_fix_request
+│       │   │       │
+│       │   │       ├── staff_add_update_patient
+│       │   │       ├── staff_create_examination_form
+│       │   │       ├── staff_manage_examination_form
+│       │   │       ├── staff_manage_bill
+│       │   │       │
+│       │   │       ├── doctor_create_appointment
+│       │   │       ├── doctor_examination_list
+│       │   │       ├── doctor_view_medical_record
+│       │   │       │
+│       │   │       └── timekeeping
+│       │   │           ├── Timekeeping.java
+│       │   │           ├── FaceSignupActivity.java
+│       │   │           ├── TimekeepingRepository.java
+│       │   │           └── timekeeping_request.java
+│       │   │
+│       │   └── res
+│       │       ├── layout
+│       │       │   ├── user_login.xml
+│       │       │   ├── user_dashboard.xml
+│       │       │   ├── fragment_home_admin.xml
+│       │       │   ├── fragment_home_doctor.xml
+│       │       │   ├── fragment_home_staff.xml
+│       │       │   ├── admin_location_setting.xml
+│       │       │   ├── map_picker.xml
+│       │       │   └── face_checking.xml
+│       │       │
+│       │       ├── drawable
+│       │       ├── mipmap-*
+│       │       └── values
+│       │
+│       ├── test
+│       └── androidTest
+│
+├── gradle
+│   ├── wrapper
+│   └── libs.versions.toml
+│
+├── build.gradle.kts
+├── settings.gradle.kts
+├── gradle.properties
+├── README.md
+└── README.txt
+
+
+## 5. Hướng dẫn cấu hình và Bảo mật API Key
 
 Để bảo mật thông tin, các API Key của Supabase và Gemini không được để trong file nguồn và không được phép commit lên GitHub. Ứng dụng sẽ lấy các thông tin này từ file local.properties khi build.
 
