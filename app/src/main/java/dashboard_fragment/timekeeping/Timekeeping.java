@@ -60,6 +60,7 @@
 
     public class Timekeeping extends BaseActivity {
 
+        private com.google.android.gms.location.FusedLocationProviderClient fusedLocationClient;
         private ImageButton btnBack;
         private TextView tvTime, tvDate;
         private Button btnConfirm;
@@ -77,14 +78,53 @@
         private TimekeepingRepository repository;
 
         private final ActivityResultLauncher<String> requestPermissionLauncher =
-                        registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                            if (isGranted) {
-                                startCamera();
-                            } else {
-                                Toast.makeText(this, "Bạn cần cấp quyền Camera để thực hiện chấm công!", Toast.LENGTH_LONG).show();
-                            }
-                        });
-
+                registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                    if (isGranted) {
+                        startCamera();
+                    } else {
+                        if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
+                            // Từ chối lần đầu, còn xin lại được
+                            Toast.makeText(this, "Bạn cần cấp quyền Camera để thực hiện chấm công!", Toast.LENGTH_LONG).show();
+                        } else {
+                            // Từ chối vĩnh viễn -> mở Settings
+                            new AlertDialog.Builder(this)
+                                    .setTitle("Cần quyền Camera")
+                                    .setMessage("Vui lòng vào Cài đặt để cấp quyền.")
+                                    .setPositiveButton("Mở Cài đặt", (d, w) -> {
+                                        Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                        intent.setData(android.net.Uri.fromParts("package", getPackageName(), null));
+                                        startActivity(intent);
+                                    })
+                                    .setNegativeButton("Hủy", null)
+                                    .show();
+                        }
+                    }
+                });
+        private final ActivityResultLauncher<String[]> requestLocationLauncher =
+                registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+                    Boolean fine = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
+                    if (Boolean.TRUE.equals(fine)) {
+                        checkLocationThenProceed();
+                    } else {
+                        // Kiểm tra xem có thể xin lại không
+                        if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                            // Từ chối lần đầu, còn có thể xin lại
+                            Toast.makeText(this, "Cần quyền vị trí để chấm công!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            // Từ chối vĩnh viễn (tick "Don't ask again") -> mở Settings
+                            new AlertDialog.Builder(this)
+                                    .setTitle("Cần quyền vị trí")
+                                    .setMessage("Vui lòng vào Cài đặt để cấp quyền.")
+                                    .setPositiveButton("Mở Cài đặt", (d, w) -> {
+                                        Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                        intent.setData(android.net.Uri.fromParts("package", getPackageName(), null));
+                                        startActivity(intent);
+                                    })
+                                    .setNegativeButton("Hủy", null)
+                                    .show();
+                        }
+                    }
+                });
             private FaceDetector detector;
             private Interpreter tflite = null;
             private final int MODEL_INPUT_SIZE = 160;
@@ -111,6 +151,8 @@
 
 
             checkCameraPermission();
+            fusedLocationClient = com.google.android.gms.location.LocationServices
+                    .getFusedLocationProviderClient(this);
             FaceDetectorOptions options = new FaceDetectorOptions.Builder()
                     .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
                     .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_NONE)
@@ -130,7 +172,15 @@
             scanAndCheckProfile();
         }
 
+        @Override
+        protected void onResume() {
+            super.onResume();
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                    == PackageManager.PERMISSION_GRANTED) {
+                startCamera();
+            }
 
+        }
 
         private void initializeViews() {
 
@@ -412,7 +462,6 @@
             // Ensure we have fetched profile info
             if (fetchedProfile == null) {
                 Toast.makeText(this, "Chưa có thông tin hồ sơ. Vui lòng chờ và thử lại.", Toast.LENGTH_SHORT).show();
-                android.util.Log.d("TimekeepingAction", "handleConfirmAction: no fetchedProfile yet");
                 return;
             }
 
@@ -426,18 +475,9 @@
                 showInvalidDeviceDialogAndSendRequest(deviceAndroidId);
                 return;
             }
-
-            // Device check passed. Now ensure the staff has a face registered; if not, prompt setup dialog
-            if (fetchedFaceId == null || fetchedFaceId.trim().isEmpty()) {
-                android.util.Log.d("TimekeepingAction", "handleConfirmAction: profile has no face_id -> showUnknownFaceIdDialog");
-                showUnknownFaceIdDialog();
-                return;
-            }
-
-            // Device matches and face_id exists -> proceed to face verification
-            android.util.Log.d("TimekeepingAction", "handleConfirmAction: device matches and face_id present -> performing in-place face verification");
-            // perform verification inline in this activity
-            verifyFaceNow();
+            // Device check passed. Now check location
+            android.util.Log.d("TimekeepingAction", "handleConfirmAction: device matches -> checking location");
+            checkLocationThenProceed();
         }
 
         private void sendTimekeepingAuthRequest(String deviceAndroidId) {
@@ -671,5 +711,60 @@
                 }
             });
 
+        }
+        private void checkLocationThenProceed() {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestLocationLauncher.launch(new String[]{
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                });
+                return;
+            }
+
+            com.google.android.gms.location.CurrentLocationRequest req =
+                    new com.google.android.gms.location.CurrentLocationRequest.Builder()
+                            .setPriority(com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY)
+                            .setMaxUpdateAgeMillis(10000)
+                            .build();
+
+            fusedLocationClient.getCurrentLocation(req, null)
+                    .addOnSuccessListener(location -> {
+                        if (location == null) {
+                            Toast.makeText(this, "Không lấy được vị trí, bật GPS và thử lại.", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        verifyLocationWithSupabase(location.getLatitude(), location.getLongitude());
+                    });
+        }
+        private void verifyLocationWithSupabase(double userLat, double userLng) {
+            LocationCheckRequest req = new LocationCheckRequest();
+            req.userLat = userLat;
+            req.userLng = userLng;
+
+            repository.checkLocationValid(req).enqueue(new Callback<Boolean>() {
+                @Override
+                public void onResponse(Call<Boolean> call, Response<Boolean> response) {
+                    boolean isValid = Boolean.TRUE.equals(response.body());
+                    android.util.Log.d("TimekeepingAction", "location valid: " + isValid);
+
+                    if (!isValid) {
+                        Toast.makeText(Timekeeping.this, "Bạn không ở trong phòng khám!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // Location OK -> check face
+                    if (fetchedFaceId == null || fetchedFaceId.trim().isEmpty()) {
+                        showUnknownFaceIdDialog();
+                    } else {
+                        verifyFaceNow();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Boolean> call, Throwable t) {
+                    Toast.makeText(Timekeeping.this, "Lỗi kiểm tra vị trí: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }

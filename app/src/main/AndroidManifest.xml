@@ -6,7 +6,8 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-feature android:name="android.hardware.camera.any" />
 
     <application
@@ -24,6 +25,14 @@
             android:exported="false" />
         <activity
             android:name="dashboard_fragment.staff_add_update_patient.add_patient_logic.OCRCameraActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="dashboard_fragment.admin_location_setting.map_picker"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="dashboard_fragment.admin_location_setting.location_setting"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity

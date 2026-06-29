@@ -180,6 +180,13 @@ public class HomeFragment_admin extends Fragment {
                 startActivity(intent);
             });
         }
+        View btnLocationSetting = view.findViewById(R.id.btn_location_setting);
+        if (btnLocationSetting != null) {
+            btnLocationSetting.setOnClickListener(v -> {
+                Intent intent = new Intent(getActivity(), dashboard_fragment.admin_location_setting.location_setting.class);
+                startActivity(intent);
+            });
+        }
 
         taiDuLieuBaoCao();
     }

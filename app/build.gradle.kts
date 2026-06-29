@@ -108,12 +108,12 @@ dependencies {
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-
+    implementation("com.google.android.gms:play-services-location:21.0.1")
     // Supabase
     implementation("io.github.jan-tennert.supabase:postgrest-kt:3.5.0")
     implementation("io.github.jan-tennert.supabase:realtime-kt:3.5.0")
     implementation("io.github.jan-tennert.supabase:supabase-kt:3.5.0")
-
+    implementation("androidx.cardview:cardview:1.0.0")
     // CameraX dependencies
     val camerax_version = "1.3.4"
     implementation("androidx.camera:camera-core:${camerax_version}")
