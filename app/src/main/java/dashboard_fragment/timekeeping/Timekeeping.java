@@ -742,29 +742,35 @@
             req.userLat = userLat;
             req.userLng = userLng;
 
-            repository.checkLocationValid(req).enqueue(new Callback<Boolean>() {
+            repository.checkLocationValid(req).enqueue(new Callback<ResponseBody>() {
                 @Override
-                public void onResponse(Call<Boolean> call, Response<Boolean> response) {
-                    boolean isValid = Boolean.TRUE.equals(response.body());
-                    android.util.Log.d("TimekeepingAction", "location valid: " + isValid);
-
-                    if (!isValid) {
-                        Toast.makeText(Timekeeping.this, "Bạn không ở trong phòng khám!", Toast.LENGTH_SHORT).show();
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if (!response.isSuccessful()) {
+                        Toast.makeText(Timekeeping.this, "Lỗi server: " + response.code(), Toast.LENGTH_SHORT).show();
                         return;
                     }
+                    try {
+                        String body = response.body().string();
+                        boolean isValid = Boolean.parseBoolean(body.trim());
+                        Log.d("LocationCheck", "response body: " + body + " isValid: " + isValid);
 
-                    // Location OK -> check face
-                    if (fetchedFaceId == null || fetchedFaceId.trim().isEmpty()) {
-                        showUnknownFaceIdDialog();
-                    } else {
-                        verifyFaceNow();
+                        if (!isValid) {
+                            Toast.makeText(Timekeeping.this, "Bạn không ở trong phòng khám!", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        if (fetchedFaceId == null || fetchedFaceId.trim().isEmpty()) {
+                            showUnknownFaceIdDialog();
+                        } else {
+                            verifyFaceNow();
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(Timekeeping.this, "Lỗi xử lý phản hồi vị trí.", Toast.LENGTH_SHORT).show();
                     }
                 }
 
                 @Override
-                public void onFailure(Call<Boolean> call, Throwable t) {
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
                     Toast.makeText(Timekeeping.this, "Lỗi kiểm tra vị trí: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
-        }
-    }
+        }    }

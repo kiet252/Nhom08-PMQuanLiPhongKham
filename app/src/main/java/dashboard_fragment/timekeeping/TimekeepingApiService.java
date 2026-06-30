@@ -18,8 +18,8 @@ public interface TimekeepingApiService {
             @Header("Prefer") String prefer,
             @Body Map<String, Object> body
     );
-    @POST("rpc/check_location_valid")
-    Call<Boolean> checkLocationValid(@Body LocationCheckRequest body);
+    @POST("rest/v1/rpc/check_location_valid")  // thêm rest/v1/
+    Call<ResponseBody> checkLocationValid(@Body LocationCheckRequest body);
     @GET("rest/v1/timekeeping_auth_request")
     Call<java.util.List<java.util.Map<String, Object>>> getAuthRequests(
             @QueryMap Map<String, String> queries

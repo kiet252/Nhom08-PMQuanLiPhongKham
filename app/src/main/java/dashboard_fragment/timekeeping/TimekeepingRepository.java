@@ -146,6 +146,7 @@ public class TimekeepingRepository {
 
         return apiService.createTimekeepingRequest("return=minimal", request);
     }
-    public Call<Boolean> checkLocationValid(LocationCheckRequest req) {
+    public Call<ResponseBody> checkLocationValid(LocationCheckRequest req) {
         return apiService.checkLocationValid(req);
-    }}
+    }
+}
